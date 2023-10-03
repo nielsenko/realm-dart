@@ -380,7 +380,7 @@ Future<void> main([List<String>? args]) async {
     final credentials = Credentials.apiKey(key.value!);
 
     final apiKeyUser = await app.logIn(credentials);
-    expect(apiKeyUser.provider, AuthProviderType.apiKey);
+    expect(apiKeyUser.identities[1].provider, AuthProviderType.apiKey);
     expect(apiKeyUser.id, user.id);
     expect(apiKeyUser.refreshToken, isNot(user.refreshToken));
   });
@@ -405,7 +405,7 @@ Future<void> main([List<String>? args]) async {
     await enableAndVerifyApiKey(user, key.id);
 
     final apiKeyUser = await app.logIn(credentials);
-    expect(apiKeyUser.provider, AuthProviderType.apiKey);
+    expect(apiKeyUser.identities[1].provider, AuthProviderType.apiKey);
     expect(apiKeyUser.id, user.id);
     expect(apiKeyUser.refreshToken, isNot(user.refreshToken));
   });

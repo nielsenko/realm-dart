@@ -88,9 +88,10 @@ class User {
     return realmCore.userGetDeviceId(this);
   }
 
-  /// Gets the [AuthProviderType] this [User] is currently logged in with.
+  @Deprecated('A user can have more than one provider.')
+  /// Gets the first [AuthProviderType] this [User] is currently logged in with.
   AuthProviderType get provider {
-    return realmCore.userGetAuthProviderType(this);
+    return identities.first.provider;
   }
 
   /// Gets the profile information for this [User].
@@ -163,7 +164,7 @@ class User {
   }
 
   void _ensureCanAccessAPIKeys() {
-    if (provider == AuthProviderType.apiKey) {
+    if (identities.any((i) => i.provider == AuthProviderType.apiKey)) {
       throw RealmError('Users logged in with API key cannot manage API keys');
     }
   }

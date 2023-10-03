@@ -285,7 +285,7 @@ Future<void> main([List<String>? args]) async {
     expect(jwtUser.state, UserState.loggedIn);
     expect(jwtUser.identities.singleWhere((identity) => identity.provider == AuthProviderType.jwt).id, jwtUserId);
     expect(jwtUser.identities.singleWhere((identity) => identity.provider == AuthProviderType.emailPassword).id, userId);
-    expect(jwtUser.provider, AuthProviderType.jwt);
+    expect(jwtUser.identities[1].provider, AuthProviderType.jwt);
     expect(jwtUser.profile.email, username);
     expect(jwtUser.profile.name, username);
     expect(jwtUser.profile.gender, "male");
