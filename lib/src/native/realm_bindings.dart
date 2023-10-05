@@ -10310,6 +10310,32 @@ class RealmLibrary {
           ffi.Pointer<realm_flx_sync_subscription_set_t> Function(
               ffi.Pointer<realm_flx_sync_mutable_subscription_set_t>)>();
 
+  /// Remove all subscriptions for a given class type. If operation completes successfully set the bool out param.
+  /// @return true if no error occurred, false otherwise (use realm_get_last_error for fetching the error).
+  bool realm_sync_subscription_set_erase_by_class_name(
+    ffi.Pointer<realm_flx_sync_mutable_subscription_set_t> arg0,
+    ffi.Pointer<ffi.Char> arg1,
+    ffi.Pointer<ffi.Bool> erased,
+  ) {
+    return _realm_sync_subscription_set_erase_by_class_name(
+      arg0,
+      arg1,
+      erased,
+    );
+  }
+
+  late final _realm_sync_subscription_set_erase_by_class_namePtr = _lookup<
+          ffi.NativeFunction<
+              ffi.Bool Function(
+                  ffi.Pointer<realm_flx_sync_mutable_subscription_set_t>,
+                  ffi.Pointer<ffi.Char>,
+                  ffi.Pointer<ffi.Bool>)>>(
+      'realm_sync_subscription_set_erase_by_class_name');
+  late final _realm_sync_subscription_set_erase_by_class_name =
+      _realm_sync_subscription_set_erase_by_class_namePtr.asFunction<
+          bool Function(ffi.Pointer<realm_flx_sync_mutable_subscription_set_t>,
+              ffi.Pointer<ffi.Char>, ffi.Pointer<ffi.Bool>)>();
+
   /// Erase from subscription set by id. If operation completes successfully set the bool out param.
   /// @return true if no error occurred, false otherwise (use realm_get_last_error for fetching the error).
   bool realm_sync_subscription_set_erase_by_id(
