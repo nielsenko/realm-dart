@@ -1257,6 +1257,7 @@ class _RealmCore {
       final out_num_modifications = arena<Size>();
       final out_num_moves = arena<Size>();
       final out_collection_cleared = arena<Bool>();
+      final out_collection_deleted = arena<Bool>();
       _realmLib.realm_collection_changes_get_num_changes(
         changes._pointer,
         out_num_deletions,
@@ -1264,6 +1265,7 @@ class _RealmCore {
         out_num_modifications,
         out_num_moves,
         out_collection_cleared,
+        out_collection_deleted,
       );
 
       final deletionsCount = out_num_deletions != nullptr ? out_num_deletions.value : 0;
