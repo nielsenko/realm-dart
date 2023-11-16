@@ -7,8 +7,8 @@ version: 1.6.1
 publish_to: "none"
 
 environment:
-  sdk: ^3.1.0
-  flutter: ^3.13.0
+  sdk: ^3.2.0
+  flutter: ^3.16.0
 
 dependencies:
   flutter:
@@ -28,7 +28,7 @@ dependencies:
 dev_dependencies:
   flutter_test:
     sdk: flutter
-  flutter_lints: ^2.0.1
+  flutter_lints: ^3.0.1
 
 flutter:
   uses-material-design: true
