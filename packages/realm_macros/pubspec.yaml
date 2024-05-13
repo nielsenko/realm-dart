@@ -1,0 +1,13 @@
+name: realm_macros
+description: An experimental replacement for realm_generator using the macros package
+version: 0.1.0
+
+environment:
+  sdk: ^3.5.0-0 # this will currently require dart from master
+
+dependencies:
+  macros: ^0.1.0-main.5
+
+dev_dependencies:
+  lints: ^3.0.0
+  test: ^1.24.0

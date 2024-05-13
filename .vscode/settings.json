@@ -9,6 +9,7 @@
     "backlinks",
     "BEGINSWITH",
     "bson",
+    "clazz",
     "dartdoc",
     "dcli",
     "deallocated",
@@ -24,6 +25,7 @@
     "fnum",
     "geospatial",
     "HRESULT",
+    "introspector",
     "keepalive",
     "loggable",
     "maccatalyst",
@@ -34,6 +36,7 @@
     "riscv",
     "sublist",
     "sublists",
+    "superconstructor",
     "TRUEPREDICATE",
     "unmanaged",
     "unsynced",
@@ -167,5 +170,5 @@
     "__tuple": "cpp",
     "__verbose_abort": "cpp"
   },
-  "cmake.sourceDirectory": "${workspaceFolder}/packages/realm_dart"
+  "cmake.sourceDirectory": "${workspaceFolder}/packages/realm_dart",
 }
