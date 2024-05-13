@@ -3,9 +3,10 @@
 
 import 'package:macros/macros.dart';
 
-// Currently just a verbatim copy of DataClass from: 
+// Currently mostly a verbatim copy of DataClass from:
 // https://github.com/dart-lang/language/blob/329f626a9bae65585065471d1cc59e236d7cf58b/working/macros/example/lib/data_class.dart
-macro class RealmModel2 implements ClassDeclarationsMacro, ClassDefinitionMacro {
+macro class RealmModel2
+    implements ClassDeclarationsMacro, ClassDefinitionMacro {
   const RealmModel2();
 
   @override
@@ -38,8 +39,11 @@ macro class AutoConstructor implements ClassDeclarationsMacro {
       ClassDeclaration clazz, MemberDeclarationBuilder builder) async {
     var constructors = await builder.constructorsOf(clazz);
     if (constructors.any((c) => c.identifier.name == '')) {
-      throw ArgumentError(
-          'Cannot generate an unnamed constructor because one already exists');
+      throw DiagnosticException(Diagnostic(
+        DiagnosticMessage(
+            'Cannot generate an unnamed constructor because one already exists'),
+        Severity.error,
+      ));
     }
 
     var params = <Object>[];
@@ -71,9 +75,13 @@ macro class AutoConstructor implements ClassDeclarationsMacro {
       superconstructor = (await builder.constructorsOf(superclass!))
           .firstWhereOrNull((c) => c.identifier.name == '');
       if (superconstructor == null) {
-        throw ArgumentError(
-            'Super class $superclass of $clazz does not have an unnamed '
-            'constructor');
+        throw DiagnosticException(
+          Diagnostic(
+            DiagnosticMessage(
+                'Super class $superclass of $clazz does not have an unnamed constructor'),
+            Severity.error,
+          ),
+        );
       }
       // We convert positional parameters in the super constructor to named
       // parameters in this constructor.
@@ -131,8 +139,13 @@ macro class CopyWith implements ClassDeclarationsMacro {
       ClassDeclaration clazz, MemberDeclarationBuilder builder) async {
     var methods = await builder.methodsOf(clazz);
     if (methods.any((c) => c.identifier.name == 'copyWith')) {
-      throw ArgumentError(
-          'Cannot generate a copyWith method because one already exists');
+      throw DiagnosticException(
+        Diagnostic(
+          DiagnosticMessage(
+              'Cannot generate a copyWith method because one already exists'),
+          Severity.error,
+        ),
+      );
     }
     var allFields = await clazz.allFields(builder).toList();
     var namedParams = [
@@ -182,13 +195,23 @@ macro class HashCode implements ClassDeclarationsMacro, ClassDefinitionMacro {
 
   @override
   Future<void> buildDefinitionForClass(
-      ClassDeclaration clazz, TypeDefinitionBuilder builder) async {
+    ClassDeclaration clazz,
+    TypeDefinitionBuilder builder,
+  ) async {
     var methods = await builder.methodsOf(clazz);
     var hashCodeBuilder = await builder.buildMethod(
         methods.firstWhere((m) => m.identifier.name == 'hashCode').identifier);
 
-    final fields = await clazz.allFields(builder).map((e) => e.identifier).toList();
-    if (fields.length > 0 && fields.length <= 20) {
+    final fields =
+        await clazz.allFields(builder).map((e) => e.identifier).toList();
+    if (fields.length == 1) {
+      hashCodeBuilder.augment(FunctionBodyCode.fromParts([
+        ' => ',
+        fields.single,
+        '.hashCode',
+        ';',
+      ]));
+    } else if (fields.length > 1 && fields.length <= 20) {
       hashCodeBuilder.augment(FunctionBodyCode.fromParts([
         ' => ',
         // ignore: deprecated_member_use
