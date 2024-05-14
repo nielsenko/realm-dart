@@ -2,10 +2,11 @@ import 'package:realm_macros/realm_macros.dart';
 
 @RealmModel2()
 class TestModel extends RealmObjectMacrosBase {
-  final int id;
+  int? _id;
 }
 
 void main() {
-  var model = TestModel(id: 1);
-  print(model);
+  var model = TestModel();
+  model.id = 123;
+  print(model.id);
 }

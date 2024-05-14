@@ -14,28 +14,29 @@ macro class RealmModel2
     implements ClassTypesMacro, ClassDeclarationsMacro, ClassDefinitionMacro {
   const RealmModel2();
 
-   @override
+  @override
   Future<void> buildTypesForClass(
       ClassDeclaration clazz, ClassTypeBuilder builder) async {
-        final realmObjectUri = Uri.parse('package:realm_dart/src/realm_object.dart');
-          builder.appendMixins([
-            // ignore: deprecated_member_use
-            NamedTypeAnnotationCode(name: await builder.resolveIdentifier(realmObjectUri, 'RealmEntity')),
-            // ignore: deprecated_member_use
-            NamedTypeAnnotationCode(name: await builder.resolveIdentifier(realmObjectUri, 'RealmObjectBase')),
-            // ignore: deprecated_member_use
-            NamedTypeAnnotationCode(name: await builder.resolveIdentifier(realmObjectUri, 'RealmObject')),
-          ]);
+    // final realmObjectUri = Uri.parse('package:realm_dart/src/realm_object.dart');
+    // builder.appendInterfaces([
+    //   // ignore: deprecated_member_use
+    //   NamedTypeAnnotationCode(name: await builder.resolveIdentifier(realmObjectUri, 'RealmObject')),
+    //   // ignore: deprecated_member_use
+    //   NamedTypeAnnotationCode(name: await builder.resolveIdentifier(realmObjectUri, 'RealmObjectBase')),
+    //   // ignore: deprecated_member_use
+    //   NamedTypeAnnotationCode(name: await builder.resolveIdentifier(realmObjectUri, 'RealmEntity')),
+    // ]);
   }
 
   @override
   Future<void> buildDeclarationsForClass(
       ClassDeclaration clazz, MemberDeclarationBuilder context) async {
     await Future.wait([
-      const AutoConstructor().buildDeclarationsForClass(clazz, context),
+      // const AutoConstructor().buildDeclarationsForClass(clazz, context),
       const HashCode().buildDeclarationsForClass(clazz, context),
       const Equality().buildDeclarationsForClass(clazz, context),
       const ToString().buildDeclarationsForClass(clazz, context),
+      const RealmProperty().buildDeclarationsForClass(clazz, context),
     ]);
   }
 
@@ -46,6 +47,8 @@ macro class RealmModel2
       const HashCode().buildDefinitionForClass(clazz, builder),
       const Equality().buildDefinitionForClass(clazz, builder),
       const ToString().buildDefinitionForClass(clazz, builder),
+      // TODO: blocked on https://github.com/dart-lang/sdk/issues/44748
+      // const RealmProperty().buildDefinitionForClass(clazz, builder),
     ]);
   }
 }
@@ -330,6 +333,89 @@ macro class ToString implements ClassDeclarationsMacro, ClassDefinitionMacro {
       ...fieldExprs,
       '\n}""";',
     ]));
+  }
+}
+
+macro class RealmProperty
+    implements ClassDeclarationsMacro, ClassDefinitionMacro {
+  const RealmProperty();
+
+  @override
+  Future<void> buildDeclarationsForClass(
+      ClassDeclaration clazz, MemberDeclarationBuilder builder) async {
+    final baseMethods = await builder.methodsOf(await builder.typeDeclarationOf(
+        // ignore: deprecated_member_use
+        await builder.resolveIdentifier(
+            Uri.parse('package:realm_dart/src/realm_object.dart'),
+            'RealmObjectBase')));
+    final methodGet = baseMethods.firstWhere((m) => m.identifier.name == 'get');
+    final methodSet = baseMethods.firstWhere((m) => m.identifier.name == 'set');
+
+    for (var field in await builder.fieldsOf(clazz)) {
+      var publicName = field.identifier.name.substring(1);
+      var realmFldName = publicName;
+
+      var getter = DeclarationCode.fromParts([
+        field.type.code,
+        ' get $publicName => ',
+        NamedTypeAnnotationCode(
+            name: methodGet.identifier, typeArguments: [field.type.code]),
+        '(this, "$realmFldName") as ',
+        field.type.code,
+        ';',
+      ]);
+      var setter = DeclarationCode.fromParts([
+        'set $publicName(',
+        field.type.code,
+        ' val) => ',
+        NamedTypeAnnotationCode(name: methodSet.identifier),
+        '(this, "$realmFldName", val);',
+      ]);
+
+      builder.declareInType(getter);
+      builder.declareInType(setter);
+    }
+  }
+
+  @override
+  Future<void> buildDefinitionForClass(
+      ClassDeclaration clazz, TypeDefinitionBuilder builder) async {
+    final realmObjectBase = NamedTypeAnnotationCode(
+        // ignore: deprecated_member_use
+        name: await builder.resolveIdentifier(
+            Uri.parse('package:realm_dart/src/realm_object.dart'),
+            'RealmObjectBase'));
+    var type = await builder.typeDeclarationOf(realmObjectBase.name);
+    var methods = await builder.methodsOf(type);
+    var methodGet = methods.firstWhere((m) => m.identifier.name == 'get');
+    var methodSet = methods.firstWhere((m) => m.identifier.name == 'set');
+
+    for (var field in await builder.fieldsOf(clazz)) {
+      var publicName = field.identifier.name;
+      var realmFldName = field.identifier.name;
+
+      var getter = DeclarationCode.fromParts([
+        field.type.code,
+        ' get $publicName => ',
+        NamedTypeAnnotationCode(
+            name: methodGet.identifier, typeArguments: [field.type.code]),
+        '(this, "$realmFldName") as ',
+        field.type.code,
+        ';',
+      ]);
+      var setter = DeclarationCode.fromParts([
+        'set $publicName(',
+        field.type.code,
+        ' val) => ',
+        NamedTypeAnnotationCode(name: methodSet.identifier),
+        '(this, "$realmFldName", val);',
+      ]);
+
+      (await builder.buildField(field.identifier)).augment(
+        getter: getter,
+        setter: setter,
+      );
+    }
   }
 }
 
