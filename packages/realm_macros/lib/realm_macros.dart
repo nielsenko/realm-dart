@@ -14,18 +14,18 @@ macro class RealmModel2
     implements ClassTypesMacro, ClassDeclarationsMacro, ClassDefinitionMacro {
   const RealmModel2();
 
-  @override
+   @override
   Future<void> buildTypesForClass(
       ClassDeclaration clazz, ClassTypeBuilder builder) async {
         final realmObjectUri = Uri.parse('package:realm_dart/src/realm_object.dart');
-        // builder.appendInterfaces([
-        //   // ignore: deprecated_member_use
-        //   NamedTypeAnnotationCode(name: await builder.resolveIdentifier(realmObjectUri, 'RealmObject')),
-        //   // ignore: deprecated_member_use
-        //   NamedTypeAnnotationCode(name: await builder.resolveIdentifier(realmObjectUri, 'RealmObjectBase')),
-        //   // ignore: deprecated_member_use
-        //   NamedTypeAnnotationCode(name: await builder.resolveIdentifier(realmObjectUri, 'RealmEntity')),
-        // ]);
+          builder.appendMixins([
+            // ignore: deprecated_member_use
+            NamedTypeAnnotationCode(name: await builder.resolveIdentifier(realmObjectUri, 'RealmEntity')),
+            // ignore: deprecated_member_use
+            NamedTypeAnnotationCode(name: await builder.resolveIdentifier(realmObjectUri, 'RealmObjectBase')),
+            // ignore: deprecated_member_use
+            NamedTypeAnnotationCode(name: await builder.resolveIdentifier(realmObjectUri, 'RealmObject')),
+          ]);
   }
 
   @override
