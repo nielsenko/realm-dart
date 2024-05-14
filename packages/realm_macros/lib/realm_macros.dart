@@ -4,7 +4,9 @@
 import 'package:macros/macros.dart';
 import 'package:realm_dart/realm.dart'; // ignore: unused_import
 
-class RealmObjectMacrosBase with RealmEntity, RealmObjectBase, RealmObject {}
+class RealmObjectMacrosBase with RealmEntity, RealmObjectBase, RealmObject {
+  RealmObjectMacrosBase();
+}
 
 // Currently mostly a verbatim copy of DataClass from:
 // https://github.com/dart-lang/language/blob/329f626a9bae65585065471d1cc59e236d7cf58b/working/macros/example/lib/data_class.dart

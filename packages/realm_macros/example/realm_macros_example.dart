@@ -1,10 +1,5 @@
-//import 'package:macros/macros.dart';
 import 'package:realm_dart/realm.dart';
 import 'package:realm_macros/realm_macros.dart';
-
-class RealmObjectMacrosBase with RealmEntity, RealmObjectBase, RealmObject {
-  RealmObjectMacrosBase();
-}
 
 @RealmModel2()
 class TestModel extends RealmObjectMacrosBase {
