@@ -1,4 +1,3 @@
-import 'package:realm_dart/realm.dart';
 import 'package:realm_macros/realm_macros.dart';
 
 @RealmModel2()
