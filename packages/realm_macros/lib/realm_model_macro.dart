@@ -5,15 +5,31 @@ import 'package:macros/macros.dart';
 import 'package:realm_dart/realm.dart';
 
 class Property<T extends Object> {
-  final String name;
-  const Property(this.name);
-  T getValue(RealmObjectBase object) => RealmObjectBase.get<T>(object, name) as T;
-  void setValue(RealmObjectBase object, T value) => RealmObjectBase.set<T>(object, name, value);
+  final SchemaProperty schema;
+
+  const Property(this.schema);
+
+  String get name => schema.name;
+  Type get type => T;
+  
+  T getValue(RealmObjectBase object) => RealmObjectBase.get<T>(object, schema.name) as T;
+  void setValue(RealmObjectBase object, T value) => RealmObjectBase.set<T>(object, schema.name, value);
 }
 
 macro
-class RealmModelMacro implements ClassDeclarationsMacro, ClassDefinitionMacro {
+class RealmModelMacro implements ClassTypesMacro, ClassDeclarationsMacro, ClassDefinitionMacro {
   const RealmModelMacro();
+
+  @override
+  FutureOr<void> buildTypesForClass(ClassDeclaration clazz, ClassTypeBuilder builder) async {
+    // builder.appendMixins([
+    //   RawTypeAnnotationCode.fromParts([]),
+    //   RawTypeAnnotationCode.fromParts([]),
+    //   RawTypeAnnotationCode.fromParts([]),
+    // ]);
+    // // TODO: implement buildTypesForClass
+    // throw UnimplementedError();
+  }
 
   @override
   FutureOr<void> buildDeclarationsForClass(ClassDeclaration clazz, MemberDeclarationBuilder builder) async {
@@ -86,13 +102,8 @@ class RealmModelMacro implements ClassDeclarationsMacro, ClassDefinitionMacro {
     final unnamedCtor = ctors.firstWhere((ctor) => ctor.isUnnamed);
     final ctorBuilder = await builder.buildConstructor(unnamedCtor.identifier);
     ctorBuilder.augment(
-      body: FunctionBodyCode.fromParts([
-        '{\n',
-        for (final param in unnamedCtor.parameters)
-          'this.${param.identifier.name} = ${param.identifier.name};\n',
-        '}'
-      ])
-    );
+        body: FunctionBodyCode.fromParts(
+            ['{\n', for (final param in unnamedCtor.parameters) 'this.${param.identifier.name} = ${param.identifier.name};\n', '}']));
   }
 }
 
