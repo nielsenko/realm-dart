@@ -5,7 +5,7 @@ version: 1.0.0
 publish_to: none
 
 environment:
-  sdk: ^3.5.0-0
+  sdk: ^3.5.0-152.0.dev
 
 dependencies:
   ejson_annotation: ^0.3.0

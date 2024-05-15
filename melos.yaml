@@ -14,7 +14,7 @@ packages:
 command:
   bootstrap:
     environment:
-      sdk: ^3.5.0-0
+      sdk: ^3.5.0-152.0.dev
       flutter: ^3.19.0
     dev_dependencies:
       lints: ^3.0.0
