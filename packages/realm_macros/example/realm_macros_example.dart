@@ -1,7 +1,6 @@
 import 'package:realm_dart/realm.dart';
 import 'package:realm_macros/realm_macros.dart';
 import 'package:realm_macros/realm_model_macro.dart';
-//import augment 'serialized_augmentation.dart';
 
 @RealmModel2()
 class TestModel extends RealmObjectMacrosBase {
