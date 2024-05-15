@@ -1,3 +1,4 @@
+import 'package:realm_dart/realm.dart';
 import 'package:realm_macros/realm_macros.dart';
 import 'package:realm_macros/realm_model_macro.dart';
 //import augment 'serialized_augmentation.dart';
@@ -10,10 +11,17 @@ class TestModel extends RealmObjectMacrosBase {
 
 @RealmModelMacro()
 class Person extends RealmObjectMacrosBase {
-  Person(
-    int age, {
+  external Person({
+    @MapTo('alder') @PrimaryKey() required int age,
     required String name,
   });
+
+  Person.foo() : this(name: 'John', age: 20);
+
+  Person.bar() {
+    name = 'Kiro';
+    age = 35;
+  }
 }
 
 void main() {
@@ -21,4 +29,7 @@ void main() {
   model.id = 123;
   print(model.id);
   print(model);
+
+  var person = Person.bar();
+  print('${person.name} aged ${person.age}');
 }
