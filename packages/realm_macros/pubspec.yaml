@@ -3,10 +3,11 @@ description: An experimental replacement for realm_generator using the macros pa
 version: 0.1.0
 
 environment:
-  sdk: ^3.5.0-0 # this will currently require dart from master
+  sdk: ^3.5.0-152.0.dev # this will currently require dart from master
 
 dependencies:
   macros: ^0.1.0-main.5
+  collection: any
   realm_dart: ^2.2.1
 
 dev_dependencies:
