@@ -108,6 +108,10 @@ macro class RealmModelMacro
         ]));
       }
     }
+
+    // add a private empty ctor
+    builder.declareInType(
+        DeclarationCode.fromString('${clazz.identifier.name}._();'));
   }
 
   @override
