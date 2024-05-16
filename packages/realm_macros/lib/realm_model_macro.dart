@@ -18,8 +18,7 @@ class Property<T> {
       RealmObjectBase.set<T>(object, name, value);
 }
 
-macro class RealmModelMacro
-    implements ClassDeclarationsMacro, ClassDefinitionMacro {
+macro class RealmModelMacro implements ClassDeclarationsMacro, ClassDefinitionMacro {
   const RealmModelMacro();
 
   @override
@@ -85,6 +84,7 @@ macro class RealmModelMacro
           "('$name', ",
           realmPropertyType,
           if (type.isNullable) ', optional: true',
+          if (realmPropertyType.name == 'realmPropertyTypeObject') ", linkTarget: '${type.identifier.name}'",
           '));',
         ]));
 
@@ -174,10 +174,6 @@ macro class RealmModelMacro
             await builder.resolveIdentifier(
                 Uri.parse('package:realm_dart/src/realm_object.dart'),
                 'RealmObjectBase')));
-
-    final getSchemaMethod = realmObjectBaseMethods
-        .firstWhere((m) => m.identifier.name == 'getSchema')
-        .identifier;
 
     final registerFactoryMethod = realmObjectBaseMethods
         .firstWhere((m) => m.identifier.name == 'registerFactory')
@@ -326,7 +322,8 @@ bool isNullable<T>() => null is T;
 extension on DeclarationPhaseIntrospector {
   Future<StaticType> resolveType<T>(Uri uri) async {
     var typeString = T.toString();
-    if (isNullable<T>()) typeString = typeString.substring(0, typeString.length - 1);
+    if (isNullable<T>())
+      typeString = typeString.substring(0, typeString.length - 1);
     // ignore: deprecated_member_use
     final identifier = await resolveIdentifier(uri, typeString);
     var typeCode = NamedTypeAnnotationCode(name: identifier);
