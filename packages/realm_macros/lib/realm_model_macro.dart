@@ -110,15 +110,31 @@ macro class RealmModelMacro
       }
     }
 
-    // add a private empty ctor
-//    builder.declareInType(
-//        DeclarationCode.fromString('${clazz.identifier.name}._();'));
+    // add a private empty ctor to be used by RealmObjectBase.registerFactory
+    builder.declareInType(
+        DeclarationCode.fromParts([clazz.identifier.name, '._();']));
+
+    final overrideId =
+        // ignore: deprecated_member_use
+        await builder.resolveIdentifier(Uri.parse('dart:core'), 'override');
+    // ignore: deprecated_member_use
+    final schemaObjectId = await builder.resolveIdentifier(
+        Uri.parse('package:realm_dart/src/configuration.dart'), 'SchemaObject');
+    builder.declareInType(DeclarationCode.fromParts([
+      '@',
+      overrideId,
+      '\nexternal ',
+      schemaObjectId,
+      ' get objectSchema;'
+    ]));
   }
 
   @override
   FutureOr<void> buildDefinitionForClass(
       ClassDeclaration clazz, TypeDefinitionBuilder builder) async {
     final ctors = await builder.constructorsOf(clazz);
+    final methods = await builder.methodsOf(clazz);
+
     final unnamedCtor = ctors.firstWhere((ctor) => ctor.isUnnamed);
     final ctorBuilder = await builder.buildConstructor(unnamedCtor.identifier);
     ctorBuilder.augment(
@@ -128,6 +144,66 @@ macro class RealmModelMacro
         'this.${param.identifier.name} = ${param.identifier.name};\n',
       '}'
     ]));
+
+    final objectSchema = methods
+        .firstWhere((method) => method.identifier.name == 'objectSchema');
+    final objectSchemaBuilder =
+        await builder.buildMethod(objectSchema.identifier);
+
+    final realmObjectBaseMethods = await builder.methodsOf(
+        await builder.typeDeclarationOf(
+            // ignore: deprecated_member_use
+            await builder.resolveIdentifier(
+                Uri.parse('package:realm_dart/src/realm_object.dart'),
+                'RealmObjectBase')));
+
+    final getSchemaMethod = realmObjectBaseMethods
+        .firstWhere((m) => m.identifier.name == 'getSchema')
+        .identifier;
+
+    final registerFactoryMethod = realmObjectBaseMethods
+        .firstWhere((m) => m.identifier.name == 'registerFactory')
+        .identifier;
+
+    final privateEmptyCtor =
+        ctors.firstWhere((ctor) => ctor.identifier.name == '_');
+
+    // ignore: deprecated_member_use
+    final schemaObjectId = await builder.resolveIdentifier(
+        Uri.parse('package:realm_dart/src/configuration.dart'), 'SchemaObject');
+
+    // ignore: deprecated_member_use
+    final objectTypeRealmObjectId = await builder.resolveIdentifier(
+      Uri.parse('package:realm_macros/realm_model_macro.dart'),
+      'objectTypeRealmObject',
+    );
+
+    objectSchemaBuilder.augment(
+      FunctionBodyCode.fromParts([
+        '{\n',
+        'final getSchemaRes = ',
+        getSchemaMethod,
+        '(this);\n',
+        'if (getSchemaRes != null) { return getSchemaRes; }\n',
+        registerFactoryMethod,
+        '(',
+        privateEmptyCtor.identifier,
+        ');\n',
+        'return ',
+        schemaObjectId,
+        '(',
+        objectTypeRealmObjectId,
+        ', ',
+        clazz.identifier,
+        ", '${clazz.identifier.name}', ",
+        '[',
+        for (final param in unnamedCtor.parameters)
+          '${param.identifier.name}Property.schema,',
+        ']',
+        ');\n',
+        '}',
+      ]),
+    );
   }
 }
 
@@ -140,6 +216,7 @@ extension on ConstructorDeclaration {
   }
 }
 
+const objectTypeRealmObject = ObjectType.realmObject;
 const realmPropertyTypeInt = RealmPropertyType.int;
 const realmPropertyTypeDouble = RealmPropertyType.double;
 const realmPropertyTypeBool = RealmPropertyType.bool;
@@ -209,16 +286,17 @@ Future<Identifier?> realmPropertyTypeOf(
         name: await introspector.resolveIdentifier(
             Uri.parse(mapping.lib), mapping.dartType)));
     if (await t.isExactly(maybeT)) {
-        // ignore: deprecated_member_use
+      // ignore: deprecated_member_use
       return await introspector.resolveIdentifier(
         Uri.parse('package:realm_macros/realm_model_macro.dart'),
         mapping.realmType,
       );
     }
 
-    final baseT = await introspector.resolveType<RealmObjectBase?>(Uri.parse('package:realm_dart/src/realm_object.dart'));
+    final baseT = await introspector.resolveType<RealmObjectBase?>(
+        Uri.parse('package:realm_dart/src/realm_object.dart'));
     if (await t.isSubtypeOf(baseT)) {
-        // ignore: deprecated_member_use
+      // ignore: deprecated_member_use
       return await introspector.resolveIdentifier(
         Uri.parse('package:realm_macros/realm_model_macro.dart'),
         'realmPropertyTypeObject',

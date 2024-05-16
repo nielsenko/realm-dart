@@ -7,6 +7,7 @@ import 'package:realm_dart/realm.dart'; // ignore: unused_import
 sealed class MacroBase with RealmEntity, RealmObjectBase {
   ObjectType get baseType;
 }
+
 class RealmObjectMacrosBase extends MacroBase with RealmObject {
   RealmObjectMacrosBase();
 

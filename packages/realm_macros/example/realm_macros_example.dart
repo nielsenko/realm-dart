@@ -19,38 +19,11 @@ class Person extends RealmObjectMacrosBase {
 
   @Backlink(#owner)
   Iterable<Dog> get dogs; // not working yet
-
-  // ignore: unused_element
-  Person._(); // should be added by macro
-
-  // should be added by macro
-  static final schema = () {
-    RealmObjectBase.registerFactory(Person._);
-    return SchemaObject(ObjectType.realmObject, Person, 'Person', [
-      nameProperty.schema,
-      ageProperty.schema,
-      // spouseProperty.schema,
-      SchemaProperty('spouse', RealmPropertyType.object, optional: true, linkTarget: 'Person'),
-    ]);
-  }();
 }
 
 @RealmModelMacro()
 class Dog extends RealmObjectMacrosBase {
   external Dog({required String name, Person? owner});
-
-  // ignore: unused_element
-  Dog._(); // should be added by macro
-
-  // should be added by macro
-  static final schema = () {
-    RealmObjectBase.registerFactory(Dog._);
-    return SchemaObject(ObjectType.realmObject, Dog, 'Dog', [
-      nameProperty.schema,
-      // ownerProperty.schema,
-      SchemaProperty('owner', RealmPropertyType.object, linkTarget: 'Person', optional: true),
-    ]);
-  }();
 }
 
 void main() {
@@ -63,7 +36,7 @@ void main() {
   final ann = Person(name: 'Ann', age: 0x32, spouse: kasper);
   kasper.spouse = ann;
   var sonja = Dog(name: 'Sonja', owner: kasper);
-  final realm = Realm(Configuration.inMemory([Person.schema, Dog.schema]));
+  final realm = Realm(Configuration.inMemory([kasper.objectSchema, sonja.objectSchema]));
   realm.write(() {
     realm.add(sonja);
   });
