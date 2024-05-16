@@ -109,9 +109,9 @@ macro class RealmModelMacro
       }
     }
 
-    // add a private empty ctor
-    builder.declareInType(
-        DeclarationCode.fromString('${clazz.identifier.name}._();'));
+    // // add a private empty ctor
+    // builder.declareInType(
+    //     DeclarationCode.fromString('${clazz.identifier.name}._();'));
   }
 
   @override
@@ -139,47 +139,67 @@ extension on ConstructorDeclaration {
   }
 }
 
+const realmPropertyTypeInt = RealmPropertyType.int;
+const realmPropertyTypeDouble = RealmPropertyType.double;
+const realmPropertyTypeBool = RealmPropertyType.bool;
+const realmPropertyTypeString = RealmPropertyType.string;
+const realmPropertyTypeTimestamp = RealmPropertyType.timestamp;
+const realmPropertyTypeBinary = RealmPropertyType.binary;
+const realmPropertyTypeObjectid = RealmPropertyType.objectid;
+const realmPropertyTypeMixed = RealmPropertyType.mixed;
+const realmPropertyTypeDecimal128 = RealmPropertyType.decimal128;
+const realmPropertyTypeObject = RealmPropertyType.object;
+const realmPropertyTypeUuid = RealmPropertyType.uuid;
+
 Future<Identifier?> realmPropertyTypeOf(
     DeclarationPhaseIntrospector introspector, StaticType t) async {
-  final enumValues =
-      await introspector.fieldsOf(await introspector.typeDeclarationOf(
-          // ignore: deprecated_member_use
-          await introspector.resolveIdentifier(
-    Uri.parse('package:realm_common/src/realm_types.dart'),
-    'RealmPropertyType',
-  )));
-
   List<({String lib, String dartType, String realmType})> mappings = [
-    (lib: 'dart:core', dartType: 'int', realmType: 'int'),
-    (lib: 'dart:core', dartType: 'double', realmType: 'double'),
-    (lib: 'dart:core', dartType: 'bool', realmType: 'bool'),
-    (lib: 'dart:core', dartType: 'String', realmType: 'string'),
-    (lib: 'dart:core', dartType: 'DateTime', realmType: 'timestamp'),
-    (lib: 'dart:typed_data', dartType: 'Uint8List', realmType: 'binary'),
+    (lib: 'dart:core', dartType: 'int', realmType: 'realmPropertyTypeInt'),
+    (
+      lib: 'dart:core',
+      dartType: 'double',
+      realmType: 'realmPropertyTypeDouble'
+    ),
+    (lib: 'dart:core', dartType: 'bool', realmType: 'realmPropertyTypeBool'),
+    (
+      lib: 'dart:core',
+      dartType: 'String',
+      realmType: 'realmPropertyTypeString'
+    ),
+    (
+      lib: 'dart:core',
+      dartType: 'DateTime',
+      realmType: 'realmPropertyTypeTimestamp'
+    ),
+    (
+      lib: 'dart:typed_data',
+      dartType: 'Uint8List',
+      realmType: 'realmPropertyTypeBinary'
+    ),
     (
       lib: 'package:objectid/src/objectid/objectid.dart',
       dartType: 'ObjectId',
-      realmType: 'objectid'
+      realmType: 'realmPropertyTypeObjectid'
     ),
     (
       lib: 'package:realm_common/src/realm_types.dart',
       dartType: 'RealmValue',
-      realmType: 'mixed'
+      realmType: 'realmPropertyTypeMixed'
     ),
     (
       lib: 'package:realm_common/src/realm_types.dart',
       dartType: 'Decimal128',
-      realmType: 'decimal128'
+      realmType: 'realmPropertyTypeDecimal128'
     ),
     (
       lib: 'package:realm_dart/src/realm_object.dart',
       dartType: 'RealmObject',
-      realmType: 'object'
+      realmType: 'realmPropertyTypeObject'
     ),
     (
       lib: 'package:sane_uuid/src/uuid_base.dart',
       dartType: 'Uuid',
-      realmType: 'uuid'
+      realmType: 'realmPropertyTypeUuid'
     ),
   ];
   for (final mapping in mappings) {
@@ -188,9 +208,10 @@ Future<Identifier?> realmPropertyTypeOf(
         name: await introspector.resolveIdentifier(
             Uri.parse(mapping.lib), mapping.dartType)));
     if (await t.isExactly(maybeT)) {
-      return enumValues
-          .firstWhere((e) => e.identifier.name == mapping.realmType)
-          .identifier;
+      return await introspector.resolveIdentifier(
+        Uri.parse('package:realm_macros/realm_model_macro.dart'),
+        mapping.realmType,
+      );
     }
   }
 
