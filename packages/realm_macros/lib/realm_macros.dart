@@ -4,8 +4,28 @@
 import 'package:macros/macros.dart';
 import 'package:realm_dart/realm.dart'; // ignore: unused_import
 
-class RealmObjectMacrosBase with RealmEntity, RealmObjectBase, RealmObject {
+sealed class MacroBase with RealmEntity, RealmObjectBase {
+  ObjectType get baseType;
+}
+class RealmObjectMacrosBase extends MacroBase with RealmObject {
   RealmObjectMacrosBase();
+
+  @override
+  ObjectType get baseType => ObjectType.realmObject;
+}
+
+class EmbeddedObjectMacrosBase extends MacroBase with EmbeddedObject {
+  EmbeddedObjectMacrosBase();
+
+  @override
+  ObjectType get baseType => ObjectType.embeddedObject;
+}
+
+class AsymmetricObjectMacrosBase extends MacroBase with AsymmetricObject {
+  AsymmetricObjectMacrosBase();
+
+  @override
+  ObjectType get baseType => ObjectType.asymmetricObject;
 }
 
 // Currently mostly a verbatim copy of DataClass from:

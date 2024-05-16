@@ -11,16 +11,15 @@ class TestModel extends RealmObjectMacrosBase {
 @RealmModelMacro()
 class Person extends RealmObjectMacrosBase {
   external Person({
-    @MapTo('alder') @PrimaryKey() required int age,
+    required int age,
     required String name,
+    // List<Dog> dogs,
   });
+}
 
-  Person.foo() : this(name: 'John', age: 20);
-
-  Person.bar() {
-    name = 'Kiro';
-    age = 35;
-  }
+@RealmModelMacro()
+class Dog extends RealmObjectMacrosBase {
+  external Dog({required String name, Person? owner});
 }
 
 void main() {
@@ -29,6 +28,6 @@ void main() {
   print(model.id);
   print(model);
 
-  var person = Person.bar();
+  var person = Person(name: 'Kasper', age: 0x32);
   print('${person.name} aged ${person.age}');
 }

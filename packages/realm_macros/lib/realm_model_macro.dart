@@ -4,7 +4,7 @@ import 'package:collection/collection.dart';
 import 'package:macros/macros.dart';
 import 'package:realm_dart/realm.dart';
 
-class Property<T extends Object> {
+class Property<T> {
   final SchemaProperty schema;
 
   const Property(this.schema);
@@ -208,9 +208,23 @@ Future<Identifier?> realmPropertyTypeOf(
         name: await introspector.resolveIdentifier(
             Uri.parse(mapping.lib), mapping.dartType)));
     if (await t.isExactly(maybeT)) {
+        // ignore: deprecated_member_use
       return await introspector.resolveIdentifier(
         Uri.parse('package:realm_macros/realm_model_macro.dart'),
         mapping.realmType,
+      );
+    }
+    final baseT = await introspector.resolve(NamedTypeAnnotationCode(
+        // ignore: deprecated_member_use
+        name: await introspector.resolveIdentifier(
+            Uri.parse('package:realm_dart/src/realm_object.dart'),
+            'RealmObjectBase')).asNullable);
+
+    if (await t.isSubtypeOf(baseT)) {
+        // ignore: deprecated_member_use
+      return await introspector.resolveIdentifier(
+        Uri.parse('package:realm_macros/realm_model_macro.dart'),
+        'realmPropertyTypeObject',
       );
     }
   }
