@@ -42,7 +42,8 @@ void main() {
   });
   // stored a dog, but by transitive closure also two persons
   for (final p in realm.all<Person>()) {
-    print('${p.name} is ${p.age} years old');
+    print(
+        '${p.name} is ${p.age} years old and is married to ${p.spouse?.name}');
   }
 
   Realm.shutdown(); // <-- needed not to hang

@@ -18,7 +18,8 @@ class Property<T> {
       RealmObjectBase.set<T>(object, name, value);
 }
 
-macro class RealmModelMacro implements ClassDeclarationsMacro, ClassDefinitionMacro {
+macro class RealmModelMacro
+    implements ClassDeclarationsMacro, ClassDefinitionMacro {
   const RealmModelMacro();
 
   @override
@@ -84,7 +85,8 @@ macro class RealmModelMacro implements ClassDeclarationsMacro, ClassDefinitionMa
           "('$name', ",
           realmPropertyType,
           if (type.isNullable) ', optional: true',
-          if (realmPropertyType.name == 'realmPropertyTypeObject') ", linkTarget: '${type.identifier.name}'",
+          if (realmPropertyType.name == 'realmPropertyTypeObject')
+            ", linkTarget: '${type.identifier.name}'",
           '));',
         ]));
 
@@ -118,32 +120,48 @@ macro class RealmModelMacro implements ClassDeclarationsMacro, ClassDefinitionMa
     final schemaObjectId = await builder.resolveIdentifier(
         Uri.parse('package:realm_dart/src/configuration.dart'), 'SchemaObject');
 
-    // TODO: change this to a static variable computed at initialization 
+    // TODO: change this to a static variable computed at initialization
     // once augmenting variable declarations is supported
     // https://github.com/dart-lang/sdk/issues/44748
     builder.declareInType(DeclarationCode.fromParts(
         ['external static ', schemaObjectId, ' get schema;']));
 
-    final overrideId =
-        // ignore: deprecated_member_use
-        await builder.resolveIdentifier(Uri.parse('dart:core'), 'override');
+    final overrideCode = DeclarationCode.fromParts([
+      '@',
+      // ignore: deprecated_member_use
+      await builder.resolveIdentifier(Uri.parse('dart:core'), 'override'),
+      '\n',
+    ]);
 
-    final getSchemaMethod = (await builder.methodsOf(
-            await builder.typeDeclarationOf(
-                // ignore: deprecated_member_use
-                await builder.resolveIdentifier(
-                    Uri.parse('package:realm_dart/src/realm_object.dart'),
-                    'RealmObjectBase'))))
+    final realmObjectBaseMethods = await builder.methodsOf(
+        await builder.typeDeclarationOf(
+            // ignore: deprecated_member_use
+            await builder.resolveIdentifier(
+                Uri.parse('package:realm_dart/src/realm_object.dart'),
+                'RealmObjectBase')));
+    final getSchemaMethod = realmObjectBaseMethods
         .firstWhere((m) => m.identifier.name == 'getSchema');
 
     builder.declareInType(DeclarationCode.fromParts([
-      '@',
-      overrideId,
-      '\n',
+      overrideCode,
       schemaObjectId,
       ' get objectSchema => ',
       getSchemaMethod.identifier,
       '(this) ?? schema;'
+    ]));
+
+    final freezeObjectMethod = realmObjectBaseMethods
+        .firstWhere((m) => m.identifier.name == 'freezeObject');
+
+    builder.declareInType(DeclarationCode.fromParts([
+      overrideCode,
+      clazz.identifier,
+      ' freeze() => ',
+      freezeObjectMethod.identifier,
+      '<',
+      clazz.identifier,
+      '>',
+      '(this);'
     ]));
   }
 
