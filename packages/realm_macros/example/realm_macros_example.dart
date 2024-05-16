@@ -36,7 +36,7 @@ void main() {
   final ann = Person(name: 'Ann', age: 0x32, spouse: kasper);
   kasper.spouse = ann;
   var sonja = Dog(name: 'Sonja', owner: kasper);
-  final realm = Realm(Configuration.inMemory([kasper.objectSchema, sonja.objectSchema]));
+  final realm = Realm(Configuration.inMemory([Person.schema, Dog.schema]));
   realm.write(() {
     realm.add(sonja);
   });

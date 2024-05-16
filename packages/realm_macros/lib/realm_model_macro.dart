@@ -114,18 +114,33 @@ macro class RealmModelMacro
     builder.declareInType(
         DeclarationCode.fromParts([clazz.identifier.name, '._();']));
 
-    final overrideId =
-        // ignore: deprecated_member_use
-        await builder.resolveIdentifier(Uri.parse('dart:core'), 'override');
     // ignore: deprecated_member_use
     final schemaObjectId = await builder.resolveIdentifier(
         Uri.parse('package:realm_dart/src/configuration.dart'), 'SchemaObject');
+
+    builder.declareInType(DeclarationCode.fromParts(
+        ['external static ', schemaObjectId, ' get schema;']));
+
+    final overrideId =
+        // ignore: deprecated_member_use
+        await builder.resolveIdentifier(Uri.parse('dart:core'), 'override');
+
+    final getSchemaMethod = (await builder.methodsOf(
+            await builder.typeDeclarationOf(
+                // ignore: deprecated_member_use
+                await builder.resolveIdentifier(
+                    Uri.parse('package:realm_dart/src/realm_object.dart'),
+                    'RealmObjectBase'))))
+        .firstWhere((m) => m.identifier.name == 'getSchema');
+
     builder.declareInType(DeclarationCode.fromParts([
       '@',
       overrideId,
-      '\nexternal ',
+      '\n',
       schemaObjectId,
-      ' get objectSchema;'
+      ' get objectSchema => ',
+      getSchemaMethod.identifier,
+      '(this) ?? schema;'
     ]));
   }
 
@@ -145,10 +160,10 @@ macro class RealmModelMacro
       '}'
     ]));
 
-    final objectSchema = methods
-        .firstWhere((method) => method.identifier.name == 'objectSchema');
-    final objectSchemaBuilder =
-        await builder.buildMethod(objectSchema.identifier);
+    final schemaGetter =
+        methods.firstWhere((method) => method.identifier.name == 'schema');
+    final schemaGetterBuilder =
+        await builder.buildMethod(schemaGetter.identifier);
 
     final realmObjectBaseMethods = await builder.methodsOf(
         await builder.typeDeclarationOf(
@@ -178,13 +193,9 @@ macro class RealmModelMacro
       'objectTypeRealmObject',
     );
 
-    objectSchemaBuilder.augment(
+    schemaGetterBuilder.augment(
       FunctionBodyCode.fromParts([
         '{\n',
-        'final getSchemaRes = ',
-        getSchemaMethod,
-        '(this);\n',
-        'if (getSchemaRes != null) { return getSchemaRes; }\n',
         registerFactoryMethod,
         '(',
         privateEmptyCtor.identifier,
