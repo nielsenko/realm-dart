@@ -118,6 +118,9 @@ macro class RealmModelMacro
     final schemaObjectId = await builder.resolveIdentifier(
         Uri.parse('package:realm_dart/src/configuration.dart'), 'SchemaObject');
 
+    // TODO: change this to a static variable computed at initialization 
+    // once augmenting variable declarations is supported
+    // https://github.com/dart-lang/sdk/issues/44748
     builder.declareInType(DeclarationCode.fromParts(
         ['external static ', schemaObjectId, ' get schema;']));
 
