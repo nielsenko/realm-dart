@@ -84,6 +84,7 @@ macro class RealmModelMacro
           schemaPropertyType.identifier,
           "('$name', ",
           realmPropertyType,
+          if (type.isNullable) ', optional: true',
           '));',
         ]));
 
@@ -109,9 +110,9 @@ macro class RealmModelMacro
       }
     }
 
-    // // add a private empty ctor
-    // builder.declareInType(
-    //     DeclarationCode.fromString('${clazz.identifier.name}._();'));
+    // add a private empty ctor
+//    builder.declareInType(
+//        DeclarationCode.fromString('${clazz.identifier.name}._();'));
   }
 
   @override
@@ -237,10 +238,7 @@ extension on DeclarationPhaseIntrospector {
     // ignore: deprecated_member_use
     final identifier = await resolveIdentifier(uri, typeString);
     var typeCode = NamedTypeAnnotationCode(name: identifier);
-    return resolve(switch(isNullable<T>()) {
-      true => typeCode.asNullable,
-      false => typeCode,
-    });
+    return resolve(isNullable<T>() ? typeCode.asNullable : typeCode);
   }
 }
 

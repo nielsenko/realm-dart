@@ -18,11 +18,33 @@ class Person extends RealmObjectMacrosBase {
 
   @Backlink(#owner)
   Iterable<Dog> get dogs; // not working yet
+
+  // ignore: unused_element
+  Person._(); // should be added by macro
+
+  static final schema = () {
+    RealmObjectBase.registerFactory(Person._);
+    return SchemaObject(ObjectType.realmObject, Person, 'Person', [
+      nameProperty.schema,
+      ageProperty.schema,
+    ]);
+  }();
 }
 
 @RealmModelMacro()
 class Dog extends RealmObjectMacrosBase {
   external Dog({required String name, Person? owner});
+
+  // ignore: unused_element
+  Dog._(); // should be added by macro
+
+  static final schema = () {
+    RealmObjectBase.registerFactory(Dog._);
+    return SchemaObject(ObjectType.realmObject, Dog, 'Dog', [
+      nameProperty.schema,
+      ownerProperty.schema,
+    ]);
+  }();
 }
 
 void main() {
@@ -33,6 +55,13 @@ void main() {
 
   var person = Person(name: 'Kasper', age: 0x32);
   var dog = Dog(name: 'Sonja', owner: person);
-  print(dog.owner!.name);
-  print('${person.name} aged ${person.age}');
+  final realm = Realm(Configuration.inMemory([Person.schema]));
+  realm.write(() {
+    realm.add(person);
+    ;
+  });
+  final person2 = realm.all<Person>().first;
+  print(person2.name);
+
+  Realm.shutdown(); // <-- needed not to hang
 }
