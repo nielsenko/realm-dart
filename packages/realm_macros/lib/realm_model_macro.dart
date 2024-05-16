@@ -170,19 +170,46 @@ macro class RealmModelMacro
     final getChangesMethod = realmObjectBaseMethods
         .firstWhere((m) => m.identifier.name == 'getChanges');
 
-    builder.declareInType(DeclarationCode.fromParts([
-      overrideCode,
+    final changesRetType = DeclarationCode.fromParts([
       streamId,
       '<',
       realmObjectChangesId,
       '<',
       clazz.identifier,
-      '>> get changes => ',
+      '>>',
+    ]);
+
+    builder.declareInType(DeclarationCode.fromParts([
+      overrideCode,
+      changesRetType,
+      ' get changes => ',
       getChangesMethod.identifier,
       '<',
       clazz.identifier,
       '>',
       '(this);'
+    ]));
+
+    final listId =
+        await builder.resolveIdentifier(Uri.parse('dart:core'), 'List');
+    final stringId =
+        await builder.resolveIdentifier(Uri.parse('dart:core'), 'String');
+    final getChangesForMethod = realmObjectBaseMethods
+        .firstWhere((m) => m.identifier.name == 'getChangesFor');
+
+    builder.declareInType(DeclarationCode.fromParts([
+      overrideCode,
+      changesRetType,
+      ' changesFor([',
+      listId,
+      '<',
+      stringId,
+      '>? keyPaths]) => ',
+      getChangesForMethod.identifier,
+      '<',
+      clazz.identifier,
+      '>',
+      '(this, keyPaths);'
     ]));
   }
 
