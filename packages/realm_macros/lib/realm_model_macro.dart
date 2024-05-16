@@ -214,12 +214,8 @@ Future<Identifier?> realmPropertyTypeOf(
         mapping.realmType,
       );
     }
-    final baseT = await introspector.resolve(NamedTypeAnnotationCode(
-        // ignore: deprecated_member_use
-        name: await introspector.resolveIdentifier(
-            Uri.parse('package:realm_dart/src/realm_object.dart'),
-            'RealmObjectBase')).asNullable);
 
+    final baseT = await introspector.resolveType<RealmObjectBase?>(Uri.parse('package:realm_dart/src/realm_object.dart'));
     if (await t.isSubtypeOf(baseT)) {
         // ignore: deprecated_member_use
       return await introspector.resolveIdentifier(
@@ -230,4 +226,26 @@ Future<Identifier?> realmPropertyTypeOf(
   }
 
   return null;
+}
+
+bool isNullable<T>() => null is T;
+
+extension on DeclarationPhaseIntrospector {
+  Future<StaticType> resolveType<T>(Uri uri) async {
+    var typeString = T.toString();
+    if (isNullable<T>()) typeString = typeString.substring(0, typeString.length - 1);
+    // ignore: deprecated_member_use
+    final identifier = await resolveIdentifier(uri, typeString);
+    var typeCode = NamedTypeAnnotationCode(name: identifier);
+    return resolve(switch(isNullable<T>()) {
+      true => typeCode.asNullable,
+      false => typeCode,
+    });
+  }
+}
+
+extension on Builder {
+  void debug(String message) {
+    report(Diagnostic(DiagnosticMessage(message), Severity.info));
+  }
 }

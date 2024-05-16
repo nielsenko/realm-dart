@@ -12,9 +12,12 @@ class TestModel extends RealmObjectMacrosBase {
 class Person extends RealmObjectMacrosBase {
   external Person({
     required int age,
+    @PrimaryKey() // not working yet
     required String name,
-    // List<Dog> dogs,
   });
+
+  @Backlink(#owner)
+  Iterable<Dog> get dogs; // not working yet
 }
 
 @RealmModelMacro()
@@ -29,5 +32,7 @@ void main() {
   print(model);
 
   var person = Person(name: 'Kasper', age: 0x32);
+  var dog = Dog(name: 'Sonja', owner: person);
+  print(dog.owner!.name);
   print('${person.name} aged ${person.age}');
 }
