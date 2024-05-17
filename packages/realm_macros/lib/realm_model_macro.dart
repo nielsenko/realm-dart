@@ -20,8 +20,7 @@ class Property<T> {
       RealmObjectBase.set<T>(object, name, value);
 }
 
-macro class RealmModelMacro
-    implements ClassDeclarationsMacro, ClassDefinitionMacro {
+macro class RealmModelMacro implements ClassDeclarationsMacro, ClassDefinitionMacro {
   const RealmModelMacro();
 
   @override
@@ -254,6 +253,13 @@ macro class RealmModelMacro
       'objectTypeRealmObject',
     );
 
+    // final backlinkId = await builder.resolveIdentifierByType<Backlink>(Uri.parse('package:realm_common/src/realm_common_base.dart'));
+    // for (final m in methods) {
+    //   if (m.metadata.any((a) => a is IdentifierMetadataAnnotation && a.identifier == backlinkId)) {
+    //     throw ArgumentError('Backlink not supported yet');
+    //   }
+    // }
+
     schemaGetterBuilder.augment(
       FunctionBodyCode.fromParts([
         '{\n',
@@ -363,7 +369,7 @@ Future<Identifier?> realmPropertyTypeOf(
       );
     }
 
-    final baseT = await introspector.resolveType<RealmObjectBase?>(
+    final baseT = await introspector.resolveByType<RealmObjectBase?>(
         Uri.parse('package:realm_dart/src/realm_object.dart'));
     if (await t.isSubtypeOf(baseT)) {
       return await introspector.resolveIdentifier(
@@ -379,14 +385,19 @@ Future<Identifier?> realmPropertyTypeOf(
 bool isNullable<T>() => null is T;
 
 extension on DeclarationPhaseIntrospector {
-  Future<StaticType> resolveType<T>(Uri uri) async {
+  Future<StaticType> resolveByType<T>(Uri uri) async {
+    final identifier = await resolveIdentifierByType<T>(uri);
+    var typeCode = NamedTypeAnnotationCode(name: identifier);
+    return resolve(isNullable<T>() ? typeCode.asNullable : typeCode);
+  }
+}
+
+extension on TypePhaseIntrospector {
+  Future<Identifier> resolveIdentifierByType<T>(Uri uri) async {
     var typeString = T.toString();
     if (isNullable<T>())
       typeString = typeString.substring(0, typeString.length - 1);
-
-    final identifier = await resolveIdentifier(uri, typeString);
-    var typeCode = NamedTypeAnnotationCode(name: identifier);
-    return resolve(isNullable<T>() ? typeCode.asNullable : typeCode);
+    return await resolveIdentifier(uri, typeString);
   }
 }
 
