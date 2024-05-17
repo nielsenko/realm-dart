@@ -8,7 +8,8 @@ import 'package:realm_dart/realm.dart';
 import 'property.dart';
 import 'utils.dart';
 
-macro class BacklinkMacro implements MethodDeclarationsMacro, MethodDefinitionMacro {
+//macro 
+class BacklinkMacro implements MethodDeclarationsMacro, MethodDefinitionMacro {
   final String fieldName;
 
   const BacklinkMacro(this.fieldName);
@@ -17,8 +18,7 @@ macro class BacklinkMacro implements MethodDeclarationsMacro, MethodDefinitionMa
   FutureOr<void> buildDeclarationsForMethod(
       MethodDeclaration method, MemberDeclarationBuilder builder) async {
     if (method.isGetter) {
-      final iterableType =
-          await builder.resolveByType<Iterable>(Uri.parse('dart:core'));
+      final iterableType = await builder.resolveByType<Iterable>(Uri.parse('dart:core'));
       final returnType = await builder.resolve(method.returnType.code);
       if (await returnType.isSubtypeOf(iterableType)) {
         final propertyType = await builder.resolveByType<Property>(

@@ -10,6 +10,19 @@ extension DeclarationPhaseIntrospectorEx on DeclarationPhaseIntrospector {
     var typeCode = NamedTypeAnnotationCode(name: identifier);
     return resolve(isNullable<T>() ? typeCode.asNullable : typeCode);
   }
+
+  Future<TypeAnnotation> typeAnnotationOf<T>(Uri uri) async {
+    var identifier = await resolveIdentifierByType<T>(uri);
+    return NamedTypeAnnotationCode(name: identifier);
+  }
+
+  Future<TypeDeclaration> typeDeclarationOfType<T>(Uri uri) async {
+    var identifier = await resolveIdentifierByType<T>(uri);
+    return await typeDeclarationOf(identifier);
+  }
+
+  Future<TypeDeclaration> typeDeclarationOfExpression<T>(T Function() exp, Uri uri) 
+    => typeDeclarationOfType<T>(uri);
 }
 
 extension TypePhaseIntrospectorEx on TypePhaseIntrospector {
