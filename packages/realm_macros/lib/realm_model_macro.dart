@@ -6,19 +6,8 @@ import 'package:collection/collection.dart';
 import 'package:macros/macros.dart';
 import 'package:realm_dart/realm.dart';
 
-class Property<T> {
-  final SchemaProperty schema;
-
-  const Property(this.schema);
-
-  String get name => schema.name;
-  Type get type => T;
-
-  T getValue(RealmObjectBase object) =>
-      RealmObjectBase.get<T>(object, name) as T;
-  void setValue(RealmObjectBase object, T value) =>
-      RealmObjectBase.set<T>(object, name, value);
-}
+import 'property.dart'; // ignore: unused_import
+import 'utils.dart';
 
 macro class RealmModelMacro implements ClassDeclarationsMacro, ClassDefinitionMacro {
   const RealmModelMacro();
@@ -51,7 +40,7 @@ macro class RealmModelMacro implements ClassDeclarationsMacro, ClassDefinitionMa
 
         final propertyType =
             await builder.typeDeclarationOf(await builder.resolveIdentifier(
-          Uri.parse('package:realm_macros/realm_model_macro.dart'),
+          Uri.parse('package:realm_macros/property.dart'),
           'Property',
         ));
         final schemaPropertyType =
@@ -295,7 +284,7 @@ const realmPropertyTypeMixed = RealmPropertyType.mixed;
 const realmPropertyTypeDecimal128 = RealmPropertyType.decimal128;
 const realmPropertyTypeObject = RealmPropertyType.object;
 const realmPropertyTypeUuid = RealmPropertyType.uuid;
-const realmProperTypeLinkingObjects = RealmPropertyType.linkingObjects;
+const realmPropertyTypeLinkingObjects = RealmPropertyType.linkingObjects;
 
 const realmCollectionTypeList = RealmCollectionType.list;
 const realmCollectionTypeSet = RealmCollectionType.set;
@@ -376,82 +365,4 @@ Future<Identifier?> realmPropertyTypeOf(
   return null;
 }
 
-macro class BacklinkMacro implements MethodDeclarationsMacro, MethodDefinitionMacro {
-  final Symbol fieldName;
 
-  const BacklinkMacro(this.fieldName);
-
-  @override
-  FutureOr<void> buildDeclarationsForMethod(
-      MethodDeclaration method, MemberDeclarationBuilder builder) async {
-    if (method.isGetter) {
-      final iterableType =
-          await builder.resolveByType<Iterable>(Uri.parse('dart:core'));
-      final returnType = await builder.resolve(method.returnType.code);
-      if (await returnType.isSubtypeOf(iterableType)) {
-        final propertyType = await builder.resolveByType<Property>(
-            Uri.parse('package:realm_macros/realm_model_macro.dart'));
-        final schemaPropertyType = await builder.resolveByType<SchemaProperty>(
-            Uri.parse('package:realm_dart/src/realm_property.dart'));
-        builder.declareInType(DeclarationCode.fromParts([
-          'static const ',
-          method.identifier.name,
-          'Property = ',
-          propertyType,
-          '(',
-          schemaPropertyType,
-          '(',
-          "'${method.identifier.name}', ",
-          await builder.resolveIdentifier(
-            Uri.parse('package:realm_macros/realm_model_macro.dart'),
-            'realmPropertyTypeLinkingObjects',
-          ),
-          ", linkOriginProperty: '$fieldName', ",
-          ', collectionType: ',
-          await builder.resolveIdentifier(
-            Uri.parse('package:realm_macros/realm_model_macro.dart'),
-            'realmCollectionTypeList',
-          ),
-          ", linkTarget: 'Source'",
-          '));\n',
-        ]));
-      }
-    }
-  }
-
-  @override
-  FutureOr<void> buildDefinitionForMethod(
-      MethodDeclaration method, FunctionDefinitionBuilder builder) {
-    // TODO: implement buildDefinitionForMethod
-    throw UnimplementedError();
-  }
-}
-
-bool isNullable<T>() => null is T;
-
-extension on DeclarationPhaseIntrospector {
-  Future<StaticType> resolveByType<T>(Uri uri) async {
-    final identifier = await resolveIdentifierByType<T>(uri);
-    var typeCode = NamedTypeAnnotationCode(name: identifier);
-    return resolve(isNullable<T>() ? typeCode.asNullable : typeCode);
-  }
-}
-
-extension on TypePhaseIntrospector {
-  Future<Identifier> resolveIdentifierByType<T>(Uri uri) async {
-    var typeString = T.toString();
-    if (isNullable<T>())
-      typeString = typeString.substring(0, typeString.length - 1);
-    return await resolveIdentifier(uri, typeString);
-  }
-}
-
-extension on Builder {
-  void debug(String message) {
-    report(Diagnostic(DiagnosticMessage(message), Severity.info));
-  }
-}
-
-extension<T extends Declaration> on Iterable<T> {
-  Map<String, T> byName() => {for (final t in this) t.identifier.name: t};
-}
