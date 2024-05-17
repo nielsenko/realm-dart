@@ -9,8 +9,13 @@ import 'package:realm_dart/realm.dart';
 import 'property.dart'; // ignore: unused_import
 import 'utils.dart';
 
-macro class RealmModelMacro implements ClassDeclarationsMacro, ClassDefinitionMacro {
-  const RealmModelMacro();
+macro class RealmModelMacro
+    implements ClassDeclarationsMacro, ClassDefinitionMacro {
+  final ObjectType _objectType;
+
+  const RealmModelMacro([
+    this._objectType = ObjectType.realmObject,
+  ]);
 
   @override
   FutureOr<void> buildDeclarationsForClass(
@@ -213,9 +218,13 @@ macro class RealmModelMacro implements ClassDeclarationsMacro, ClassDefinitionMa
     final schemaObjectId =
         await builder.resolveIdentifierByType<SchemaObject>();
 
-    final objectTypeRealmObjectId = await builder.resolveIdentifier(
+    final objectTypeId = await builder.resolveIdentifier(
       Uri.parse('package:realm_macros/realm_model_macro.dart'),
-      'objectTypeRealmObject',
+      switch (_objectType) {
+        ObjectType.realmObject => 'objectTypeRealmObject',
+        ObjectType.embeddedObject => 'objectTypeEmbeddedObject',
+        ObjectType.asymmetricObject => 'objectTypeAsymmetricObject',
+      },
     );
 
     final fields = await builder.fieldsOf(clazz);
@@ -229,7 +238,7 @@ macro class RealmModelMacro implements ClassDeclarationsMacro, ClassDefinitionMa
         'return ',
         schemaObjectId,
         '(',
-        objectTypeRealmObjectId,
+        objectTypeId,
         ', ',
         clazz.identifier,
         ", '${clazz.identifier.name}', ",
@@ -251,6 +260,8 @@ extension on ConstructorDeclaration {
 }
 
 const objectTypeRealmObject = ObjectType.realmObject;
+const objectTypeEmbeddedObject = ObjectType.embeddedObject;
+const objectTypeAsymmetricObject = ObjectType.asymmetricObject;
 
 const realmPropertyTypeInt = RealmPropertyType.int;
 const realmPropertyTypeDouble = RealmPropertyType.double;
