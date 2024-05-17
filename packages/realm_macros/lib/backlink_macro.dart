@@ -8,7 +8,7 @@ import 'package:realm_dart/realm.dart';
 import 'property.dart';
 import 'utils.dart';
 
-//macro 
+macro 
 class BacklinkMacro implements MethodDeclarationsMacro, MethodDefinitionMacro {
   final String fieldName;
 
@@ -21,10 +21,8 @@ class BacklinkMacro implements MethodDeclarationsMacro, MethodDefinitionMacro {
       final iterableType = await builder.resolveByType<Iterable>(Uri.parse('dart:core'));
       final returnType = await builder.resolve(method.returnType.code);
       if (await returnType.isSubtypeOf(iterableType)) {
-        final propertyType = await builder.resolveByType<Property>(
-            Uri.parse('package:realm_macros/realm_model_macro.dart'));
-        final schemaPropertyType = await builder.resolveByType<SchemaProperty>(
-            Uri.parse('package:realm_dart/src/realm_property.dart'));
+        final propertyType = await builder.resolveByType<Property>();
+        final schemaPropertyType = await builder.resolveByType<SchemaProperty>();
         builder.declareInType(DeclarationCode.fromParts([
           'static const ',
           method.identifier.name,
@@ -55,6 +53,5 @@ class BacklinkMacro implements MethodDeclarationsMacro, MethodDefinitionMacro {
   FutureOr<void> buildDefinitionForMethod(
       MethodDeclaration method, FunctionDefinitionBuilder builder) {
     // TODO: implement buildDefinitionForMethod
-    throw UnimplementedError();
   }
 }
