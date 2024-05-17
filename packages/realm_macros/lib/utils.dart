@@ -30,7 +30,7 @@ extension DeclarationPhaseIntrospectorEx on DeclarationPhaseIntrospector {
     return resolve(isNullable<T>() ? typeCode.asNullable : typeCode);
   }
 
-  Future<TypeAnnotation> typeAnnotationOf<T>([Uri? uri]) async {
+  Future<NamedTypeAnnotationCode> typeAnnotationOf<T>([Uri? uri]) async {
     var identifier = await resolveIdentifierByType<T>(uri);
     return NamedTypeAnnotationCode(name: identifier);
   }
