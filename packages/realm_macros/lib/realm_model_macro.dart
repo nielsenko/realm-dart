@@ -218,13 +218,7 @@ macro class RealmModelMacro implements ClassDeclarationsMacro, ClassDefinitionMa
       'objectTypeRealmObject',
     );
 
-    // final backlinkId = await builder.resolveIdentifierByType<Backlink>(Uri.parse('package:realm_common/src/realm_common_base.dart'));
-    // for (final m in methods) {
-    //   if (m.metadata.any((a) => a is IdentifierMetadataAnnotation && a.identifier == backlinkId)) {
-    //     throw ArgumentError('Backlink not supported yet');
-    //   }
-    // }
-
+    final fields = await builder.fieldsOf(clazz);
     schemaGetterBuilder.augment(
       FunctionBodyCode.fromParts([
         '{\n',
@@ -240,8 +234,8 @@ macro class RealmModelMacro implements ClassDeclarationsMacro, ClassDefinitionMa
         clazz.identifier,
         ", '${clazz.identifier.name}', ",
         '[',
-        for (final param in unnamedCtor.parameters)
-          '${param.identifier.name}Property.schema,',
+        for (final f in fields.where((f) => f.hasStatic && f.hasConst && f.identifier.name.endsWith('Property')))
+          '${f.identifier.name}.schema,',
         ']',
         ');\n',
         '}',
