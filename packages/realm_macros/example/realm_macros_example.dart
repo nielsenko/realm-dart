@@ -11,14 +11,14 @@ class TestModel extends RealmObjectMacrosBase {
 @RealmModelMacro()
 class Person extends RealmObjectMacrosBase {
   external Person({
+    required int age,
     @PrimaryKey() // not working yet
     required String name,
-    required int age,
     Person? spouse,
   });
 
-  //@Backlink(#owner)
-  //Iterable<Dog> get dogs; // not working yet
+  @Backlink(#owner)
+  Iterable<Dog> get dogs; // not working yet
 }
 
 @RealmModelMacro()
@@ -46,20 +46,20 @@ void main() {
   // stored a dog, but by transitive closure also two persons
   for (final p in realm.all<Person>()) {
     final spouse = p.spouse;
-    final dog = realm.query<Dog>(r'owner = $0', [p]); // p.dogs.firstOrNull;
+    final dog = realm.query<Dog>(r'owner = $0', [p]).firstOrNull;
     print([
       p.name,
       ' is ',
       p.age,
       ' years old, ',
       if (spouse != null) ...[
-        if (dog == null) ' and ',
+        if (dog == null) 'and ',
         'is married to ',
         spouse.name,
         dog != null ? ', ' : '',
       ],
       if (dog != null) ...[
-        ' and has a dog named ',
+        'and has a dog named ',
         dog.name,
       ],
       '.'

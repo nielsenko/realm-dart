@@ -130,12 +130,12 @@ macro class RealmModelMacro implements ClassDeclarationsMacro, ClassDefinitionMa
       '\n',
     ]);
 
-    final realmObjectBaseMethods = await builder.methodsOf(
-        await builder.typeDeclarationOf(await builder.resolveIdentifier(
-            Uri.parse('package:realm_dart/src/realm_object.dart'),
-            'RealmObjectBase')));
-    final getSchemaMethod = realmObjectBaseMethods
-        .firstWhere((m) => m.identifier.name == 'getSchema');
+    final realmObjectBaseMethods = (await builder.methodsOf(
+            await builder.typeDeclarationOf(await builder.resolveIdentifier(
+                Uri.parse('package:realm_dart/src/realm_object.dart'),
+                'RealmObjectBase'))))
+        .byName();
+    final getSchemaMethod = realmObjectBaseMethods['getSchema']!;
 
     builder.declareInType(DeclarationCode.fromParts([
       overrideCode,
@@ -145,9 +145,7 @@ macro class RealmModelMacro implements ClassDeclarationsMacro, ClassDefinitionMa
       '(this) ?? schema;'
     ]));
 
-    final freezeObjectMethod = realmObjectBaseMethods
-        .firstWhere((m) => m.identifier.name == 'freezeObject');
-
+    final freezeObjectMethod = realmObjectBaseMethods['freezeObject']!;
     builder.declareInType(DeclarationCode.fromParts([
       overrideCode,
       clazz.identifier,
@@ -166,9 +164,7 @@ macro class RealmModelMacro implements ClassDeclarationsMacro, ClassDefinitionMa
         Uri.parse('package:realm_dart/src/realm_object.dart'),
         'RealmObjectChanges');
 
-    final getChangesMethod = realmObjectBaseMethods
-        .firstWhere((m) => m.identifier.name == 'getChanges');
-
+    final getChangesMethod = realmObjectBaseMethods['getChanges']!;
     final changesRetType = DeclarationCode.fromParts([
       streamId,
       '<',
@@ -193,9 +189,8 @@ macro class RealmModelMacro implements ClassDeclarationsMacro, ClassDefinitionMa
         await builder.resolveIdentifier(Uri.parse('dart:core'), 'List');
     final stringId =
         await builder.resolveIdentifier(Uri.parse('dart:core'), 'String');
-    final getChangesForMethod = realmObjectBaseMethods
-        .firstWhere((m) => m.identifier.name == 'getChangesFor');
 
+    final getChangesForMethod = realmObjectBaseMethods['getChangesFor']!;
     builder.declareInType(DeclarationCode.fromParts([
       overrideCode,
       changesRetType,
@@ -215,10 +210,10 @@ macro class RealmModelMacro implements ClassDeclarationsMacro, ClassDefinitionMa
   @override
   FutureOr<void> buildDefinitionForClass(
       ClassDeclaration clazz, TypeDefinitionBuilder builder) async {
-    final ctors = await builder.constructorsOf(clazz);
-    final methods = await builder.methodsOf(clazz);
+    final ctors = (await builder.constructorsOf(clazz)).byName();
+    final methods = (await builder.methodsOf(clazz)).byName();
 
-    final unnamedCtor = ctors.firstWhere((ctor) => ctor.isUnnamed);
+    final unnamedCtor = ctors['']!;
     final ctorBuilder = await builder.buildConstructor(unnamedCtor.identifier);
     ctorBuilder.augment(
         body: FunctionBodyCode.fromParts([
@@ -228,22 +223,18 @@ macro class RealmModelMacro implements ClassDeclarationsMacro, ClassDefinitionMa
       '}'
     ]));
 
-    final schemaGetter =
-        methods.firstWhere((method) => method.identifier.name == 'schema');
+    final schemaGetter = methods['schema']!;
     final schemaGetterBuilder =
         await builder.buildMethod(schemaGetter.identifier);
 
-    final realmObjectBaseMethods = await builder.methodsOf(
-        await builder.typeDeclarationOf(await builder.resolveIdentifier(
-            Uri.parse('package:realm_dart/src/realm_object.dart'),
-            'RealmObjectBase')));
+    final realmObjectBaseMethods = (await builder.methodsOf(
+            await builder.typeDeclarationOf(await builder.resolveIdentifier(
+                Uri.parse('package:realm_dart/src/realm_object.dart'),
+                'RealmObjectBase'))))
+        .byName();
 
-    final registerFactoryMethod = realmObjectBaseMethods
-        .firstWhere((m) => m.identifier.name == 'registerFactory')
-        .identifier;
-
-    final privateEmptyCtor =
-        ctors.firstWhere((ctor) => ctor.identifier.name == '_');
+    final registerFactoryMethod = realmObjectBaseMethods['registerFactory']!;
+    final privateEmptyCtor = ctors['_']!;
 
     final schemaObjectId = await builder.resolveIdentifier(
         Uri.parse('package:realm_dart/src/configuration.dart'), 'SchemaObject');
@@ -263,7 +254,7 @@ macro class RealmModelMacro implements ClassDeclarationsMacro, ClassDefinitionMa
     schemaGetterBuilder.augment(
       FunctionBodyCode.fromParts([
         '{\n',
-        registerFactoryMethod,
+        registerFactoryMethod.identifier,
         '(',
         privateEmptyCtor.identifier,
         ');\n',
@@ -287,11 +278,8 @@ macro class RealmModelMacro implements ClassDeclarationsMacro, ClassDefinitionMa
 
 extension on ConstructorDeclaration {
   bool get isUnnamed => identifier.name.isEmpty;
-
-  Iterable<FormalParameterDeclaration> get parameters sync* {
-    yield* positionalParameters;
-    yield* namedParameters;
-  }
+  Iterable<FormalParameterDeclaration> get parameters =>
+      positionalParameters.followedBy(namedParameters);
 }
 
 const objectTypeRealmObject = ObjectType.realmObject;
@@ -405,4 +393,8 @@ extension on Builder {
   void debug(String message) {
     report(Diagnostic(DiagnosticMessage(message), Severity.info));
   }
+}
+
+extension<T extends Declaration> on Iterable<T> {
+  Map<String, T> byName() => {for (final t in this) t.identifier.name: t};
 }
