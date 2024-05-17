@@ -18,7 +18,7 @@ class Person extends RealmObjectMacrosBase {
   });
 
   @Backlink(#owner)
-  Iterable<Dog> get dogs; // not working yet
+  Iterable<Dog> get dogs;
 }
 
 @RealmModelMacro()

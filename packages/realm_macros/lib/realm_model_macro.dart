@@ -283,6 +283,7 @@ extension on ConstructorDeclaration {
 }
 
 const objectTypeRealmObject = ObjectType.realmObject;
+
 const realmPropertyTypeInt = RealmPropertyType.int;
 const realmPropertyTypeDouble = RealmPropertyType.double;
 const realmPropertyTypeBool = RealmPropertyType.bool;
@@ -294,6 +295,11 @@ const realmPropertyTypeMixed = RealmPropertyType.mixed;
 const realmPropertyTypeDecimal128 = RealmPropertyType.decimal128;
 const realmPropertyTypeObject = RealmPropertyType.object;
 const realmPropertyTypeUuid = RealmPropertyType.uuid;
+const realmProperTypeLinkingObjects = RealmPropertyType.linkingObjects;
+
+const realmCollectionTypeList = RealmCollectionType.list;
+const realmCollectionTypeSet = RealmCollectionType.set;
+const realmCollectionTypeMap = RealmCollectionType.map;
 
 Future<Identifier?> realmPropertyTypeOf(
     DeclarationPhaseIntrospector introspector, StaticType t) async {
@@ -368,6 +374,57 @@ Future<Identifier?> realmPropertyTypeOf(
   }
 
   return null;
+}
+
+macro class BacklinkMacro implements MethodDeclarationsMacro, MethodDefinitionMacro {
+  final Symbol fieldName;
+
+  const BacklinkMacro(this.fieldName);
+
+  @override
+  FutureOr<void> buildDeclarationsForMethod(
+      MethodDeclaration method, MemberDeclarationBuilder builder) async {
+    if (method.isGetter) {
+      final iterableType =
+          await builder.resolveByType<Iterable>(Uri.parse('dart:core'));
+      final returnType = await builder.resolve(method.returnType.code);
+      if (await returnType.isSubtypeOf(iterableType)) {
+        final propertyType = await builder.resolveByType<Property>(
+            Uri.parse('package:realm_macros/realm_model_macro.dart'));
+        final schemaPropertyType = await builder.resolveByType<SchemaProperty>(
+            Uri.parse('package:realm_dart/src/realm_property.dart'));
+        builder.declareInType(DeclarationCode.fromParts([
+          'static const ',
+          method.identifier.name,
+          'Property = ',
+          propertyType,
+          '(',
+          schemaPropertyType,
+          '(',
+          "'${method.identifier.name}', ",
+          await builder.resolveIdentifier(
+            Uri.parse('package:realm_macros/realm_model_macro.dart'),
+            'realmPropertyTypeLinkingObjects',
+          ),
+          ", linkOriginProperty: '$fieldName', ",
+          ', collectionType: ',
+          await builder.resolveIdentifier(
+            Uri.parse('package:realm_macros/realm_model_macro.dart'),
+            'realmCollectionTypeList',
+          ),
+          ", linkTarget: 'Source'",
+          '));\n',
+        ]));
+      }
+    }
+  }
+
+  @override
+  FutureOr<void> buildDefinitionForMethod(
+      MethodDeclaration method, FunctionDefinitionBuilder builder) {
+    // TODO: implement buildDefinitionForMethod
+    throw UnimplementedError();
+  }
 }
 
 bool isNullable<T>() => null is T;
