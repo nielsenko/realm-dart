@@ -1,0 +1,7 @@
+version: 0.1.0
+requirements:
+  ndk:
+    version: 26.0.0
+  rust:
+    stable:
+      version: 1.79.0
