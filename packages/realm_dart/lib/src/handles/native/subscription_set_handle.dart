@@ -19,6 +19,7 @@ import 'results_handle.dart';
 import 'rooted_handle.dart';
 import 'scheduler_handle.dart';
 import 'subscription_handle.dart';
+
 class SubscriptionSetHandle extends RootedHandleBase<realm_flx_sync_subscription_set> implements intf.SubscriptionSetHandle {
   @override
   bool get shouldRoot => true;

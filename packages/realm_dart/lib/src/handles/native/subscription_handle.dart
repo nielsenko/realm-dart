@@ -10,7 +10,8 @@ import 'realm_bindings.dart';
 import 'realm_library.dart';
 
 import '../subscription_handle.dart' as intf;
-class SubscriptionHandle extends HandleBase<realm_flx_sync_subscription> implements intf.SubscriptionHandle{
+
+class SubscriptionHandle extends HandleBase<realm_flx_sync_subscription> implements intf.SubscriptionHandle {
   SubscriptionHandle(Pointer<realm_flx_sync_subscription> pointer) : super(pointer, 184);
 
   @override

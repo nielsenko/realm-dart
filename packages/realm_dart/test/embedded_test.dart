@@ -1,7 +1,6 @@
 // Copyright 2022 MongoDB, Inc.
 // SPDX-License-Identifier: Apache-2.0
 
-
 import 'package:realm_dart/realm.dart';
 // This is required to be able to use the API for querying embedded objects.
 import 'package:realm_dart/src/realm_class.dart' show RealmInternal;

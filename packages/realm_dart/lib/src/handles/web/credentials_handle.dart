@@ -4,7 +4,7 @@
 import '../credentials_handle.dart' as intf;
 import 'handle_base.dart';
 
-class CredentialsHandle  extends HandleBase implements intf.CredentialsHandle {
+class CredentialsHandle extends HandleBase implements intf.CredentialsHandle {
   factory CredentialsHandle.anonymous(bool reuseCredentials) => webNotSupported();
 
   factory CredentialsHandle.emailPassword(String email, String password) => webNotSupported();

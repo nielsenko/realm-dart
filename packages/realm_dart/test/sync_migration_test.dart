@@ -237,7 +237,7 @@ void main() {
     expect(objv2.stringValue, isNull);
     expect(objv2.uuidValue, isNull);
     expect(objv2.binaryValue, isNull);
-  }, appName: AppName.staticSchema, skip:true);
+  }, appName: AppName.staticSchema, skip: true);
 
   baasTest('Realm can be migrated skipping versions (0->2)', (appConfig) async {
     final differentiator = ObjectId();

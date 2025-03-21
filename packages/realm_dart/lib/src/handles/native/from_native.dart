@@ -205,41 +205,41 @@ extension PointerRealmErrorEx on Pointer<realm_error_t> {
 
 extension IntEx on int {
   SyncErrorCode toSyncErrorCode() => switch (this) {
-    realm_errno.RLM_ERR_RUNTIME => SyncErrorCode.runtimeError,
-    realm_errno.RLM_ERR_BAD_CHANGESET => SyncErrorCode.badChangeset,
-    realm_errno.RLM_ERR_BAD_SYNC_PARTITION_VALUE => SyncErrorCode.badPartitionValue,
-    realm_errno.RLM_ERR_SYNC_PROTOCOL_INVARIANT_FAILED => SyncErrorCode.protocolInvariantFailed,
-    realm_errno.RLM_ERR_INVALID_SUBSCRIPTION_QUERY => SyncErrorCode.invalidSubscriptionQuery,
-    realm_errno.RLM_ERR_SYNC_CLIENT_RESET_REQUIRED => SyncErrorCode.clientReset,
-    realm_errno.RLM_ERR_SYNC_INVALID_SCHEMA_CHANGE => SyncErrorCode.invalidSchemaChange,
-    realm_errno.RLM_ERR_SYNC_PERMISSION_DENIED => SyncErrorCode.permissionDenied,
-    realm_errno.RLM_ERR_SYNC_SERVER_PERMISSIONS_CHANGED => SyncErrorCode.serverPermissionsChanged,
-    realm_errno.RLM_ERR_SYNC_USER_MISMATCH => SyncErrorCode.userMismatch,
-    realm_errno.RLM_ERR_SYNC_WRITE_NOT_ALLOWED => SyncErrorCode.writeNotAllowed,
-    realm_errno.RLM_ERR_AUTO_CLIENT_RESET_FAILED => SyncErrorCode.autoClientResetFailed,
-    realm_errno.RLM_ERR_WRONG_SYNC_TYPE => SyncErrorCode.wrongSyncType,
-    realm_errno.RLM_ERR_SYNC_COMPENSATING_WRITE => SyncErrorCode.compensatingWrite,
-    _ => throw RealmError("Unknown sync error code $this"),
-  };
+        realm_errno.RLM_ERR_RUNTIME => SyncErrorCode.runtimeError,
+        realm_errno.RLM_ERR_BAD_CHANGESET => SyncErrorCode.badChangeset,
+        realm_errno.RLM_ERR_BAD_SYNC_PARTITION_VALUE => SyncErrorCode.badPartitionValue,
+        realm_errno.RLM_ERR_SYNC_PROTOCOL_INVARIANT_FAILED => SyncErrorCode.protocolInvariantFailed,
+        realm_errno.RLM_ERR_INVALID_SUBSCRIPTION_QUERY => SyncErrorCode.invalidSubscriptionQuery,
+        realm_errno.RLM_ERR_SYNC_CLIENT_RESET_REQUIRED => SyncErrorCode.clientReset,
+        realm_errno.RLM_ERR_SYNC_INVALID_SCHEMA_CHANGE => SyncErrorCode.invalidSchemaChange,
+        realm_errno.RLM_ERR_SYNC_PERMISSION_DENIED => SyncErrorCode.permissionDenied,
+        realm_errno.RLM_ERR_SYNC_SERVER_PERMISSIONS_CHANGED => SyncErrorCode.serverPermissionsChanged,
+        realm_errno.RLM_ERR_SYNC_USER_MISMATCH => SyncErrorCode.userMismatch,
+        realm_errno.RLM_ERR_SYNC_WRITE_NOT_ALLOWED => SyncErrorCode.writeNotAllowed,
+        realm_errno.RLM_ERR_AUTO_CLIENT_RESET_FAILED => SyncErrorCode.autoClientResetFailed,
+        realm_errno.RLM_ERR_WRONG_SYNC_TYPE => SyncErrorCode.wrongSyncType,
+        realm_errno.RLM_ERR_SYNC_COMPENSATING_WRITE => SyncErrorCode.compensatingWrite,
+        _ => throw RealmError("Unknown sync error code $this"),
+      };
 }
 
 extension SyncErrorCodeEx on SyncErrorCode {
-  int get code  => switch (this) {
-    SyncErrorCode.runtimeError => realm_errno.RLM_ERR_RUNTIME,
-    SyncErrorCode.badChangeset => realm_errno.RLM_ERR_BAD_CHANGESET,
-    SyncErrorCode.badPartitionValue => realm_errno.RLM_ERR_BAD_SYNC_PARTITION_VALUE,
-    SyncErrorCode.protocolInvariantFailed => realm_errno.RLM_ERR_SYNC_PROTOCOL_INVARIANT_FAILED,
-    SyncErrorCode.invalidSubscriptionQuery => realm_errno.RLM_ERR_INVALID_SUBSCRIPTION_QUERY,
-    SyncErrorCode.clientReset => realm_errno.RLM_ERR_SYNC_CLIENT_RESET_REQUIRED,
-    SyncErrorCode.invalidSchemaChange => realm_errno.RLM_ERR_SYNC_INVALID_SCHEMA_CHANGE,
-    SyncErrorCode.permissionDenied => realm_errno.RLM_ERR_SYNC_PERMISSION_DENIED,
-    SyncErrorCode.serverPermissionsChanged => realm_errno.RLM_ERR_SYNC_SERVER_PERMISSIONS_CHANGED,
-    SyncErrorCode.userMismatch => realm_errno.RLM_ERR_SYNC_USER_MISMATCH,
-    SyncErrorCode.writeNotAllowed => realm_errno.RLM_ERR_SYNC_WRITE_NOT_ALLOWED,
-    SyncErrorCode.autoClientResetFailed => realm_errno.RLM_ERR_AUTO_CLIENT_RESET_FAILED,
-    SyncErrorCode.wrongSyncType => realm_errno.RLM_ERR_WRONG_SYNC_TYPE,
-    SyncErrorCode.compensatingWrite => realm_errno.RLM_ERR_SYNC_COMPENSATING_WRITE,
-  };
+  int get code => switch (this) {
+        SyncErrorCode.runtimeError => realm_errno.RLM_ERR_RUNTIME,
+        SyncErrorCode.badChangeset => realm_errno.RLM_ERR_BAD_CHANGESET,
+        SyncErrorCode.badPartitionValue => realm_errno.RLM_ERR_BAD_SYNC_PARTITION_VALUE,
+        SyncErrorCode.protocolInvariantFailed => realm_errno.RLM_ERR_SYNC_PROTOCOL_INVARIANT_FAILED,
+        SyncErrorCode.invalidSubscriptionQuery => realm_errno.RLM_ERR_INVALID_SUBSCRIPTION_QUERY,
+        SyncErrorCode.clientReset => realm_errno.RLM_ERR_SYNC_CLIENT_RESET_REQUIRED,
+        SyncErrorCode.invalidSchemaChange => realm_errno.RLM_ERR_SYNC_INVALID_SCHEMA_CHANGE,
+        SyncErrorCode.permissionDenied => realm_errno.RLM_ERR_SYNC_PERMISSION_DENIED,
+        SyncErrorCode.serverPermissionsChanged => realm_errno.RLM_ERR_SYNC_SERVER_PERMISSIONS_CHANGED,
+        SyncErrorCode.userMismatch => realm_errno.RLM_ERR_SYNC_USER_MISMATCH,
+        SyncErrorCode.writeNotAllowed => realm_errno.RLM_ERR_SYNC_WRITE_NOT_ALLOWED,
+        SyncErrorCode.autoClientResetFailed => realm_errno.RLM_ERR_AUTO_CLIENT_RESET_FAILED,
+        SyncErrorCode.wrongSyncType => realm_errno.RLM_ERR_WRONG_SYNC_TYPE,
+        SyncErrorCode.compensatingWrite => realm_errno.RLM_ERR_SYNC_COMPENSATING_WRITE,
+      };
 }
 
 extension ObjectEx on Object {

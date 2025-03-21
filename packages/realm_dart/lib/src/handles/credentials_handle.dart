@@ -8,7 +8,7 @@ import 'native/credentials_handle.dart' if (dart.library.js_interop) 'web/creden
 
 abstract interface class CredentialsHandle extends HandleBase {
   factory CredentialsHandle.anonymous(bool reuseCredentials) = impl.CredentialsHandle.anonymous;
-  
+
   factory CredentialsHandle.emailPassword(String email, String password) = impl.CredentialsHandle.emailPassword;
 
   factory CredentialsHandle.jwt(String token) = impl.CredentialsHandle.jwt;
