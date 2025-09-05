@@ -17,28 +17,24 @@ abstract class EJsonLintRule extends DartLintRule {
 
 class TooManyAnnotatedConstructors extends DartLintRule {
   TooManyAnnotatedConstructors()
-      : super(
-          code: const LintCode(
-            name: 'too_many_annotated_constructors',
-            problemMessage: 'Only one constructor can be annotated',
-            errorSeverity: error.ErrorSeverity.ERROR,
-          ),
-        );
+    : super(
+        code: const LintCode(
+          name: 'too_many_annotated_constructors',
+          problemMessage: 'Only one constructor can be annotated',
+          errorSeverity: error.DiagnosticSeverity.ERROR,
+        ),
+      );
 
   @override
-  void run(
-    CustomLintResolver resolver,
-    ErrorReporter reporter,
-    CustomLintContext context,
-  ) {
+  void run(CustomLintResolver resolver, DiagnosticReporter reporter, CustomLintContext context) {
     context.registry.addClassDeclaration((node) {
-      final cls = node.declaredElement;
+      final cls = node.declaredFragment;
       if (cls == null) return; // not resolved;
 
-      final annotatedConstructors = cls.constructors.where((ctor) => isEJsonAnnotated(ctor));
+      final annotatedConstructors = cls.constructors.where((ctor) => isEJsonAnnotated(ctor.element));
       if (annotatedConstructors.length > 1) {
         for (final ctor in annotatedConstructors) {
-          reporter.atElement(ctor, code);
+          reporter.atElement2(ctor.element, code);
         }
       }
     });

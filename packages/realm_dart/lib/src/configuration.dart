@@ -1,9 +1,8 @@
 // Copyright 2021 MongoDB, Inc.
 // SPDX-License-Identifier: Apache-2.0
 
-// ignore: no_leading_underscores_for_library_prefixes
 import 'package:collection/collection.dart';
-import 'package:path/path.dart' as _path;
+import 'package:path/path.dart' as p;
 
 import 'handles/realm_core.dart';
 import 'realm_dart.dart';
@@ -41,8 +40,8 @@ typedef MigrationCallback = void Function(Migration migration, int oldSchemaVers
 /// {@category Configuration}
 abstract class Configuration {
   /// The default realm filename to be used.
-  static String get defaultRealmName => _path.basename(defaultRealmPath);
-  static set defaultRealmName(String name) => defaultRealmPath = _path.join(_path.dirname(defaultRealmPath), _path.basename(name));
+  static String get defaultRealmName => p.basename(defaultRealmPath);
+  static set defaultRealmName(String name) => defaultRealmPath = p.join(p.dirname(defaultRealmPath), p.basename(name));
 
   /// A collection of [SchemaObject] that will be used to construct the
   /// [RealmSchema] once the `Realm` is opened.
@@ -63,17 +62,11 @@ abstract class Configuration {
   ///
   /// If set it should contain the path and the name of the realm file. Ex. "~/my_path/my_realm.realm"
   /// [defaultStoragePath] can be used to build this path.
-  static String defaultRealmPath = _path.join(defaultStoragePath, 'default.realm');
+  static String defaultRealmPath = p.join(defaultStoragePath, 'default.realm');
 
-  Configuration._(
-    this.schemaObjects, {
-    String? path,
-    this.fifoFilesFallbackPath,
-    this.encryptionKey,
-    this.maxNumberOfActiveVersions,
-  }) {
+  Configuration._(this.schemaObjects, {String? path, this.fifoFilesFallbackPath, this.encryptionKey, this.maxNumberOfActiveVersions}) {
     _validateEncryptionKey(encryptionKey);
-    this.path = path ?? _path.join(_path.dirname(_defaultPath), _path.basename(defaultRealmName));
+    this.path = path ?? p.join(p.dirname(_defaultPath), p.basename(defaultRealmName));
   }
 
   // allow inheritors to override the _defaultPath value
@@ -121,33 +114,24 @@ abstract class Configuration {
     MigrationCallback? migrationCallback,
     int? maxNumberOfActiveVersions,
     bool shouldDeleteIfMigrationNeeded = false,
-  }) =>
-      LocalConfiguration._(schemaObjects,
-          initialDataCallback: initialDataCallback,
-          schemaVersion: schemaVersion,
-          fifoFilesFallbackPath: fifoFilesFallbackPath,
-          path: path,
-          encryptionKey: encryptionKey,
-          disableFormatUpgrade: disableFormatUpgrade,
-          isReadOnly: isReadOnly,
-          shouldCompactCallback: shouldCompactCallback,
-          migrationCallback: migrationCallback,
-          maxNumberOfActiveVersions: maxNumberOfActiveVersions,
-          shouldDeleteIfMigrationNeeded: shouldDeleteIfMigrationNeeded);
+  }) => LocalConfiguration._(
+    schemaObjects,
+    initialDataCallback: initialDataCallback,
+    schemaVersion: schemaVersion,
+    fifoFilesFallbackPath: fifoFilesFallbackPath,
+    path: path,
+    encryptionKey: encryptionKey,
+    disableFormatUpgrade: disableFormatUpgrade,
+    isReadOnly: isReadOnly,
+    shouldCompactCallback: shouldCompactCallback,
+    migrationCallback: migrationCallback,
+    maxNumberOfActiveVersions: maxNumberOfActiveVersions,
+    shouldDeleteIfMigrationNeeded: shouldDeleteIfMigrationNeeded,
+  );
 
   /// Constructs a [InMemoryConfiguration]
-  static InMemoryConfiguration inMemory(
-    List<SchemaObject> schemaObjects, {
-    String? fifoFilesFallbackPath,
-    String? path,
-    int? maxNumberOfActiveVersions,
-  }) =>
-      InMemoryConfiguration._(
-        schemaObjects,
-        fifoFilesFallbackPath: fifoFilesFallbackPath,
-        path: path,
-        maxNumberOfActiveVersions: maxNumberOfActiveVersions,
-      );
+  static InMemoryConfiguration inMemory(List<SchemaObject> schemaObjects, {String? fifoFilesFallbackPath, String? path, int? maxNumberOfActiveVersions}) =>
+      InMemoryConfiguration._(schemaObjects, fifoFilesFallbackPath: fifoFilesFallbackPath, path: path, maxNumberOfActiveVersions: maxNumberOfActiveVersions);
 
   void _validateEncryptionKey(List<int>? key) {
     if (key == null) {
@@ -227,12 +211,7 @@ class LocalConfiguration extends Configuration {
 /// are temporary to running process.
 /// {@category Configuration}
 class InMemoryConfiguration extends Configuration {
-  InMemoryConfiguration._(
-    super.schemaObjects, {
-    super.fifoFilesFallbackPath,
-    super.path,
-    super.maxNumberOfActiveVersions,
-  }) : super._();
+  InMemoryConfiguration._(super.schemaObjects, {super.fifoFilesFallbackPath, super.path, super.maxNumberOfActiveVersions}) : super._();
 }
 
 /// A collection of properties describing the underlying schema of a [RealmObjectBase].

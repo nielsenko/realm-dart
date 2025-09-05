@@ -13,10 +13,10 @@ import 'session.dart';
 import 'type_checkers.dart';
 
 extension DartTypeEx on DartType {
-  bool isExactly<T>() => TypeChecker.fromRuntime(T).isExactlyType(this);
-  bool isA<T>() => TypeChecker.fromRuntime(T).isAssignableFromType(this);
+  bool isExactly<T>() => TypeChecker.typeNamed(T).isExactlyType(this);
+  bool isA<T>() => TypeChecker.typeNamed(T).isAssignableFromType(this);
 
-  bool get isRealmValue => const TypeChecker.fromRuntime(RealmValue).isAssignableFromType(this);
+  bool get isRealmValue => const TypeChecker.typeNamed(RealmValue).isAssignableFromType(this);
   bool get isRealmCollection => realmCollectionType != RealmCollectionType.none;
   bool get isRealmSet => realmCollectionType == RealmCollectionType.set;
 
@@ -63,13 +63,13 @@ extension DartTypeEx on DartType {
         final mapped = self.typeArguments.last.mappedType;
         if (self != mapped) {
           if (self.isDartCoreList) {
-            return PseudoType('RealmList<${mapped.getDisplayString(withNullability: true)}>');
+            return PseudoType('RealmList<${mapped.getDisplayString()}>');
           }
           if (self.isDartCoreSet) {
-            return PseudoType('RealmSet<${mapped.getDisplayString(withNullability: true)}>');
+            return PseudoType('RealmSet<${mapped.getDisplayString()}>');
           }
           if (self.isDartCoreMap) {
-            return PseudoType('RealmMap<${mapped.getDisplayString(withNullability: true)}>');
+            return PseudoType('RealmMap<${mapped.getDisplayString()}>');
           }
         }
       }
@@ -81,15 +81,12 @@ extension DartTypeEx on DartType {
         }
       }
     } else if (isRealmModel) {
-      return PseudoType(
-        getDisplayString(withNullability: false).replaceAll(session.prefix, ''),
-        nullabilitySuffix: nullabilitySuffix,
-      );
+      return PseudoType(asNonNullable.getDisplayString().replaceAll(session.prefix, ''), nullabilitySuffix: nullabilitySuffix);
     }
     return self;
   }
 
-  String get mappedName => mappedType.getDisplayString(withNullability: true);
+  String get mappedName => mappedType.getDisplayString();
 
   RealmPropertyType? get realmType => _realmType(true);
 

@@ -7,6 +7,7 @@ import "package:collection/collection.dart";
 import 'package:realm_common/realm_common.dart';
 import 'package:realm_generator/src/dart_type_ex.dart';
 import 'package:source_gen/source_gen.dart';
+
 import 'annotation_value.dart';
 import 'error.dart';
 import 'field_element_ex.dart';
@@ -56,7 +57,7 @@ extension ClassElementEx on ClassElement {
         return null;
       }
 
-      final modelName = this.name;
+      final modelName = this.name!;
 
       // ensure a valid prefix and suffix is used.
       final prefix = session.prefix;
@@ -87,14 +88,14 @@ extension ClassElementEx on ClassElement {
       // Check that mapping not already defined
       final mapped = session.mapping.putIfAbsent(name, () => this);
       if (mapped != this) {
-        throw RealmInvalidGenerationSourceError('Duplicate definition',
-            element: this,
-            primarySpan: span,
-            primaryLabel: "realm model '${mapped.displayName}' already defines '$name'",
-            secondarySpans: {
-              mapped.span!: '',
-            },
-            todo: "Duplicate realm model definitions '$displayName' and '${mapped.displayName}'.");
+        throw RealmInvalidGenerationSourceError(
+          'Duplicate definition',
+          element: this,
+          primarySpan: span,
+          primaryLabel: "realm model '${mapped.displayName}' already defines '$name'",
+          secondarySpans: {mapped.span!: ''},
+          todo: "Duplicate realm model definitions '$displayName' and '${mapped.displayName}'.",
+        );
       }
 
       // Check that realm model class does not extend another class than Object (not supported for now).
@@ -112,10 +113,11 @@ extension ClassElementEx on ClassElement {
       final explicitCtors = constructors.where((c) => !c.isSynthetic);
       if (explicitCtors.isNotEmpty) {
         final ctor = explicitCtors.first;
+        final ctorNode = getDeclarationFromElement(ctor)?.node as ConstructorDeclaration?;
         throw RealmInvalidGenerationSourceError(
           'No constructors allowed on realm model classes',
           element: ctor,
-          primarySpan: ctor.span,
+          primarySpan: ctor.span ?? ctorNode?.returnType.span(span!.file),
           primaryLabel: 'has constructor',
           todo: 'Remove constructor',
         );
@@ -147,12 +149,14 @@ extension ClassElementEx on ClassElement {
 
       if (objectType == ObjectType.embeddedObject && mappedFields.any((field) => field.isPrimaryKey)) {
         final pkSpan = fields.firstWhere((field) => field.realmInfo?.isPrimaryKey == true).span;
-        throw RealmInvalidGenerationSourceError("Primary key not allowed on embedded objects",
-            element: this,
-            primarySpan: pkSpan,
-            secondarySpans: {span!: ''},
-            primaryLabel: "$realmName is marked as embedded but has primary key defined",
-            todo: 'Remove the @PrimaryKey annotation from the field or set the model type to a value different from ObjectType.embeddedObject.');
+        throw RealmInvalidGenerationSourceError(
+          "Primary key not allowed on embedded objects",
+          element: this,
+          primarySpan: pkSpan,
+          secondarySpans: {span!: ''},
+          primaryLabel: "$realmName is marked as embedded but has primary key defined",
+          todo: 'Remove the @PrimaryKey annotation from the field or set the model type to a value different from ObjectType.embeddedObject.',
+        );
       }
 
       // Get the generator configuration
@@ -160,14 +164,7 @@ extension ClassElementEx on ClassElement {
       final ctorStyle = index != null ? CtorStyle.values[index] : CtorStyle.onlyOptionalNamed;
       final config = GeneratorConfig(ctorStyle: ctorStyle);
 
-      return RealmModelInfo(
-        name,
-        modelName,
-        realmName,
-        mappedFields,
-        objectType,
-        config,
-      );
+      return RealmModelInfo(name, modelName, realmName, mappedFields, objectType, config);
     } on InvalidGenerationSourceError catch (_) {
       rethrow;
     } catch (e, s) {

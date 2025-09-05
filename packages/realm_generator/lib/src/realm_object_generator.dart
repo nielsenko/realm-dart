@@ -1,7 +1,7 @@
 // Copyright 2021 MongoDB, Inc.
 // SPDX-License-Identifier: Apache-2.0
 
-library realm_generator;
+library;
 
 import 'dart:async';
 import 'dart:io';
@@ -27,8 +27,10 @@ Future<ResolvedLibraryResult> _getResolvedLibrary(LibraryElement library, Resolv
     } catch (_) {
       ++attempts;
       if (attempts == 3) {
-        log.severe('Internal error: Analysis session '
-            'did not stabilize after $attempts attempts!');
+        log.severe(
+          'Internal error: Analysis session '
+          'did not stabilize after $attempts attempts!',
+        );
         rethrow;
       }
     }
@@ -38,24 +40,17 @@ Future<ResolvedLibraryResult> _getResolvedLibrary(LibraryElement library, Resolv
 class RealmObjectGenerator extends Generator {
   @override
   Future<String> generate(LibraryReader library, BuildStep buildStep) async {
-    return await measure(
-      () async {
-        final result = await _getResolvedLibrary(library.element, buildStep.resolver);
+    return await measure(() async {
+      final result = await _getResolvedLibrary(library.element, buildStep.resolver);
 
-        return scopeSession(
-          result,
-          () {
-            final codeLines = library.classes.realmInfo.expand((m) => m.toCode())..toList();
-            if (codeLines.isEmpty) {
-              return '';
-            }
-            return ['// coverage:ignore-file', '// ignore_for_file: type=lint', ...codeLines].join('\n');
-          },
-          color: stdout.supportsAnsiEscapes,
-        );
-      },
-      tag: 'generate',
-    );
+      return scopeSession(result, () {
+        final codeLines = library.classes.realmInfo.expand((m) => m.toCode())..toList();
+        if (codeLines.isEmpty) {
+          return '';
+        }
+        return ['// coverage:ignore-file', '// ignore_for_file: type=lint', ...codeLines].join('\n');
+      }, color: stdout.supportsAnsiEscapes);
+    }, tag: 'generate');
   }
 }
 

@@ -18,15 +18,12 @@ import 'session.dart';
 import 'type_checkers.dart';
 import 'utils.dart';
 
-ElementDeclarationResult? getDeclarationFromElement(Element element) {
-  return session.resolvedLibrary.getElementDeclaration(element);
+FragmentDeclarationResult? getDeclarationFromElement(Element element) {
+  return session.resolvedLibrary.getFragmentDeclaration(element.firstFragment);
 }
 
 extension on FileSpan {
-  FileSpan clampEnd(FileSpan other) => file.span(
-        start.offset,
-        min(end.offset, other.end.offset),
-      );
+  FileSpan clampEnd(FileSpan other) => file.span(start.offset, min(end.offset, other.end.offset));
 
   FileSpan extentToEndOfLine([int noOfLines = 1]) {
     var end = this.end.offset;
@@ -76,14 +73,16 @@ extension ElementEx on Element {
       final elementSpan = span!;
       final file = elementSpan.file;
 
-      throw RealmInvalidGenerationSourceError('Repeated annotation',
-          element: this,
-          primarySpan: ExpandedContextSpan(second.annotation.span(file), [elementSpan]),
-          primaryLabel: 'duplicated annotation',
-          secondarySpans: {
-            ...{for (final a in annotations..removeAt(1)) a.annotation.span(file): ''}
-          },
-          todo: 'Remove all duplicated ${second.annotation} annotations.');
+      throw RealmInvalidGenerationSourceError(
+        'Repeated annotation',
+        element: this,
+        primarySpan: ExpandedContextSpan(second.annotation.span(file), [elementSpan]),
+        primaryLabel: 'duplicated annotation',
+        secondarySpans: {
+          ...{for (final a in annotations..removeAt(1)) a.annotation.span(file): ''},
+        },
+        todo: 'Remove all duplicated ${second.annotation} annotations.',
+      );
     }
     return annotations.singleOrNull;
   }

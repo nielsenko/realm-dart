@@ -4,21 +4,16 @@
 import 'package:realm_common/realm_common.dart';
 import 'package:source_gen/source_gen.dart';
 
-const ignoredChecker = TypeChecker.fromRuntime(Ignored);
+const ignoredChecker = TypeChecker.typeNamed(Ignored);
 
-const indexedChecker = TypeChecker.fromRuntime(Indexed);
+const indexedChecker = TypeChecker.typeNamed(Indexed);
 
-const mapToChecker = TypeChecker.fromRuntime(MapTo);
+const mapToChecker = TypeChecker.typeNamed(MapTo);
 
-const primaryKeyChecker = TypeChecker.fromRuntime(PrimaryKey);
+const primaryKeyChecker = TypeChecker.typeNamed(PrimaryKey);
 
-const backlinkChecker = TypeChecker.fromRuntime(Backlink);
+const backlinkChecker = TypeChecker.typeNamed(Backlink);
 
-const realmAnnotationChecker = TypeChecker.any([
-  ignoredChecker,
-  indexedChecker,
-  mapToChecker,
-  primaryKeyChecker,
-]);
+const realmAnnotationChecker = TypeChecker.any([ignoredChecker, indexedChecker, mapToChecker, primaryKeyChecker]);
 
-const realmModelChecker = TypeChecker.fromRuntime(RealmModel);
+const realmModelChecker = TypeChecker.typeNamed(RealmModel);

@@ -2,7 +2,7 @@ name: ejson_annotation
 description: >-
   Annotation for EJSON serialization.
 
-  BSON is a binary format used to store JSON-like documents efficiently. 
+  BSON is a binary format used to store JSON-like documents efficiently.
   EJSON extends JSON defining how all BSON types should be represented in JSON.
 
 version: 0.4.1
@@ -10,6 +10,7 @@ repository: https://github.com/realm/realm-dart/ejson/packages/ejson_annotation
 
 environment:
   sdk: ^3.6.0
+resolution: workspace
 
 dev_dependencies:
-  lints: ^5.1.1
+  lints: ^6.0.0

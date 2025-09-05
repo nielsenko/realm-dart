@@ -2,7 +2,6 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import 'package:realm_dart/realm.dart';
-import 'package:test/test.dart' hide test, throws;
 
 import 'test.dart';
 
@@ -113,18 +112,17 @@ void main() {
     final target = realm.write(() => realm.add(Target()));
 
     expectLater(
-        target.oneToMany.changes,
-        emitsInOrder(<Matcher>[
-          isA<RealmResultsChanges<Source>>().having((ch) => ch.inserted, 'inserted', <int>[]),
-          isA<RealmResultsChanges<Source>>().having((ch) => ch.inserted, 'inserted', [0]),
-          isA<RealmResultsChanges<Source>>().having((ch) => ch.inserted, 'inserted', [1]),
-          isA<RealmResultsChanges<Source>>() //
-              // Backlinks don't have a natural order - removing the element at 0, then adding a new one will
-              // appear like the new one was added at position 0.
-              .having((ch) => ch.inserted, 'inserted', [0, 2]) //
-              .having((ch) => ch.deleted, 'deleted', [0]) //
-              .having((ch) => ch.modified, 'modified', [1]),
-        ]));
+      target.oneToMany.changes,
+      emitsInOrder(<Matcher>[
+        isA<RealmResultsChanges<Source>>().having((ch) => ch.inserted, 'inserted', <int>[]),
+        isA<RealmResultsChanges<Source>>().having((ch) => ch.inserted, 'inserted', [0]),
+        isA<RealmResultsChanges<Source>>().having((ch) => ch.inserted, 'inserted', [1]),
+        isA<RealmResultsChanges<Source>>() //
+            .having((ch) => ch.inserted, 'inserted', [0, 2]) //
+            .having((ch) => ch.deleted, 'deleted', [0]) //
+            .having((ch) => ch.modified, 'modified', [1]),
+      ]),
+    );
 
     final first = realm.write(() => realm.add(Source(oneTarget: target)));
 
@@ -228,18 +226,17 @@ void main() {
       final target = realm.write(() => realm.add(Target()));
 
       expectLater(
-          target.getBacklinks<Source>('oneTarget').changes,
-          emitsInOrder(<Matcher>[
-            isA<RealmResultsChanges<Source>>().having((ch) => ch.inserted, 'inserted', <int>[]),
-            isA<RealmResultsChanges<Source>>().having((ch) => ch.inserted, 'inserted', [0]),
-            isA<RealmResultsChanges<Source>>().having((ch) => ch.inserted, 'inserted', [1]),
-            isA<RealmResultsChanges<Source>>() //
-                // Backlinks don't have a natural order - removing the element at 0, then adding a new one will
-                // appear like the new one was added at position 0.
-                .having((ch) => ch.inserted, 'inserted', [0, 2]) //
-                .having((ch) => ch.deleted, 'deleted', [0]) //
-                .having((ch) => ch.modified, 'modified', [1]),
-          ]));
+        target.getBacklinks<Source>('oneTarget').changes,
+        emitsInOrder(<Matcher>[
+          isA<RealmResultsChanges<Source>>().having((ch) => ch.inserted, 'inserted', <int>[]),
+          isA<RealmResultsChanges<Source>>().having((ch) => ch.inserted, 'inserted', [0]),
+          isA<RealmResultsChanges<Source>>().having((ch) => ch.inserted, 'inserted', [1]),
+          isA<RealmResultsChanges<Source>>() //
+              .having((ch) => ch.inserted, 'inserted', [0, 2]) //
+              .having((ch) => ch.deleted, 'deleted', [0]) //
+              .having((ch) => ch.modified, 'modified', [1]),
+        ]),
+      );
 
       final first = realm.write(() => realm.add(Source(oneTarget: target)));
 
@@ -256,14 +253,18 @@ void main() {
     test('pointing to a non-existent property throws', () {
       final (theOne, _, _) = populateData();
 
-      expect(() => theOne.getBacklinks<Source>('foo'),
-          throwsA(isA<RealmException>().having((p0) => p0.message, 'message', 'Property foo does not exist on class Source')));
+      expect(
+        () => theOne.getBacklinks<Source>('foo'),
+        throwsA(isA<RealmException>().having((p0) => p0.message, 'message', 'Property foo does not exist on class Source')),
+      );
     });
 
     test('on an unmanaged object throws', () {
       final theOne = Target(name: 'the one');
-      expect(() => theOne.getBacklinks<Source>('oneTarget'),
-          throwsA(isA<RealmStateError>().having((p0) => p0.message, 'message', "Can't look up backlinks of unmanaged objects.")));
+      expect(
+        () => theOne.getBacklinks<Source>('oneTarget'),
+        throwsA(isA<RealmStateError>().having((p0) => p0.message, 'message', "Can't look up backlinks of unmanaged objects.")),
+      );
     });
 
     test('on a deleted object throws', () {
@@ -274,39 +275,57 @@ void main() {
       expect(theOne.isManaged, true);
 
       expect(
-          () => theOne.getBacklinks<Source>('oneTarget'),
-          throwsA(
-              isA<RealmException>().having((p0) => p0.message, 'message', contains("Accessing object of type Target which has been invalidated or deleted."))));
+        () => theOne.getBacklinks<Source>('oneTarget'),
+        throwsA(
+          isA<RealmException>().having((p0) => p0.message, 'message', contains("Accessing object of type Target which has been invalidated or deleted.")),
+        ),
+      );
     });
 
     test('with a dynamic type argument throws', () {
       final (theOne, _, _) = populateData();
-      expect(() => theOne.getBacklinks('oneTarget'),
-          throwsA(isA<RealmError>().having((p0) => p0.message, 'message', contains("Object type dynamic not configured in the current Realm's schema."))));
+      expect(
+        () => theOne.getBacklinks('oneTarget'),
+        throwsA(isA<RealmError>().having((p0) => p0.message, 'message', contains("Object type dynamic not configured in the current Realm's schema."))),
+      );
     });
 
     test('with an invalid type argument throws', () {
       final (theOne, _, _) = populateData();
-      expect(() => theOne.getBacklinks('oneTarget'),
-          throwsA(isA<RealmError>().having((p0) => p0.message, 'message', contains("Object type dynamic not configured in the current Realm's schema."))));
+      expect(
+        () => theOne.getBacklinks('oneTarget'),
+        throwsA(isA<RealmError>().having((p0) => p0.message, 'message', contains("Object type dynamic not configured in the current Realm's schema."))),
+      );
     });
 
     test('pointing to a non-link property throws', () {
       final (theOne, _, _) = populateData();
 
       expect(
-          () => theOne.getBacklinks<Source>('name'),
-          throwsA(isA<RealmError>()
-              .having((p0) => p0.message, 'message', 'Property Source.name is not a link property - it is a property of type RealmPropertyType.string')));
+        () => theOne.getBacklinks<Source>('name'),
+        throwsA(
+          isA<RealmError>().having(
+            (p0) => p0.message,
+            'message',
+            'Property Source.name is not a link property - it is a property of type RealmPropertyType.string',
+          ),
+        ),
+      );
     });
 
     test('pointing to a link property of incorrect type throws', () {
       final (theOne, _, _) = populateData();
 
       expect(
-          () => theOne.getBacklinks<Target>('source'),
-          throwsA(isA<RealmError>().having((p0) => p0.message, 'message',
-              'Property Target.source is a link property that links to Source which is different from the type of the current object, which is Target.')));
+        () => theOne.getBacklinks<Target>('source'),
+        throwsA(
+          isA<RealmError>().having(
+            (p0) => p0.message,
+            'message',
+            'Property Target.source is a link property that links to Source which is different from the type of the current object, which is Target.',
+          ),
+        ),
+      );
     });
   });
 }

@@ -8,8 +8,8 @@ import 'dart:math';
 
 import 'package:collection/collection.dart';
 import 'package:meta/meta.dart';
-import 'package:test/test.dart' hide test, throws;
 import 'package:realm_dart/realm.dart';
+
 import 'test.dart';
 
 void main() {
@@ -45,10 +45,7 @@ void main() {
     realm.write(() => players.add(Person("Michael")));
     expect(players.length, 1);
 
-    realm.write(() => players.addAll([
-          Person("Sebastian"),
-          Person("Kimi"),
-        ]));
+    realm.write(() => players.addAll([Person("Sebastian"), Person("Kimi")]));
 
     expect(players.length, 3);
 
@@ -94,11 +91,7 @@ void main() {
     realm.write(() => realm.add(team));
 
     //Add players to the team
-    final newPlayers = [
-      Person("Michael Schumacher"),
-      Person("Sebastian Vettel"),
-      Person("Kimi Räikkönen"),
-    ];
+    final newPlayers = [Person("Michael Schumacher"), Person("Sebastian Vettel"), Person("Kimi Räikkönen")];
 
     realm.write(() {
       team.players.addAll(newPlayers);
@@ -135,11 +128,7 @@ void main() {
     });
 
     //Create common players list for both teams
-    final newPlayers = [
-      Person("Michael Schumacher"),
-      Person("Sebastian Vettel"),
-      Person("Kimi Räikkönen"),
-    ];
+    final newPlayers = [Person("Michael Schumacher"), Person("Sebastian Vettel"), Person("Kimi Räikkönen")];
     realm.write(() {
       teamOne.players.addAll(newPlayers);
       teamTwo.players.addAll(newPlayers);
@@ -224,8 +213,10 @@ void main() {
     realm.write(() => realm.add(team));
     var players = team.players;
     realm.write(() => realm.delete(team));
-    expect(() => realm.write(() => realm.deleteMany(players)),
-        throws<RealmException>("List is no longer valid. Either the parent object was deleted or the containing Realm has been invalidated or closed"));
+    expect(
+      () => realm.write(() => realm.deleteMany(players)),
+      throws<RealmException>("List is no longer valid. Either the parent object was deleted or the containing Realm has been invalidated or closed"),
+    );
   });
 
   test('Get length of list property on a deleted object', () {
@@ -245,11 +236,7 @@ void main() {
     var realm = getRealm(config);
 
     realm.write(() {
-      realm.add(Team("Speed Team", players: [
-        Person("Michael Schumacher"),
-        Person("Sebastian Vettel"),
-        Person("Kimi Räikkönen"),
-      ]));
+      realm.add(Team("Speed Team", players: [Person("Michael Schumacher"), Person("Sebastian Vettel"), Person("Kimi Räikkönen")]));
     });
 
     var teams = realm.all<Team>();
@@ -320,12 +307,7 @@ void main() {
 
       expectLater(
         list.changes.map((e) => getIndexes(e)),
-        emitsInOrder([
-          <int>[],
-          ...listOfIndexes.map(
-            (l) => l.sorted((a, b) => a - b),
-          )
-        ].map<Matcher>((indexes) => equals(indexes))),
+        emitsInOrder([<int>[], ...listOfIndexes.map((l) => l.sorted((a, b) => a - b))].map<Matcher>((indexes) => equals(indexes))),
       );
 
       for (final indexes in listOfIndexes) {
@@ -353,10 +335,7 @@ void main() {
   ];
 
   @isTest
-  void testListInsertNotifications<T>(
-    RealmList<T> Function(AllCollections c) getList,
-    void Function(RealmList<T> list, int index) op,
-  ) {
+  void testListInsertNotifications<T>(RealmList<T> Function(AllCollections c) getList, void Function(RealmList<T> list, int index) op) {
     testListNotificationsHelper<T>('insert', getList, (ch) => ch.inserted, op, inserts);
   }
 
@@ -384,19 +363,19 @@ void main() {
     [10, 8],
     [0],
     [11],
-    [10, 9, 8, 7, 6, 5, 4, 3, 2, 1, 0]
+    [10, 9, 8, 7, 6, 5, 4, 3, 2, 1, 0],
   ];
 
   @isTest
-  void testListDeleteNotifications<T>(
-    RealmList<T> Function(AllCollections c) getList,
-    T Function(int i) indexToValue,
-  ) {
-    testListNotificationsHelper<T>('deleted', getList, (ch) => ch.deleted, (c, i) => c.removeAt(i), deletes,
-        factory: () => List.generate(
-              100,
-              (i) => indexToValue(i),
-            ));
+  void testListDeleteNotifications<T>(RealmList<T> Function(AllCollections c) getList, T Function(int i) indexToValue) {
+    testListNotificationsHelper<T>(
+      'deleted',
+      getList,
+      (ch) => ch.deleted,
+      (c, i) => c.removeAt(i),
+      deletes,
+      factory: () => List.generate(100, (i) => indexToValue(i)),
+    );
   }
 
   testListDeleteNotifications<bool?>((c) => c.nullableBoolList, (i) => null);
@@ -423,19 +402,19 @@ void main() {
     [10, 8],
     [0],
     [11],
-    [10, 7, 8, 9, 3, 2, 6, 5, 1, 0, 4]
+    [10, 7, 8, 9, 3, 2, 6, 5, 1, 0, 4],
   ];
 
   @isTest
-  void testListModificationNotifications<T>(
-    RealmList<T> Function(AllCollections c) getList,
-    T Function(int i) indexToValue,
-  ) {
-    testListNotificationsHelper<T>('modified', getList, (ch) => ch.modified, (c, i) => c[i] = indexToValue(i), modifications,
-        factory: () => List.generate(
-              100,
-              (i) => indexToValue(i),
-            ));
+  void testListModificationNotifications<T>(RealmList<T> Function(AllCollections c) getList, T Function(int i) indexToValue) {
+    testListNotificationsHelper<T>(
+      'modified',
+      getList,
+      (ch) => ch.modified,
+      (c, i) => c[i] = indexToValue(i),
+      modifications,
+      factory: () => List.generate(100, (i) => indexToValue(i)),
+    );
   }
 
   testListModificationNotifications<bool?>((c) => c.nullableBoolList, (i) => null);
@@ -458,11 +437,7 @@ void main() {
     final realm = getRealm(config);
 
     final person = Person('John');
-    final team = Team('team1', players: [
-      Person('Pavel'),
-      person,
-      Person('Alex'),
-    ]);
+    final team = Team('team1', players: [Person('Pavel'), person, Person('Alex')]);
 
     realm.write(() => realm.add(team));
 
@@ -594,7 +569,7 @@ void main() {
     expect(externalChanges.length, 0);
   });
 
-  test('List.freeze when frozen returns same object', () {
+  test('List.freeze, when frozen returns same object', () {
     final config = Configuration.local([Team.schema, Person.schema]);
     final realm = getRealm(config);
 
@@ -1054,11 +1029,7 @@ void main() {
     // even if the static type is right.
     expect(
       () => players.indexOf(Person('10')),
-      throwsA(isA<RealmStateError>().having(
-        (e) => e.message,
-        'message',
-        'Cannot call indexOf on a managed list with an element that is an unmanaged object',
-      )),
+      throwsA(isA<RealmStateError>().having((e) => e.message, 'message', 'Cannot call indexOf on a managed list with an element that is an unmanaged object')),
     );
   });
 
@@ -1089,44 +1060,46 @@ void main() {
         for (final p in players) {
           p.scoresByRound.add(scores[p]);
         }
-        final bestResult =
-            scores.entries.fold<MapEntry<Player, int>?>(null, (bestResult, result) => result.value > (bestResult?.value ?? 0) ? result : bestResult);
+        final bestResult = scores.entries.fold<MapEntry<Player, int>?>(
+          null,
+          (bestResult, result) => result.value > (bestResult?.value ?? 0) ? result : bestResult,
+        );
         game.winnerByRound[currentRound++] = bestResult!.key;
       });
     }
 
     playRound({alice: 1, bob: 2});
 
-    checkResult([
-      bob
-    ], {
-      alice: [1],
-      bob: [2],
-      carol: [null]
-    });
+    checkResult(
+      [bob],
+      {
+        alice: [1],
+        bob: [2],
+        carol: [null],
+      },
+    );
 
     playRound({alice: 3, carol: 1});
 
-    checkResult([
-      bob,
-      alice
-    ], {
-      alice: [1, 3],
-      bob: [2, null],
-      carol: [null, 1]
-    });
+    checkResult(
+      [bob, alice],
+      {
+        alice: [1, 3],
+        bob: [2, null],
+        carol: [null, 1],
+      },
+    );
 
     playRound({alice: 2, bob: 3, carol: 1});
 
-    checkResult([
-      bob,
-      alice,
-      bob
-    ], {
-      alice: [1, 3, 2],
-      bob: [2, null, 3],
-      carol: [null, 1, 1]
-    });
+    checkResult(
+      [bob, alice, bob],
+      {
+        alice: [1, 3, 2],
+        bob: [2, null, 3],
+        carol: [null, 1, 1],
+      },
+    );
   });
 
   test('RealmList<T> is a RealmList<T?> (covariance)', () {
@@ -1227,13 +1200,14 @@ void main() {
     realm.write(() => realm.add(team));
 
     expectLater(
-        team.players.changes,
-        emitsInOrder(<Matcher>[
-          isA<RealmListChanges<Person>>().having((ch) => ch.inserted, 'inserted', <int>[]), // always an empty event on subscription
-          isA<RealmListChanges<Person>>().having((ch) => ch.moved, 'moved', [Move(1, 0)]),
-          // no Move(0, 0)
-          isA<RealmListChanges<Person>>().having((ch) => ch.moved, 'moved', [Move(2, 3)]),
-        ]));
+      team.players.changes,
+      emitsInOrder(<Matcher>[
+        isA<RealmListChanges<Person>>().having((ch) => ch.inserted, 'inserted', <int>[]), // always an empty event on subscription
+        isA<RealmListChanges<Person>>().having((ch) => ch.moved, 'moved', [Move(1, 0)]),
+        // no Move(0, 0)
+        isA<RealmListChanges<Person>>().having((ch) => ch.moved, 'moved', [Move(2, 3)]),
+      ]),
+    );
 
     realm.write(() => team.players.move(1, 0));
     expect(team.players, [bob, alice, carol, dan]);
@@ -1251,19 +1225,20 @@ void main() {
     realm.write(() => realm.add(team));
 
     expectLater(
-        team.players.changes,
-        emitsInOrder(<Matcher>[
-          isA<RealmListChanges<Person>>()
-              .having((changes) => changes.inserted, 'inserted', <int>[])
-              .having((changes) => changes.isCleared, 'isCleared', false)
-              .having((changes) => changes.isCollectionDeleted, 'isCollectionDeleted', false), // always an empty event on subscription
-          isA<RealmListChanges<Person>>()
-              .having((changes) => changes.isCleared, 'isCleared', true)
-              .having((changes) => changes.isCollectionDeleted, 'isCollectionDeleted', false),
-          isA<RealmListChanges<Person>>()
-              .having((changes) => changes.isCleared, 'isCleared', false)
-              .having((changes) => changes.isCollectionDeleted, 'isCollectionDeleted', true),
-        ]));
+      team.players.changes,
+      emitsInOrder(<Matcher>[
+        isA<RealmListChanges<Person>>()
+            .having((changes) => changes.inserted, 'inserted', <int>[])
+            .having((changes) => changes.isCleared, 'isCleared', false)
+            .having((changes) => changes.isCollectionDeleted, 'isCollectionDeleted', false), // always an empty event on subscription
+        isA<RealmListChanges<Person>>()
+            .having((changes) => changes.isCleared, 'isCleared', true)
+            .having((changes) => changes.isCollectionDeleted, 'isCollectionDeleted', false),
+        isA<RealmListChanges<Person>>()
+            .having((changes) => changes.isCleared, 'isCleared', false)
+            .having((changes) => changes.isCollectionDeleted, 'isCollectionDeleted', true),
+      ]),
+    );
     realm.write(() => team.players.clear());
     realm.refresh();
     realm.write(() => realm.delete(team));
@@ -1305,11 +1280,12 @@ void main() {
     realm.write(() => realm.add(team));
     final playersAsResults = team.players.asResults();
     expectLater(
-        playersAsResults.changes,
-        emitsInOrder(<Matcher>[
-          isA<RealmResultsChanges<Person>>().having((changes) => changes.inserted, 'inserted', <int>[]), // always an empty event on subscription
-          isA<RealmResultsChanges<Person>>().having((changes) => changes.results.isEmpty, 'isCleared', true),
-        ]));
+      playersAsResults.changes,
+      emitsInOrder(<Matcher>[
+        isA<RealmResultsChanges<Person>>().having((changes) => changes.inserted, 'inserted', <int>[]), // always an empty event on subscription
+        isA<RealmResultsChanges<Person>>().having((changes) => changes.results.isEmpty, 'isCleared', true),
+      ]),
+    );
     realm.write(() => team.players.clear());
     expect(playersAsResults.length, 0);
     realm.refresh();
@@ -1319,14 +1295,10 @@ void main() {
     final config = Configuration.local([Team.schema, Person.schema]);
     final realm = getRealm(config);
 
-    final team = realm.write(() => realm.add(Team('team', players: [
-          Person('Paul'),
-          Person('John'),
-          Person('Alex'),
-        ])));
+    final team = realm.write(() => realm.add(Team('team', players: [Person('Paul'), Person('John'), Person('Alex')])));
 
     final result = team.players.query(r'name IN $0', [
-      ['Paul', 'Alex']
+      ['Paul', 'Alex'],
     ]);
     expect(result.length, 2);
   });
@@ -1335,11 +1307,18 @@ void main() {
     final config = Configuration.local([School.schema, Student.schema]);
     final realm = getRealm(config);
 
-    final school = realm.write(() => realm.add(School('primary school 1', branches: [
-          School('131', city: "NY city"),
-          School('144'),
-          School('128'),
-        ])));
+    final school = realm.write(
+      () => realm.add(
+        School(
+          'primary school 1',
+          branches: [
+            School('131', city: "NY city"),
+            School('144'),
+            School('128'),
+          ],
+        ),
+      ),
+    );
 
     final result = school.branches.query(r'city = $0', [null]);
     expect(result.length, 2);

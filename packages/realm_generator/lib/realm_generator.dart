@@ -6,7 +6,7 @@
 /// * Add a dependency to [realm](https://pub.dev/packages/realm) package or [realm_dart](https://pub.dev/packages/realm_dart) package to your application
 /// * Run `dart run build_runner build` or `dart run build_runner build` to generate RealmObjects
 
-library realm_generator;
+library;
 
 import 'package:build/build.dart';
 import 'package:source_gen/source_gen.dart';
@@ -17,8 +17,5 @@ export 'src/error.dart';
 
 /// @nodoc
 Builder generateRealmObjects([BuilderOptions? options]) {
-  return PartBuilder(
-    [RealmObjectGenerator()],
-    '.realm.dart',
-  );
+  return PartBuilder([RealmObjectGenerator()], '.realm.dart');
 }

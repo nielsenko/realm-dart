@@ -89,7 +89,7 @@ ulimit -n 2048
 ```
 
 > [!TIP]
-> There are many more melos scripts available to customize what to build and test. See [melos.yaml](melos.yaml) for details.
+> There are many more melos scripts available to customize what to build and test. See the `melos` section in [pubspec.yaml](pubspec.yaml) for details.
 
 ## Running emulators/simulators
 

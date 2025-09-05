@@ -7,7 +7,6 @@ import 'dart:typed_data';
 import 'package:collection/collection.dart';
 import 'package:realm_common/realm_common.dart' show memEquals;
 import 'package:realm_dart/realm.dart';
-import 'package:test/test.dart' hide test, throws;
 
 import 'test.dart';
 
@@ -275,7 +274,7 @@ void main() {
         RealmValue.double(2.0),
         RealmValue.string('abc'),
         RealmValue.nullValue(),
-        RealmValue.string('abc')
+        RealmValue.string('abc'),
       ];
       final obj = realm.write(() => realm.add(ObjectWithRealmValue(ObjectId()))..setOfAny.addAll(values));
 
@@ -455,11 +454,11 @@ void main() {
           Uint8List.fromList([1, 2, 0]),
           ObjectWithInt(ObjectId(), differentiator: differentiator, i: 123),
           [5, 'abc'],
-          {'int': -10, 'string': 'abc'}
+          {'int': -10, 'string': 'abc'},
         ];
       }
 
-      test('List when $managedString works with all types', () {
+      test('List, when $managedString works with all types', () {
         final realm = getMixedRealm();
         final originalList = getListAllTypes();
         final foundValue = persistIfNecessary(RealmValue.from(originalList), realm);
@@ -488,7 +487,7 @@ void main() {
         expect(storedDict.asMap()['non-existent'], null);
       });
 
-      test('List when $managedString can be reassigned', () {
+      test('List, when $managedString can be reassigned', () {
         final realm = getMixedRealm();
         final obj = ObjectWithRealmValue(ObjectId(), oneAny: RealmValue.from([true, 5.3]));
         if (isManaged) {
@@ -522,11 +521,11 @@ void main() {
           'primitive_binary': Uint8List.fromList([1, 2, 0]),
           'object': ObjectWithInt(ObjectId(), differentiator: differentiator, i: 123),
           'list': [5, 'abc'],
-          'map': {'int': -10, 'string': 'abc'}
+          'map': {'int': -10, 'string': 'abc'},
         };
       }
 
-      test('Map when $managedString works with all types', () {
+      test('Map, when $managedString works with all types', () {
         final realm = getMixedRealm();
         final originalMap = getDictAllTypes();
         final foundValue = persistIfNecessary(RealmValue.from(originalMap), realm);
@@ -553,7 +552,7 @@ void main() {
         expectMatches(storedDict, {'int': -10, 'string': 'abc'});
       });
 
-      test('Map when $managedString can be reassigned', () {
+      test('Map, when $managedString can be reassigned', () {
         final realm = getMixedRealm();
         final obj = ObjectWithRealmValue(ObjectId(), oneAny: RealmValue.from({'bool': true, 'double': 5.3}));
         if (isManaged) {
@@ -573,14 +572,16 @@ void main() {
         expectMatches(obj.oneAny, [1.23456789]);
       });
 
-      test('Map inside list when $managedString can be reassigned', () {
+      test('Map inside list, when $managedString can be reassigned', () {
         final realm = getMixedRealm();
-        final obj = ObjectWithRealmValue(ObjectId(),
-            oneAny: RealmValue.from([
-              true,
-              {'foo': 'bar'},
-              5.3
-            ]));
+        final obj = ObjectWithRealmValue(
+          ObjectId(),
+          oneAny: RealmValue.from([
+            true,
+            {'foo': 'bar'},
+            5.3,
+          ]),
+        );
         if (isManaged) {
           realm.write(() => realm.add(obj));
         }
@@ -593,7 +594,7 @@ void main() {
         expectMatches(obj.oneAny, [
           true,
           {'new': 5},
-          5.3
+          5.3,
         ]);
 
         writeIfNecessary(realm, () {
@@ -604,17 +605,17 @@ void main() {
           true,
           {'new': 5},
           5.3,
-          {'new': 5}
+          {'new': 5},
         ]);
       });
 
       // TODO: Self-assignment - this doesn't work due to https://github.com/realm/realm-core/issues/7422
-      test('Map inside list when $managedString can self-assign', () {
+      test('Map inside list, when $managedString can self-assign', () {
         final realm = getMixedRealm();
         final originalList = [
           true,
           {'foo': 'bar'},
-          5.3
+          5.3,
         ];
         final obj = ObjectWithRealmValue(ObjectId(), oneAny: RealmValue.from(originalList));
         if (isManaged) {
@@ -631,13 +632,15 @@ void main() {
         expectMatches(obj.oneAny, originalList);
       }, skip: true);
 
-      test('Map inside map when $managedString can be reassigned', () {
+      test('Map inside map, when $managedString can be reassigned', () {
         final realm = getMixedRealm();
-        final obj = ObjectWithRealmValue(ObjectId(),
-            oneAny: RealmValue.from({
-              'a': 5,
-              'b': {'foo': 'bar'}
-            }));
+        final obj = ObjectWithRealmValue(
+          ObjectId(),
+          oneAny: RealmValue.from({
+            'a': 5,
+            'b': {'foo': 'bar'},
+          }),
+        );
 
         if (isManaged) {
           realm.write(() => realm.add(obj));
@@ -650,7 +653,7 @@ void main() {
         writeIfNecessary(realm, () => map['b'] = RealmValue.from({'new': 5}));
         expectMatches(obj.oneAny, {
           'a': 5,
-          'b': {'new': 5}
+          'b': {'new': 5},
         });
 
         writeIfNecessary(realm, () {
@@ -665,11 +668,11 @@ void main() {
       });
 
       // TODO: Self-assignment - this doesn't work due to https://github.com/realm/realm-core/issues/7422
-      test('Map inside map when $managedString can self-assign', () {
+      test('Map inside map, when $managedString can self-assign', () {
         final realm = getMixedRealm();
         final originalMap = {
           'a': 5,
-          'b': {'foo': 'bar'}
+          'b': {'foo': 'bar'},
         };
         final obj = ObjectWithRealmValue(ObjectId(), oneAny: RealmValue.from(originalMap));
         if (isManaged) {
@@ -686,14 +689,16 @@ void main() {
         expectMatches(obj.oneAny, originalMap);
       }, skip: true);
 
-      test('List inside list when $managedString can be reassigned', () {
+      test('List inside list, when $managedString can be reassigned', () {
         final realm = getMixedRealm();
-        final obj = ObjectWithRealmValue(ObjectId(),
-            oneAny: RealmValue.from([
-              true,
-              ['foo'],
-              5.3
-            ]));
+        final obj = ObjectWithRealmValue(
+          ObjectId(),
+          oneAny: RealmValue.from([
+            true,
+            ['foo'],
+            5.3,
+          ]),
+        );
         if (isManaged) {
           realm.write(() => realm.add(obj));
         }
@@ -706,7 +711,7 @@ void main() {
         expectMatches(obj.oneAny, [
           true,
           [5, true],
-          5.3
+          5.3,
         ]);
 
         writeIfNecessary(realm, () {
@@ -717,17 +722,17 @@ void main() {
           true,
           [5, true],
           5.3,
-          [5, true]
+          [5, true],
         ]);
       });
 
       // TODO: Self-assignment - this doesn't work due to https://github.com/realm/realm-core/issues/7422
-      test('List inside list when $managedString can self-assign', () {
+      test('List inside list, when $managedString can self-assign', () {
         final realm = getMixedRealm();
         final originalList = [
           true,
           ['foo'],
-          5.3
+          5.3,
         ];
         final obj = ObjectWithRealmValue(ObjectId(), oneAny: RealmValue.from(originalList));
         if (isManaged) {
@@ -744,13 +749,15 @@ void main() {
         expectMatches(obj.oneAny, originalList);
       }, skip: true);
 
-      test('List inside map when $managedString can be reassigned', () {
+      test('List inside map, when $managedString can be reassigned', () {
         final realm = getMixedRealm();
-        final obj = ObjectWithRealmValue(ObjectId(),
-            oneAny: RealmValue.from({
-              'a': 5,
-              'b': ['foo']
-            }));
+        final obj = ObjectWithRealmValue(
+          ObjectId(),
+          oneAny: RealmValue.from({
+            'a': 5,
+            'b': ['foo'],
+          }),
+        );
 
         if (isManaged) {
           realm.write(() => realm.add(obj));
@@ -763,7 +770,7 @@ void main() {
         writeIfNecessary(realm, () => map['b'] = RealmValue.from([999, true]));
         expectMatches(obj.oneAny, {
           'a': 5,
-          'b': [999, true]
+          'b': [999, true],
         });
 
         writeIfNecessary(realm, () {
@@ -773,16 +780,16 @@ void main() {
         expectMatches(obj.oneAny, {
           'a': 5,
           'b': [999, true],
-          'c': [999, true]
+          'c': [999, true],
         });
       });
 
       // TODO: Self-assignment - this doesn't work due to https://github.com/realm/realm-core/issues/7422
-      test('List inside map when $managedString can self-assign', () {
+      test('List inside map, when $managedString can self-assign', () {
         final realm = getMixedRealm();
         final originalMap = {
           'a': 5,
-          'b': ['foo']
+          'b': ['foo'],
         };
         final obj = ObjectWithRealmValue(ObjectId(), oneAny: RealmValue.from(originalMap));
 
@@ -810,14 +817,14 @@ void main() {
               '2_list': [
                 'bla bla',
                 {
-                  '3_dict': {'4_string': 'abc'}
-                }
-              ]
-            }
-          }
+                  '3_dict': {'4_string': 'abc'},
+                },
+              ],
+            },
+          },
         ];
 
-        test('RealmValue when $managedString can store complex struct', () {
+        test('RealmValue, when $managedString can store complex struct', () {
           final realm = getMixedRealm();
           final rv = persistIfNecessary(RealmValue.from(originalList), realm);
 
@@ -835,11 +842,11 @@ void main() {
                 '2_list': [
                   'bla bla',
                   {
-                    '3_dict': {'4_string': 'abc'}
-                  }
-                ]
-              }
-            }
+                    '3_dict': {'4_string': 'abc'},
+                  },
+                ],
+              },
+            },
           ]);
 
           writeIfNecessary(realm, () {
@@ -850,18 +857,18 @@ void main() {
 
           expectMatches(rv, [
             {'1_int': 5, '1_double': 5.5},
-            true
+            true,
           ]);
         });
 
-        test('RealmValue list when $managedString can remove nested collections', () {
+        test('RealmValue list, when $managedString can remove nested collections', () {
           final realm = getMixedRealm();
 
           final listWithMap = [
             {
               '1_map': {'2_string': 'map value'},
-              '1_list': ['list value']
-            }
+              '1_list': ['list value'],
+            },
           ];
           final rv = persistIfNecessary(RealmValue.from(listWithMap), realm);
 
@@ -875,14 +882,14 @@ void main() {
           expect(rv.asList()[0].asMap().isEmpty, true);
         });
 
-        test('RealmValue map when $managedString can remove nested collections', () {
+        test('RealmValue map, when $managedString can remove nested collections', () {
           final realm = getMixedRealm();
 
           final mapWithMap = {
             '1_map': {
               '2_map': {'3_string': 'map value'},
-              '2_list': ['list value']
-            }
+              '2_list': ['list value'],
+            },
           };
           final rv = persistIfNecessary(RealmValue.from(mapWithMap), realm);
 
@@ -1097,7 +1104,7 @@ void main() {
       expect(rv.asList() == list, true);
     });
 
-    test('List in RealmValue when managed is different instance', () {
+    test('List in RealmValue, when managed is different instance', () {
       final list = [RealmValue.bool(true), RealmValue.string('abc')];
       final rv = RealmValue.list(list);
       final realm = getMixedRealm();
@@ -1105,13 +1112,13 @@ void main() {
       expect(identical(obj.oneAny.asList(), list), false);
     });
 
-    test('Map in RealmValue when unmanaged is equal to original map', () {
+    test('Map in RealmValue, when unmanaged is equal to original map', () {
       final map = {'bool': RealmValue.bool(true), 'str': RealmValue.string('abc')};
       final rv = RealmValue.map(map);
       expect(rv.asMap() == map, true);
     });
 
-    test('Map in RealmValue when managed is different instance', () {
+    test('Map in RealmValue, when managed is different instance', () {
       final map = {'bool': RealmValue.bool(true), 'str': RealmValue.string('abc')};
       final rv = RealmValue.map(map);
       final realm = getMixedRealm();
@@ -1121,14 +1128,16 @@ void main() {
 
     test('Notifications', () async {
       final realm = getMixedRealm();
-      final obj = ObjectWithRealmValue(ObjectId(),
-          oneAny: RealmValue.from([
-            5,
-            {
-              'string': 'bar',
-              'list': [10]
-            }
-          ]));
+      final obj = ObjectWithRealmValue(
+        ObjectId(),
+        oneAny: RealmValue.from([
+          5,
+          {
+            'string': 'bar',
+            'list': [10],
+          },
+        ]),
+      );
 
       realm.write(() {
         realm.add(obj);
@@ -1275,29 +1284,41 @@ void main() {
       late ObjectWithRealmValue third;
 
       realm.write(() {
-        first = realm.add(ObjectWithRealmValue(ObjectId(),
+        first = realm.add(
+          ObjectWithRealmValue(
+            ObjectId(),
             oneAny: RealmValue.from([
               1,
               'a',
-              {'foo': 'bar'}
-            ])));
+              {'foo': 'bar'},
+            ]),
+          ),
+        );
 
-        second = realm.add(ObjectWithRealmValue(ObjectId(),
+        second = realm.add(
+          ObjectWithRealmValue(
+            ObjectId(),
             oneAny: RealmValue.from([
               2,
-              {'foo': 'baz'}
-            ])));
+              {'foo': 'baz'},
+            ]),
+          ),
+        );
 
-        third = realm.add(ObjectWithRealmValue(ObjectId(),
+        third = realm.add(
+          ObjectWithRealmValue(
+            ObjectId(),
             oneAny: RealmValue.from([
               3,
               'c',
               {
                 'foo': {'child': 5},
-                'bar': 10
+                'bar': 10,
               },
-              3.4
-            ])));
+              3.4,
+            ]),
+          ),
+        );
       });
 
       final listElementQuery = realm.query<ObjectWithRealmValue>('oneAny[0] < 3');

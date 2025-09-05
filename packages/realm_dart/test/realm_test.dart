@@ -85,7 +85,7 @@ void main() {
     expect(realm.schema, realm1.schema);
   });
 
-  test('Realm add throws when no write transaction', () {
+  test('Realm add throws, when no write transaction', () {
     final config = Configuration.local([Car.schema]);
     var realm = getRealm(config);
     final car = Car('');
@@ -142,11 +142,7 @@ void main() {
     final config = Configuration.local([Car.schema]);
     final realm = getRealm(config);
 
-    final cars = [
-      Car('Mercedes'),
-      Car('Volkswagen'),
-      Car('Tesla'),
-    ];
+    final cars = [Car('Mercedes'), Car('Volkswagen'), Car('Tesla')];
 
     realm.write(() {
       realm.addAll(cars);
@@ -282,9 +278,11 @@ void main() {
   test('Realm query', () {
     final config = Configuration.local([Car.schema]);
     var realm = getRealm(config);
-    realm.write(() => realm
-      ..add(Car("Audi"))
-      ..add(Car("Tesla")));
+    realm.write(
+      () => realm
+        ..add(Car("Audi"))
+        ..add(Car("Tesla")),
+    );
     final cars = realm.query<Car>('make == "Tesla"');
     expect(cars.length, 1);
     expect(cars[0].make, "Tesla");
@@ -293,9 +291,11 @@ void main() {
   test('Realm query with parameter', () {
     final config = Configuration.local([Car.schema]);
     var realm = getRealm(config);
-    realm.write(() => realm
-      ..add(Car("Audi"))
-      ..add(Car("Tesla")));
+    realm.write(
+      () => realm
+        ..add(Car("Audi"))
+        ..add(Car("Tesla")),
+    );
     final cars = realm.query<Car>(r'make == $0', ['Tesla']);
     expect(cars.length, 1);
     expect(cars[0].make, "Tesla");
@@ -311,10 +311,12 @@ void main() {
     final t2 = Team("A2", players: [p2]);
     final t3 = Team("B1", players: [p1, p2]);
 
-    realm.write(() => realm
-      ..add(t1)
-      ..add(t2)
-      ..add(t3));
+    realm.write(
+      () => realm
+        ..add(t1)
+        ..add(t2)
+        ..add(t3),
+    );
 
     expect(t1.players, [p1]);
     expect(t2.players, [p2]);
@@ -387,11 +389,7 @@ void main() {
     realm.write(() => realm.add(team));
 
     //Add players to the team
-    final newPlayers = [
-      Person("Michael Schumacher"),
-      Person("Sebastian Vettel"),
-      Person("Kimi Räikkönen"),
-    ];
+    final newPlayers = [Person("Michael Schumacher"), Person("Sebastian Vettel"), Person("Kimi Räikkönen")];
     realm.write(() => team.players.addAll(newPlayers));
 
     //Ensure the team exists in realm
@@ -424,11 +422,7 @@ void main() {
     });
 
     //Create common players list for both teams
-    final newPlayers = [
-      Person("Michael Schumacher"),
-      Person("Sebastian Vettel"),
-      Person("Kimi Räikkönen"),
-    ];
+    final newPlayers = [Person("Michael Schumacher"), Person("Sebastian Vettel"), Person("Kimi Räikkönen")];
     realm.write(() {
       teamOne.players.addAll(newPlayers);
       teamTwo.players.addAll(newPlayers);
@@ -658,12 +652,7 @@ void main() {
     }
 
     // In 99, dan is not invited
-    final partyOf99 = Party(
-      1999,
-      host: bobAgain,
-      guests: everyOne.except(bobAgain).except(danAgain),
-      previous: partyOf92,
-    );
+    final partyOf99 = Party(1999, host: bobAgain, guests: everyOne.except(bobAgain).except(danAgain), previous: partyOf92);
 
     // Cannot just add the party of 99, as it transitively updates a lot of existing objects
     //expect(() => realm.write(() => realm.add(partyOf99)), throwsA(TypeMatcher<RealmException>()));
@@ -783,8 +772,8 @@ void main() {
     final realm = getRealm(Configuration.local([When.schema]));
     tz.initializeTimeZones();
 
-    final cph = tz.getLocation('Europe/Copenhagen');
-    final now = tz.TZDateTime.now(cph);
+    final berlin = tz.getLocation('Europe/Berlin');
+    final now = tz.TZDateTime.now(berlin);
     final when = newWhen(now);
 
     realm.write(() => realm.add(when));
@@ -794,14 +783,16 @@ void main() {
     expect(stored, now);
     expect(stored.timeZone, now.timeZone);
     expect(stored.location, now.location);
-    expect(stored.location.name, 'Europe/Copenhagen');
+    expect(stored.location.name, 'Europe/Berlin');
   });
 
   test('Realm.add with frozen object argument throws', () {
     final realm = getRealm(Configuration.local([Person.schema]));
-    final frozenPeter = freezeObject(realm.write(() {
-      return realm.add(Person('Peter'));
-    }));
+    final frozenPeter = freezeObject(
+      realm.write(() {
+        return realm.add(Person('Peter'));
+      }),
+    );
 
     realm.write(() {
       expect(() => realm.add(frozenPeter), throws<RealmError>('Cannot add object to Realm because the object is managed by a frozen Realm'));
@@ -810,9 +801,11 @@ void main() {
 
   test('Realm.delete frozen object throws', () {
     final realm = getRealm(Configuration.local([Person.schema]));
-    final frozenPeter = freezeObject(realm.write(() {
-      return realm.add(Person('Peter'));
-    }));
+    final frozenPeter = freezeObject(
+      realm.write(() {
+        return realm.add(Person('Peter'));
+      }),
+    );
 
     realm.write(() {
       expect(() => realm.delete(frozenPeter), throws<RealmError>('Cannot delete object from Realm because the object is managed by a frozen Realm'));
@@ -862,7 +855,9 @@ void main() {
 
     realm.write(() {
       expect(
-          () => realm.deleteMany([peter, frozenPeter]), throws<RealmError>('Cannot delete object from Realm because the object is managed by a frozen Realm'));
+        () => realm.deleteMany([peter, frozenPeter]),
+        throws<RealmError>('Cannot delete object from Realm because the object is managed by a frozen Realm'),
+      );
     });
   });
 
@@ -904,7 +899,9 @@ void main() {
 
     otherRealm.write(() {
       expect(
-          () => otherRealm.deleteMany(people), throws<RealmError>('Cannot delete objects from Realm because the object is managed by another Realm instance'));
+        () => otherRealm.deleteMany(people),
+        throws<RealmError>('Cannot delete objects from Realm because the object is managed by another Realm instance'),
+      );
     });
   });
 
@@ -917,8 +914,10 @@ void main() {
     });
 
     otherRealm.write(() {
-      expect(() => otherRealm.deleteMany(team.players),
-          throws<RealmError>('Cannot delete objects from Realm because the object is managed by another Realm instance'));
+      expect(
+        () => otherRealm.deleteMany(team.players),
+        throws<RealmError>('Cannot delete objects from Realm because the object is managed by another Realm instance'),
+      );
     });
   });
 
@@ -932,7 +931,9 @@ void main() {
 
     otherRealm.write(() {
       expect(
-          () => otherRealm.deleteMany([peter]), throws<RealmError>('Cannot delete object from Realm because the object is managed by another Realm instance'));
+        () => otherRealm.deleteMany([peter]),
+        throws<RealmError>('Cannot delete object from Realm because the object is managed by another Realm instance'),
+      );
     });
   });
 
@@ -1105,9 +1106,11 @@ void main() {
     final realm = getRealm(Configuration.local([Person.schema]));
 
     for (var i = 0; i < 5; i++) {
-      futures.add(realm.writeAsync(() {
-        acquisitionOrder.add(i);
-      }));
+      futures.add(
+        realm.writeAsync(() {
+          acquisitionOrder.add(i);
+        }),
+      );
     }
 
     await Future.wait(futures);
@@ -1140,7 +1143,7 @@ void main() {
     t1.rollback();
   });
 
-  test('Realm.beginWriteAsync when canceled after write lock obtained is a no-op', () async {
+  test('Realm.beginWriteAsync, when canceled after write lock obtained is a no-op', () async {
     final realm = getRealm(Configuration.local([Person.schema]));
 
     final token = CancellationToken();
@@ -1153,17 +1156,18 @@ void main() {
     transaction.rollback();
   });
 
-  test('Realm.writeAsync when canceled after write lock obtained rolls it back', () async {
+  test('Realm.writeAsync, when canceled after write lock obtained rolls it back', () async {
     final realm = getRealm(Configuration.local([Person.schema]));
 
     final token = CancellationToken();
     await expectLater(
-        realm.writeAsync(() {
-          realm.add(Person('A'));
-          token.cancel();
-          realm.add(Person('B'));
-        }, token),
-        throwsA(isA<CancelledException>()));
+      realm.writeAsync(() {
+        realm.add(Person('A'));
+        token.cancel();
+        realm.add(Person('B'));
+      }, token),
+      throwsA(isA<CancelledException>()),
+    );
 
     expect(realm.all<Person>().length, 0);
     expect(realm.isInTransaction, false);
@@ -1330,8 +1334,10 @@ void main() {
   test('Realm writeCopy local to existing file', () {
     final config = Configuration.local([Car.schema]);
     final realm = getRealm(config);
-    expect(() => realm.writeCopy(config),
-        throws<RealmException>(Platform.isWindows ? "The file exists" : "Failed to open file at path '${config.path}': File exists"));
+    expect(
+      () => realm.writeCopy(config),
+      throws<RealmException>(Platform.isWindows ? "The file exists" : "Failed to open file at path '${config.path}': File exists"),
+    );
   });
 
   test('Realm writeCopy Local to not existing directory', () {
@@ -1339,9 +1345,11 @@ void main() {
     final realm = getRealm(config);
     final path = '';
     expect(
-        () => realm.writeCopy(Configuration.local([Car.schema], path: path)),
-        throws<RealmException>(
-            Platform.isWindows ? "The system cannot find the path specified." : "Failed to open file at path '$path': parent directory does not exist"));
+      () => realm.writeCopy(Configuration.local([Car.schema], path: path)),
+      throws<RealmException>(
+        Platform.isWindows ? "The system cannot find the path specified." : "Failed to open file at path '$path': parent directory does not exist",
+      ),
+    );
   });
 
   test('Realm writeCopy Local->Local inside a write block is not allowed.', () {
@@ -1358,12 +1366,18 @@ void main() {
   test('Realm writeCopy Local->Local during migration is not allowed', () {
     getRealm(Configuration.local([Car.schema], schemaVersion: 1)).close();
 
-    final configWithMigrationCallback = Configuration.local([Car.schema], schemaVersion: 2, migrationCallback: (migration, oldVersion) {
-      final pathCopy = migration.newRealm.config.path.replaceFirst(p.basenameWithoutExtension(migration.newRealm.config.path), generateRandomString(10));
-      final configCopy = Configuration.local([Car.schema], path: pathCopy);
-      expect(
-          () => migration.newRealm.writeCopy(configCopy), throws<RealmError>("Copying a Realm is not allowed within a write transaction or during migration."));
-    });
+    final configWithMigrationCallback = Configuration.local(
+      [Car.schema],
+      schemaVersion: 2,
+      migrationCallback: (migration, oldVersion) {
+        final pathCopy = migration.newRealm.config.path.replaceFirst(p.basenameWithoutExtension(migration.newRealm.config.path), generateRandomString(10));
+        final configCopy = Configuration.local([Car.schema], path: pathCopy);
+        expect(
+          () => migration.newRealm.writeCopy(configCopy),
+          throws<RealmError>("Copying a Realm is not allowed within a write transaction or during migration."),
+        );
+      },
+    );
     getRealm(configWithMigrationCallback);
   });
 
@@ -1580,10 +1594,7 @@ void openEncryptedRealm(List<int>? encryptionKey, List<int>? decryptionKey, {voi
     final decryptedRealm = getRealm(config2);
     expect(decryptedRealm.isClosed, false);
   } else {
-    expect(
-      () => getRealm(config2),
-      throws<RealmException>(realm.isClosed ? "Realm file decryption failed" : "already opened with a different encryption key"),
-    );
+    expect(() => getRealm(config2), throws<RealmException>(realm.isClosed ? "Realm file decryption failed" : "already opened with a different encryption key"));
   }
 }
 

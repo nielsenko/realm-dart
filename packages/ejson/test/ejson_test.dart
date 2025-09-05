@@ -18,30 +18,12 @@ bool _canDecodeAny<T>([Type? type]) {
   commonDecoders; // ensure common types has been registered;
   type ??= T;
   if (type.isNullable) return _canDecodeAny(type.base);
-  if ([
-    dynamic,
-    Null,
-    Object,
-    bool,
-    double,
-    int,
-    num,
-    String,
-    DateTime,
-    BsonKey,
-    Symbol,
-    ObjectId,
-    Uuid,
-    Uint8List,
-  ].contains(type)) return true;
-  if ([
-    List,
-    Set,
-    Map,
-    DBRef,
-    Undefined,
-    UndefinedOr,
-  ].contains(type.base)) return type.args.every(_canDecodeAny);
+  if ([dynamic, Null, Object, bool, double, int, num, String, DateTime, BsonKey, Symbol, ObjectId, Uuid, Uint8List].contains(type)) {
+    return true;
+  }
+  if ([List, Set, Map, DBRef, Undefined, UndefinedOr].contains(type.base)) {
+    return type.args.every(_canDecodeAny);
+  }
   return false;
 }
 
@@ -132,7 +114,9 @@ void main() {
 
   test('missing encoder', () {
     expect(
-        () => toEJson(Dummy()), throwsA(isA<MissingEncoder>().having((e) => e.toString(), 'toString', "Missing encoder for type Dummy (Instance of 'Dummy')")));
+      () => toEJson(Dummy()),
+      throwsA(isA<MissingEncoder>().having((e) => e.toString(), 'toString', "Missing encoder for type Dummy (Instance of 'Dummy')")),
+    );
   });
 
   group('invalid', () {
@@ -233,7 +217,7 @@ void main() {
           time,
           canonical
               ? {
-                  '\$date': {'\$numberLong': time.millisecondsSinceEpoch.toString()}
+                  '\$date': {'\$numberLong': time.millisecondsSinceEpoch.toString()},
                 }
               : {'\$date': time.toIso8601String()},
         );
@@ -254,19 +238,19 @@ void main() {
         _testCase(ObjectId.fromValues(1, 2, 3), {'\$oid': '000000000000000002000003'});
         final uuid = Uuid.v4();
         _testCase(uuid, {
-          '\$binary': {'base64': base64.encode(uuid.bytes), 'subType': '04'}
+          '\$binary': {'base64': base64.encode(uuid.bytes), 'subType': '04'},
         });
         final uint8list = Uint8List.fromList(List.generate(32, (i) => i));
         _testCase(uint8list, {
-          '\$binary': {'base64': base64.encode(uint8list), 'subType': '00'}
+          '\$binary': {'base64': base64.encode(uint8list), 'subType': '00'},
         });
         // a complex nested generic type
         _testCase<Map<String, Map<String, List<num?>?>>>(
           {
             'a': {
               'b': null,
-              'c': [1, 1.1, null]
-            }
+              'c': [1, 1.1, null],
+            },
           },
           canonical
               ? {
@@ -275,15 +259,15 @@ void main() {
                     'c': [
                       {'\$numberInt': '1'},
                       {'\$numberDouble': '1.1'},
-                      null
-                    ]
-                  }
+                      null,
+                    ],
+                  },
                 }
               : {
                   'a': {
                     'b': null,
-                    'c': [1, 1.1, null]
-                  }
+                    'c': [1, 1.1, null],
+                  },
                 },
         );
 
@@ -297,15 +281,9 @@ void main() {
           x = Defined(null);
           expect(x.toEJson(), isNull);
 
-          expect(
-            fromEJson<UndefinedOr<int?>>({'\$undefined': 1}),
-            const Undefined<int?>(),
-          );
+          expect(fromEJson<UndefinedOr<int?>>({'\$undefined': 1}), const Undefined<int?>());
 
-          expect(
-            fromEJson<UndefinedOr<int?>>({'\$numberInt': '42'}),
-            Defined<int?>(42),
-          );
+          expect(fromEJson<UndefinedOr<int?>>({'\$numberInt': '42'}), Defined<int?>(42));
 
           expect(fromEJson<UndefinedOr<int?>>(null), Defined<int?>(null));
         });
@@ -319,12 +297,7 @@ void main() {
       group('custom types', () {
         registerPerson();
 
-        final person = Person(
-          'John',
-          DateTime(1974),
-          80000,
-          spouse: Person('Jane', DateTime(1973), 90000),
-        );
+        final person = Person('John', DateTime(1974), 80000, spouse: Person('Jane', DateTime(1973), 90000));
 
         _testCase(
           person,
@@ -332,17 +305,17 @@ void main() {
               ? {
                   'name': 'John',
                   'birthDate': {
-                    '\$date': {'\$numberLong': person.birthDate.millisecondsSinceEpoch.toString()}
+                    '\$date': {'\$numberLong': person.birthDate.millisecondsSinceEpoch.toString()},
                   },
                   'income': {'\$numberDouble': '80000.0'},
                   'spouse': {
                     'name': 'Jane',
                     'birthDate': {
-                      '\$date': {'\$numberLong': person.spouse!.birthDate.millisecondsSinceEpoch.toString()}
+                      '\$date': {'\$numberLong': person.spouse!.birthDate.millisecondsSinceEpoch.toString()},
                     },
                     'income': {'\$numberDouble': '90000.0'},
-                    'spouse': null
-                  }
+                    'spouse': null,
+                  },
                 }
               : {
                   'name': 'John',
@@ -352,8 +325,8 @@ void main() {
                     'name': 'Jane',
                     'birthDate': {'\$date': '1973-01-01T00:00:00.000'},
                     'income': 90000.0,
-                    'spouse': null
-                  }
+                    'spouse': null,
+                  },
                 },
         );
         _testCase<Map<String, Person>>(
@@ -363,18 +336,18 @@ void main() {
                   'a': {
                     'name': 'John',
                     'birthDate': {
-                      '\$date': {'\$numberLong': person.birthDate.millisecondsSinceEpoch.toString()}
+                      '\$date': {'\$numberLong': person.birthDate.millisecondsSinceEpoch.toString()},
                     },
                     'income': {'\$numberDouble': '80000.0'},
                     'spouse': {
                       'name': 'Jane',
                       'birthDate': {
-                        '\$date': {'\$numberLong': person.spouse!.birthDate.millisecondsSinceEpoch.toString()}
+                        '\$date': {'\$numberLong': person.spouse!.birthDate.millisecondsSinceEpoch.toString()},
                       },
                       'income': {'\$numberDouble': '90000.0'},
-                      'spouse': null
-                    }
-                  }
+                      'spouse': null,
+                    },
+                  },
                 }
               : {
                   'a': {
@@ -385,9 +358,9 @@ void main() {
                       'name': 'Jane',
                       'birthDate': {'\$date': '1973-01-01T00:00:00.000'},
                       'income': 90000.0,
-                      'spouse': null
-                    }
-                  }
+                      'spouse': null,
+                    },
+                  },
                 },
         );
       });

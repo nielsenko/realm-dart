@@ -7,3 +7,6 @@
 /zig-out/
 # Zig package cache (restored from build.zig.zon hashes)
 /zig-pkg/
+
+# test artifacts (tests run in the package root)
+default.realm*

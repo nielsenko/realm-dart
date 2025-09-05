@@ -5,10 +5,11 @@ publish_to: none
 
 environment:
   sdk: ^3.6.0
+resolution: workspace
 
 dependencies:
   realm_dart:
     path: ../
 
 dev_dependencies:
-  lints: ^5.1.1
+  lints: ^6.0.0

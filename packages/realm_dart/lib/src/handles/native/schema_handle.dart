@@ -4,6 +4,7 @@
 import 'dart:ffi';
 
 import 'ffi.dart';
+
 import 'package:realm_common/realm_common.dart';
 
 import '../../configuration.dart';
@@ -49,8 +50,8 @@ class SchemaHandle extends HandleBase<realm_schema> implements intf.SchemaHandle
           propInfo.public_name = (schemaProperty.mapTo != schemaProperty.name ? schemaProperty.name : '').toCharPtr(arena);
           propInfo.link_target = (schemaProperty.linkTarget ?? "").toCharPtr(arena);
           propInfo.link_origin_property_name = (schemaProperty.linkOriginProperty ?? "").toCharPtr(arena);
-          propInfo.type = schemaProperty.propertyType.index;
-          propInfo.collection_type = schemaProperty.collectionType.index;
+          propInfo.typeAsInt = schemaProperty.propertyType.index;
+          propInfo.collection_typeAsInt = schemaProperty.collectionType.index;
           propInfo.flags = realm_property_flags.RLM_PROPERTY_NORMAL.value;
 
           if (schemaProperty.optional) {

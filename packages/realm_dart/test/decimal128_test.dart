@@ -20,18 +20,15 @@ void repeat(dynamic Function() body, [int times = defaultTimes]) {
 void repeatTest(String description, dynamic Function(Decimal128 x, int xInt, Decimal128 y, int yInt) body, [int times = defaultTimes]) {
   final random = Random(42); // use a fixed seed to make tests deterministic
   test(description, () {
-    repeat(
-      () {
-        // 2^31 ensures x * y doesn't overflow
-        var xInt = random.nextInt(1 << 31);
-        final x = Decimal128.fromInt(xInt);
-        var yInt = random.nextInt(1 << 31);
-        final y = Decimal128.fromInt(yInt);
+    repeat(() {
+      // 2^31 ensures x * y doesn't overflow
+      var xInt = random.nextInt(1 << 31);
+      final x = Decimal128.fromInt(xInt);
+      var yInt = random.nextInt(1 << 31);
+      final y = Decimal128.fromInt(yInt);
 
-        body(x, xInt, y, yInt);
-      },
-      times,
-    );
+      body(x, xInt, y, yInt);
+    }, times);
   });
 }
 
@@ -54,7 +51,7 @@ void main() {
     expect(double.nan, isNot(greaterThan(0.0)));
     expect(double.nan, isNot(greaterThanOrEqualTo(0.0)));
 
-    expect(double.nan, isNot(double.nan));
+    expect(double.nan == double.nan, isFalse);
     expect(double.nan, isNot(lessThan(double.nan)));
     expect(double.nan, isNot(lessThanOrEqualTo(double.nan)));
     expect(double.nan, isNot(greaterThan(double.nan)));
@@ -124,14 +121,7 @@ void main() {
   });
 
   test('Decimal128.parse throws on invalid input', () {
-    final inputs = [
-      '',
-      ' 1',
-      'a',
-      '1a',
-      '1.2.3',
-      '1,0',
-    ];
+    final inputs = ['', ' 1', 'a', '1a', '1.2.3', '1,0'];
     for (var input in inputs) {
       expect(() => Decimal128.parse(input), throwsFormatException);
     }

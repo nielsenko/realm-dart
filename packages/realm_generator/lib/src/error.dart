@@ -24,12 +24,12 @@ class RealmInvalidGenerationSourceError extends InvalidGenerationSourceError {
     bool? color,
     this.primaryLabel,
     Map<FileSpan, String> secondarySpans = const {},
-  })  : primarySpan = primarySpan ?? element.span,
-        secondarySpans = {...secondarySpans},
-        color = color ?? session.color,
-        super(element: element) {
+  }) : primarySpan = primarySpan ?? element.span,
+       secondarySpans = {...secondarySpans},
+       color = color ?? session.color,
+       super(element: element) {
     if (element is FieldElement || element is ConstructorElement) {
-      final classElement = element.enclosingElement3!;
+      final classElement = element.enclosingElement!;
       this.secondarySpans.addAll({
         classElement.span!: "in realm model for '${session.mapping.entries.where((e) => e.value == classElement).singleOrNull?.key}'",
       });
@@ -40,12 +40,12 @@ class RealmInvalidGenerationSourceError extends InvalidGenerationSourceError {
   String toString() => format(color);
 
   String format([bool color = false]) => formatSpans(
-        message,
-        element: element!, // is required, so safe
-        todo: todo,
-        primaryLabel: primaryLabel,
-        primarySpan: primarySpan,
-        secondarySpans: secondarySpans,
-        color: color,
-      );
+    message,
+    element: element!, // is required, so safe
+    todo: todo,
+    primaryLabel: primaryLabel,
+    primarySpan: primarySpan,
+    secondarySpans: secondarySpans,
+    color: color,
+  );
 }

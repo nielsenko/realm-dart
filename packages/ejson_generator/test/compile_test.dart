@@ -1,17 +1,18 @@
+@Timeout.none
+library;
+
 import 'dart:io';
 
-import 'package:build_test/build_test.dart';
 import 'package:dart_style/dart_style.dart';
-import 'package:ejson_generator/ejson_generator.dart';
+import 'package:ejson_generator/src/builder.dart';
 import 'package:source_gen/source_gen.dart';
 import 'package:test/test.dart';
 import 'package:meta/meta.dart';
 import 'package:pub_semver/pub_semver.dart';
 
-final _formatter = DartFormatter(
-  languageVersion: Version(3, 7, 0),
-  lineEnding: '\n',
-);
+import 'test_builder.dart';
+
+final _formatter = DartFormatter(languageVersion: Version(3, 7, 0), lineEnding: '\n');
 final _tag = RegExp(r'// \*.*\n// EJsonGenerator\n// \*.*');
 
 @isTest
@@ -28,27 +29,16 @@ void testCompile(String description, dynamic source, dynamic matcher, {dynamic s
 
   if (matcher is! Matcher) throw ArgumentError.value(matcher, 'matcher');
 
-  test(description, () {
-    generate() async {
-      final writer = InMemoryAssetWriter();
-      await testBuilder(
-        getEJsonGenerator(),
-        {'pkg|source.dart': source as Object},
-        writer: writer,
-        reader: await PackageAssetReader.currentIsolate(),
-      );
-      return _formatter.format(String.fromCharCodes(writer.assets.entries.single.value));
-    }
+  test(description, () async {
+    Future<String> generate() async => await testBuilder(getEJsonGenerator(), source as String) ?? '';
 
-    expect(generate(), matcher);
+    await expectLater(generate(), matcher);
   }, skip: skip);
 }
 
 Future<void> main() async {
   group('user errors', () {
-    testCompile(
-      'two annotated ctors',
-      r'''
+    testCompile('two annotated ctors', r'''
 import 'package:ejson/ejson.dart';
 import 'package:ejson_annotation/ejson_annotation.dart';
 
@@ -59,16 +49,8 @@ class TwoAnnotatedCtors {
   @ejson
   TwoAnnotatedCtors.named(this.i);
 }
-''',
-      throwsA(isA<InvalidGenerationSourceError>().having(
-        (e) => e.message,
-        'message',
-        'Too many annotated constructors',
-      )),
-    );
-    testCompile(
-      'missing getter',
-      r'''
+''', throwsA(isA<InvalidGenerationSourceError>().having((e) => e.message, 'message', 'Too many annotated constructors')));
+    testCompile('missing getter', r'''
 import 'package:ejson/ejson.dart';
 import 'package:ejson_annotation/ejson_annotation.dart';
 
@@ -77,13 +59,9 @@ class MissingGetter {
   @ejson
   MissingGetter(int i) : _i = i;
 }
-''',
-      throwsA(isA<InvalidGenerationSourceError>()),
-    );
+''', throwsA(isA<InvalidGenerationSourceError>()));
 
-    testCompile(
-      'mismatching getter',
-      r'''
+    testCompile('mismatching getter', r'''
 import 'package:ejson/ejson.dart';
 import 'package:ejson_annotation/ejson_annotation.dart';
 
@@ -93,15 +71,11 @@ class MismatchingGetter {
   @ejson
   MismatchingGetter(int i) : _i = i;
 }
-''',
-      throwsA(isA<InvalidGenerationSourceError>()),
-    );
+''', throwsA(isA<InvalidGenerationSourceError>()));
   });
 
   group('good', () {
-    testCompile(
-      'private field',
-      r'''
+    testCompile('private field', r'''
 import 'package:ejson/ejson.dart';
 import 'package:ejson_annotation/ejson_annotation.dart';
 
@@ -110,9 +84,7 @@ class PrivateFieldIsOkay {
   @ejson
   PrivateFieldIsOkay(this._i);
 }
-''',
-      completes,
-    );
+''', completes);
 
     testCompile(
       'mismatching getter but custom encoder',

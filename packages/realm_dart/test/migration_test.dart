@@ -4,9 +4,11 @@
 // ignore_for_file: unused_local_variable
 
 import 'dart:async';
-import 'package:test/test.dart' hide test, throws;
+
 import 'package:realm_dart/realm.dart';
+
 import 'test.dart';
+
 import 'package:realm_dart/src/results.dart';
 import 'package:realm_dart/src/realm_object.dart';
 import 'package:realm_dart/src/list.dart';
@@ -56,49 +58,65 @@ class _MyObjectWithoutValue {
 void main() {
   setupTests();
 
-  test('Configuration.migrationCallback executed when schema version changes', () {
+  test('Configuration.migrationCallback executed, when schema version changes', () {
     final config1 = Configuration.local([PersonIntName.schema], schemaVersion: 1);
     getRealm(config1).close();
 
     var invoked = false;
-    final config2 = Configuration.local([PersonIntName.schema], schemaVersion: 2, migrationCallback: (migration, oldVersion) {
-      invoked = true;
-      expect(oldVersion, 1);
-    });
+    final config2 = Configuration.local(
+      [PersonIntName.schema],
+      schemaVersion: 2,
+      migrationCallback: (migration, oldVersion) {
+        invoked = true;
+        expect(oldVersion, 1);
+      },
+    );
 
     getRealm(config2);
     expect(invoked, true);
   });
 
-  test('Configuration.migrationCallback executed when schema changes', () {
+  test('Configuration.migrationCallback executed, when schema changes', () {
     final config1 = Configuration.local([PersonIntName.schema], schemaVersion: 1);
     getRealm(config1).close();
 
     var invoked = false;
-    final config2 = Configuration.local([Person.schema], schemaVersion: 2, migrationCallback: (migration, oldVersion) {
-      invoked = true;
-      expect(oldVersion, 1);
-    });
+    final config2 = Configuration.local(
+      [Person.schema],
+      schemaVersion: 2,
+      migrationCallback: (migration, oldVersion) {
+        invoked = true;
+        expect(oldVersion, 1);
+      },
+    );
 
     getRealm(config2);
     expect(invoked, true);
   });
 
-  test('Configuration.migrationCallback not invoked when schemaVersion is the same', () {
+  test('Configuration.migrationCallback not invoked, '
+      'when schemaVersion is the same', () {
     final config1 = Configuration.local([PersonIntName.schema], schemaVersion: 1);
     getRealm(config1).close();
 
     var invoked = false;
     // Keep schema version the same
-    final config2 = Configuration.local([Person.schema], schemaVersion: 1, migrationCallback: (migration, oldVersion) {
-      invoked = true;
-    });
+    final config2 = Configuration.local(
+      [Person.schema],
+      schemaVersion: 1,
+      migrationCallback: (migration, oldVersion) {
+        invoked = true;
+      },
+    );
 
     expect(
-        () => getRealm(config2),
-        throwsA(isA<MigrationRequiredException>()
+      () => getRealm(config2),
+      throwsA(
+        isA<MigrationRequiredException>()
             .having((e) => e.message, 'message', contains('Migration is required due to the following errors'))
-            .having((e) => e.helpLink, 'helpLink', isNotNull)));
+            .having((e) => e.helpLink, 'helpLink', isNotNull),
+      ),
+    );
     expect(invoked, false);
   });
 
@@ -114,19 +132,23 @@ void main() {
 
     v1Realm.close();
 
-    final v2Config = Configuration.local([Person.schema], schemaVersion: 2, migrationCallback: (migration, oldSchemaVersion) {
-      expect(oldSchemaVersion, 1);
+    final v2Config = Configuration.local(
+      [Person.schema],
+      schemaVersion: 2,
+      migrationCallback: (migration, oldSchemaVersion) {
+        expect(oldSchemaVersion, 1);
 
-      final oldPeople = migration.oldRealm.all('Person');
-      final newPeople = migration.newRealm.all<Person>();
+        final oldPeople = migration.oldRealm.all('Person');
+        final newPeople = migration.newRealm.all<Person>();
 
-      for (var i = 0; i < oldPeople.length; i++) {
-        final oldPerson = oldPeople[i];
-        final newPerson = newPeople[i];
+        for (var i = 0; i < oldPeople.length; i++) {
+          final oldPerson = oldPeople[i];
+          final newPerson = newPeople[i];
 
-        newPerson.name = oldPerson.dynamic.get<int>('name').toString();
-      }
-    });
+          newPerson.name = oldPerson.dynamic.get<int>('name').toString();
+        }
+      },
+    );
 
     final v2Realm = getRealm(v2Config);
     final peopleNames = v2Realm.all<Person>().map((e) => e.name);
@@ -146,20 +168,24 @@ void main() {
 
     v1Realm.close();
 
-    final v2Config = Configuration.local([Student.schema, School.schema], schemaVersion: 2, migrationCallback: (migration, oldSchemaVersion) {
-      expect(oldSchemaVersion, 1);
+    final v2Config = Configuration.local(
+      [Student.schema, School.schema],
+      schemaVersion: 2,
+      migrationCallback: (migration, oldSchemaVersion) {
+        expect(oldSchemaVersion, 1);
 
-      // We want to assign numbers in ascending order
-      final oldStudents = migration.oldRealm.all('Student').query('TRUEPREDICATE SORT(name ASC)');
-      final newStudents = migration.newRealm.all<Student>().query('TRUEPREDICATE sort(name ASC)');
+        // We want to assign numbers in ascending order
+        final oldStudents = migration.oldRealm.all('Student').query('TRUEPREDICATE SORT(name ASC)');
+        final newStudents = migration.newRealm.all<Student>().query('TRUEPREDICATE sort(name ASC)');
 
-      for (var i = 0; i < oldStudents.length; i++) {
-        final oldStudent = oldStudents[i];
-        final newStudent = newStudents[i];
+        for (var i = 0; i < oldStudents.length; i++) {
+          final oldStudent = oldStudents[i];
+          final newStudent = newStudents[i];
 
-        newStudent.number = i;
-      }
-    });
+          newStudent.number = i;
+        }
+      },
+    );
 
     final v2Realm = getRealm(v2Config);
     final students = v2Realm.all<Student>().query('TRUEPREDICATE sort(number ASC)');
@@ -186,21 +212,25 @@ void main() {
 
     v1Realm.close();
 
-    final v2Config = Configuration.local([Student.schema, School.schema], schemaVersion: 2, migrationCallback: (migration, oldSchemaVersion) {
-      expect(oldSchemaVersion, 1);
+    final v2Config = Configuration.local(
+      [Student.schema, School.schema],
+      schemaVersion: 2,
+      migrationCallback: (migration, oldSchemaVersion) {
+        expect(oldSchemaVersion, 1);
 
-      final oldStudents = migration.oldRealm.all('Student');
+        final oldStudents = migration.oldRealm.all('Student');
 
-      var number = 0;
-      for (final student in oldStudents) {
-        final newStudent = migration.findInNewRealm<Student>(student);
-        expect(newStudent, isNotNull);
-        expect(newStudent!.name, student.dynamic.get<String>('name'));
-        expect(newStudent.yearOfBirth, student.dynamic.get<int?>('yearOfBirth'));
+        var number = 0;
+        for (final student in oldStudents) {
+          final newStudent = migration.findInNewRealm<Student>(student);
+          expect(newStudent, isNotNull);
+          expect(newStudent!.name, student.dynamic.get<String>('name'));
+          expect(newStudent.yearOfBirth, student.dynamic.get<int?>('yearOfBirth'));
 
-        newStudent.number = number++;
-      }
-    });
+          newStudent.number = number++;
+        }
+      },
+    );
 
     final v2Realm = getRealm(v2Config);
     final studentNumbers = v2Realm.all<Student>().map((e) => e.number);
@@ -220,11 +250,15 @@ void main() {
 
     v1Realm.close();
 
-    final v2Config = Configuration.local([MyObjectWithoutTypo.schema], schemaVersion: 2, migrationCallback: (migration, oldSchemaVersion) {
-      expect(oldSchemaVersion, 1);
+    final v2Config = Configuration.local(
+      [MyObjectWithoutTypo.schema],
+      schemaVersion: 2,
+      migrationCallback: (migration, oldSchemaVersion) {
+        expect(oldSchemaVersion, 1);
 
-      migration.renameProperty('MyObject', 'nmae', 'name');
-    });
+        migration.renameProperty('MyObject', 'nmae', 'name');
+      },
+    );
 
     final v2Realm = getRealm(v2Config);
 
@@ -242,31 +276,47 @@ void main() {
     final v1Realm = getRealm(v1Config);
     v1Realm.close();
 
-    final renameToNonExistentConfig = Configuration.local([MyObjectWithoutTypo.schema], schemaVersion: 2, migrationCallback: (migration, oldSchemaVersion) {
-      expect(oldSchemaVersion, 1);
+    final renameToNonExistentConfig = Configuration.local(
+      [MyObjectWithoutTypo.schema],
+      schemaVersion: 2,
+      migrationCallback: (migration, oldSchemaVersion) {
+        expect(oldSchemaVersion, 1);
 
-      migration.renameProperty('MyObject', 'nmae', 'non-existent');
-    });
+        migration.renameProperty('MyObject', 'nmae', 'non-existent');
+      },
+    );
 
     expect(() => getRealm(renameToNonExistentConfig), throws<RealmException>("Renamed property 'MyObject.non-existent' does not exist"));
 
-    final renameFromNonExistentConfig = Configuration.local([MyObjectWithoutTypo.schema], schemaVersion: 2, migrationCallback: (migration, oldSchemaVersion) {
-      expect(oldSchemaVersion, 1);
+    final renameFromNonExistentConfig = Configuration.local(
+      [MyObjectWithoutTypo.schema],
+      schemaVersion: 2,
+      migrationCallback: (migration, oldSchemaVersion) {
+        expect(oldSchemaVersion, 1);
 
-      migration.renameProperty('MyObject', 'non-existent', 'name');
-    });
+        migration.renameProperty('MyObject', 'non-existent', 'name');
+      },
+    );
 
     expect(
-        () => getRealm(renameFromNonExistentConfig), throws<UserCallbackException>("Cannot rename property 'MyObject.non-existent' because it does not exist"));
+      () => getRealm(renameFromNonExistentConfig),
+      throws<UserCallbackException>("Cannot rename property 'MyObject.non-existent' because it does not exist"),
+    );
 
-    final renameNonExistentClassClass = Configuration.local([MyObjectWithoutTypo.schema], schemaVersion: 2, migrationCallback: (migration, oldSchemaVersion) {
-      expect(oldSchemaVersion, 1);
+    final renameNonExistentClassClass = Configuration.local(
+      [MyObjectWithoutTypo.schema],
+      schemaVersion: 2,
+      migrationCallback: (migration, oldSchemaVersion) {
+        expect(oldSchemaVersion, 1);
 
-      migration.renameProperty('non-existent', 'foo', 'bar');
-    });
+        migration.renameProperty('non-existent', 'foo', 'bar');
+      },
+    );
 
-    expect(() => getRealm(renameNonExistentClassClass),
-        throws<UserCallbackException>("Cannot rename properties for type 'non-existent' because it does not exist"));
+    expect(
+      () => getRealm(renameNonExistentClassClass),
+      throws<UserCallbackException>("Cannot rename properties for type 'non-existent' because it does not exist"),
+    );
   });
 
   test('Migration error in callback gets propagated correctly', () {
@@ -276,14 +326,18 @@ void main() {
 
     final userError = Exception('this is a user error');
 
-    final v2Config = Configuration.local([Person.schema], schemaVersion: 2, migrationCallback: (migration, oldSchemaVersion) {
-      throw userError;
-    });
+    final v2Config = Configuration.local(
+      [Person.schema],
+      schemaVersion: 2,
+      migrationCallback: (migration, oldSchemaVersion) {
+        throw userError;
+      },
+    );
 
     expect(() => getRealm(v2Config), throwsA(isA<UserCallbackException>().having((error) => error.userException, 'userException', userError)));
   });
 
-  test('Migration when type is not removed table remains', () {
+  test('Migration, when type is not removed table remains', () {
     final v1Config = Configuration.local([Person.schema, Dog.schema], schemaVersion: 1);
     final v1Realm = getRealm(v1Config);
     v1Realm.write(() {
@@ -293,13 +347,14 @@ void main() {
 
     v1Realm.close();
 
-    final v2Config = Configuration.local([Person.schema], schemaVersion: 2, migrationCallback: (migration, oldSchemaVersion) {
-      // We remove the Dog type from the list of types, but don't explicitly delete the table.
-      // Core will not remove it automatically, so it will still be there, even if it's invisible
-      // when opening the Realm with a specific schema.
-      expect(migration.oldRealm.schema.length, 2);
-      expect(migration.newRealm.schema.length, 1);
-    });
+    final v2Config = Configuration.local(
+      [Person.schema],
+      schemaVersion: 2,
+      migrationCallback: (migration, oldSchemaVersion) {
+        expect(migration.oldRealm.schema.length, 2);
+        expect(migration.newRealm.schema.length, 1);
+      },
+    );
 
     final v2Realm = getRealm(v2Config);
     expect(v2Realm.schema.length, 1);
@@ -316,7 +371,7 @@ void main() {
     expect(dogs[0].dynamic.get<String>('name'), 'Fido');
   });
 
-  test('Migration when type is removed table is removed as well', () {
+  test('Migration, when type is removed table is removed as well', () {
     final v1Config = Configuration.local([Person.schema, Dog.schema], schemaVersion: 1);
     final v1Realm = getRealm(v1Config);
     v1Realm.write(() {
@@ -327,10 +382,14 @@ void main() {
     v1Realm.close();
 
     // Verify that just removing a type does not actually delete it.
-    final v2Config = Configuration.local([Person.schema], schemaVersion: 2, migrationCallback: (migration, oldSchemaVersion) {
-      expect(migration.oldRealm.schema.length, 2);
-      expect(migration.newRealm.schema.length, 1);
-    });
+    final v2Config = Configuration.local(
+      [Person.schema],
+      schemaVersion: 2,
+      migrationCallback: (migration, oldSchemaVersion) {
+        expect(migration.oldRealm.schema.length, 2);
+        expect(migration.newRealm.schema.length, 1);
+      },
+    );
 
     final v2Realm = getRealm(v2Config);
     expect(v2Realm.schema.length, 1);
@@ -348,13 +407,17 @@ void main() {
 
     // Verify that calling deleteType deletes the table and its data
 
-    final v3Config = Configuration.local([Person.schema], schemaVersion: 3, migrationCallback: ((migration, oldSchemaVersion) {
-      expect(migration.oldRealm.schema.length, 2);
-      expect(migration.newRealm.schema.length, 1);
+    final v3Config = Configuration.local(
+      [Person.schema],
+      schemaVersion: 3,
+      migrationCallback: ((migration, oldSchemaVersion) {
+        expect(migration.oldRealm.schema.length, 2);
+        expect(migration.newRealm.schema.length, 1);
 
-      expect(migration.deleteType('Dog'), true);
-      expect(migration.deleteType('i-dont-exist'), false);
-    }));
+        expect(migration.deleteType('Dog'), true);
+        expect(migration.deleteType('i-dont-exist'), false);
+      }),
+    );
 
     final v3Realm = getRealm(v3Config);
     expect(v3Realm.schema.length, 1);
@@ -369,7 +432,7 @@ void main() {
     expect(() => v3DynamicRealm.dynamic.all('Dog'), throws<RealmError>("Object type Dog not configured in the current Realm's schema"));
   });
 
-  test('Migration when property is removed, column gets removed as well', () {
+  test('Migration, when property is removed, column gets removed as well', () {
     final v1Config = Configuration.local([MyObjectWithoutTypo.schema], schemaVersion: 1);
     final v1Realm = getRealm(v1Config);
     v1Realm.write(() {
@@ -378,10 +441,14 @@ void main() {
 
     v1Realm.close();
 
-    final v2Config = Configuration.local([MyObjectWithoutValue.schema], schemaVersion: 2, migrationCallback: (migration, oldSchemaVersion) {
-      expect(migration.oldRealm.schema.single.length, 2);
-      expect(migration.newRealm.schema.single.length, 1);
-    });
+    final v2Config = Configuration.local(
+      [MyObjectWithoutValue.schema],
+      schemaVersion: 2,
+      migrationCallback: (migration, oldSchemaVersion) {
+        expect(migration.oldRealm.schema.single.length, 2);
+        expect(migration.newRealm.schema.single.length, 1);
+      },
+    );
 
     final v2Realm = getRealm(v2Config);
     expect(v2Realm.schema.single.length, 1);
@@ -415,16 +482,20 @@ void main() {
     late RealmList<RealmObject> oldPlayers;
     late RealmList<Person> newPlayers;
 
-    final v2Config = Configuration.local([Person.schema, Team.schema], schemaVersion: 2, migrationCallback: (migration, oldSchemaVersion) {
-      oldTeams = migration.oldRealm.all('Team');
-      newTeams = migration.newRealm.all();
+    final v2Config = Configuration.local(
+      [Person.schema, Team.schema],
+      schemaVersion: 2,
+      migrationCallback: (migration, oldSchemaVersion) {
+        oldTeams = migration.oldRealm.all('Team');
+        newTeams = migration.newRealm.all();
 
-      oldTeam = oldTeams.single;
-      newTeam = newTeams.single;
+        oldTeam = oldTeams.single;
+        newTeam = newTeams.single;
 
-      oldPlayers = oldTeam.dynamic.getList('players');
-      newPlayers = newTeam.players;
-    });
+        oldPlayers = oldTeam.dynamic.getList('players');
+        newPlayers = newTeam.players;
+      },
+    );
 
     final v2Realm = getRealm(v2Config);
 

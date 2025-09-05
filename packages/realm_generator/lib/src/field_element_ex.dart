@@ -24,7 +24,7 @@ import 'type_checkers.dart';
 extension FieldElementEx on FieldElement {
   static const realmSetUnsupportedRealmTypes = [RealmPropertyType.linkingObjects];
 
-  ClassElement get enclosingClassElement => enclosingElement3 as ClassElement;
+  ClassElement get enclosingClassElement => enclosingElement as ClassElement;
 
   FieldDeclaration get declarationAstNode => getDeclarationFromElement(this)!.node.parent!.parent as FieldDeclaration;
 
@@ -40,25 +40,15 @@ extension FieldElementEx on FieldElement {
 
   Expression? get initializerExpression => declarationAstNode.fields.variables.singleWhere((v) => v.name.toString() == name).initializer;
 
-  FileSpan? typeSpan(SourceFile file) => ExpandedContextSpan(
-        ExpandedContextSpan(
-          (typeAnnotation ?? initializerExpression)?.span(file) ?? span!,
-          [span!],
-        ),
-        [span!],
-      );
+  FileSpan? typeSpan(SourceFile file) =>
+      ExpandedContextSpan(ExpandedContextSpan((typeAnnotation ?? initializerExpression)?.span(file) ?? span!, [span!]), [span!]);
 
-  FileSpan? initializerExpressionSpan(SourceFile file, Expression initializerExpression) => ExpandedContextSpan(
-        ExpandedContextSpan(
-          (initializerExpression).span(file),
-          [span!],
-        ),
-        [span!],
-      );
+  FileSpan? initializerExpressionSpan(SourceFile file, Expression initializerExpression) =>
+      ExpandedContextSpan(ExpandedContextSpan((initializerExpression).span(file), [span!]), [span!]);
 
   DartType get modelType => typeAnnotation?.type?.nullIfDynamic ?? initializerExpression?.staticType ?? PseudoType(typeAnnotation.toString());
 
-  String get modelTypeName => modelType.getDisplayString(withNullability: true);
+  String get modelTypeName => modelType.getDisplayString();
 
   String get mappedTypeName => modelType.mappedName;
 
@@ -81,12 +71,14 @@ extension FieldElementEx on FieldElement {
       // Validate primary key
       if (primaryKey != null) {
         if (indexed != null) {
-          log.info(formatSpans(
-            'Indexed is implied for a primary key',
-            primarySpan: span!,
-            todo: "Remove either the @Indexed or @PrimaryKey annotation from '$displayName'.",
-            element: this,
-          ));
+          log.info(
+            formatSpans(
+              'Indexed is implied for a primary key',
+              primarySpan: span!,
+              todo: "Remove either the @Indexed or @PrimaryKey annotation from '$displayName'.",
+              element: this,
+            ),
+          );
         }
         // Since the setter of a dart late final public field without initializer is public,
         // the error of setting a primary key after construction will be a runtime error no matter
@@ -116,7 +108,8 @@ extension FieldElementEx on FieldElement {
 
         if (type.realmType?.mapping.canBePrimaryKey != true) {
           final file = span!.file;
-          final listOfValidTypes = RealmPropertyType.values //
+          final listOfValidTypes = RealmPropertyType
+              .values //
               .map((t) => t.mapping)
               .where((m) => m.canBePrimaryKey)
               .map((m) => m.type);
@@ -137,15 +130,18 @@ extension FieldElementEx on FieldElement {
         final file = span!.file;
 
         if (indexType == RealmIndexType.fullText && type.realmType != RealmPropertyType.string) {
-          throw RealmInvalidGenerationSourceError('Cannot add full-text index on a non-string property',
-              element: this,
-              primarySpan: typeSpan(file),
-              primaryLabel: 'Cannot use RealmIndexType.fullText for property of type $modelTypeName',
-              todo: 'Change the index type to general or change the property type to string');
+          throw RealmInvalidGenerationSourceError(
+            'Cannot add full-text index on a non-string property',
+            element: this,
+            primarySpan: typeSpan(file),
+            primaryLabel: 'Cannot use RealmIndexType.fullText for property of type $modelTypeName',
+            todo: 'Change the index type to general or change the property type to string',
+          );
         }
 
         if (type.realmType?.mapping.indexable != true) {
-          final listOfValidTypes = RealmPropertyType.values //
+          final listOfValidTypes = RealmPropertyType
+              .values //
               .map((t) => t.mapping)
               .where((m) => m.indexable)
               .map((m) => m.type);
@@ -163,7 +159,7 @@ extension FieldElementEx on FieldElement {
       String? linkOriginProperty;
 
       // Validate field type
-      final modelSpan = enclosingElement3.span!;
+      final modelSpan = enclosingElement.span!;
       final file = modelSpan.file;
       final realmType = type.realmType;
       if (realmType == null) {
@@ -185,9 +181,9 @@ extension FieldElementEx on FieldElement {
           primarySpan: typeSpan(file),
           primaryLabel: '$modelTypeName is not a realm model type',
           secondarySpans: {
-            modelSpan: "in realm model '${enclosingElement3.displayName}'",
+            modelSpan: "in realm model '${enclosingElement.displayName}'",
             // may go both above and below, or stem from another file
-            if (notARealmTypeSpan != null) notARealmTypeSpan: ''
+            if (notARealmTypeSpan != null) notARealmTypeSpan: '',
           },
           todo: todo,
         );
@@ -210,56 +206,68 @@ extension FieldElementEx on FieldElement {
             final requestedObjectType = objectsShouldBeNullable ? 'nullable' : 'non-nullable';
             final invalidObjectType = objectsShouldBeNullable ? 'non-nullable' : 'nullable';
 
-            throw RealmInvalidGenerationSourceError('Realm objects in $typeDescription must be $requestedObjectType',
-                primarySpan: typeSpan(file),
-                primaryLabel: 'which has a $invalidObjectType realm object element type',
-                element: this,
-                todo: 'Ensure element type is $requestedObjectType');
+            throw RealmInvalidGenerationSourceError(
+              'Realm objects in $typeDescription must be $requestedObjectType',
+              primarySpan: typeSpan(file),
+              primaryLabel: 'which has a $invalidObjectType realm object element type',
+              element: this,
+              todo: 'Ensure element type is $requestedObjectType',
+            );
           }
 
           if (realmType == RealmPropertyType.mixed && itemType.isNullable) {
-            throw RealmInvalidGenerationSourceError('$type is not supported',
-                primarySpan: typeSpan(file),
-                primaryLabel: 'Nullable RealmValues are not supported',
-                element: this,
-                todo: 'Ensure the RealmValue type argument is non-nullable. RealmValue can hold null, but must not be nullable itself.');
+            throw RealmInvalidGenerationSourceError(
+              '$type is not supported',
+              primarySpan: typeSpan(file),
+              primaryLabel: 'Nullable RealmValues are not supported',
+              element: this,
+              todo: 'Ensure the RealmValue type argument is non-nullable. RealmValue can hold null, but must not be nullable itself.',
+            );
           }
 
           if (itemType.isRealmCollection || itemType.realmType == RealmPropertyType.linkingObjects) {
-            throw RealmInvalidGenerationSourceError('$type is not supported',
-                primarySpan: typeSpan(file),
-                primaryLabel: 'Collections of collections are not supported',
-                element: this,
-                todo: 'Ensure the collection element type $itemType is not Iterable.');
+            throw RealmInvalidGenerationSourceError(
+              '$type is not supported',
+              primarySpan: typeSpan(file),
+              primaryLabel: 'Collections of collections are not supported',
+              element: this,
+              todo: 'Ensure the collection element type $itemType is not Iterable.',
+            );
           }
 
           final initExpression = initializerExpression;
           if (initExpression != null && !_isValidCollectionInitializer(initExpression)) {
-            throw RealmInvalidGenerationSourceError('Non-empty default values for $typeDescription are not supported.',
-                primarySpan: initializerExpressionSpan(file, initExpression),
-                primaryLabel: 'Remove the default value.',
-                element: this,
-                todo: 'Remove the default value for field $displayName or change it to be an empty collection.');
+            throw RealmInvalidGenerationSourceError(
+              'Non-empty default values for $typeDescription are not supported.',
+              primarySpan: initializerExpressionSpan(file, initExpression),
+              primaryLabel: 'Remove the default value.',
+              element: this,
+              todo: 'Remove the default value for field $displayName or change it to be an empty collection.',
+            );
           }
 
           switch (type.realmCollectionType) {
             case RealmCollectionType.map:
               final keyType = (type as ParameterizedType).typeArguments.first;
               if (!keyType.isDartCoreString || keyType.isNullable) {
-                throw RealmInvalidGenerationSourceError('$type is not supported',
-                    primarySpan: typeSpan(file),
-                    primaryLabel: 'Non-String keys are not supported in maps',
-                    element: this,
-                    todo: 'Change the map key type to be String');
+                throw RealmInvalidGenerationSourceError(
+                  '$type is not supported',
+                  primarySpan: typeSpan(file),
+                  primaryLabel: 'Non-String keys are not supported in maps',
+                  element: this,
+                  todo: 'Change the map key type to be String',
+                );
               }
               break;
             case RealmCollectionType.set:
               if (itemType.realmObjectType == ObjectType.embeddedObject) {
-                throw RealmInvalidGenerationSourceError('$type is not supported',
-                    primarySpan: typeSpan(file),
-                    primaryLabel: 'Embedded objects in sets are not supported',
-                    element: this,
-                    todo: 'Change the collection element to be a non-embedded object');
+                throw RealmInvalidGenerationSourceError(
+                  '$type is not supported',
+                  primarySpan: typeSpan(file),
+                  primaryLabel: 'Embedded objects in sets are not supported',
+                  element: this,
+                  todo: 'Change the collection element to be a non-embedded object',
+                );
               }
               break;
             default:
@@ -293,7 +301,7 @@ extension FieldElementEx on FieldElement {
             );
           }
 
-          final thisType = (enclosingElement3 as ClassElement).thisType;
+          final thisType = (enclosingElement as ClassElement).thisType;
           final linkType = thisType.asNullable;
           final listOf = session.typeProvider.listType(thisType);
           if (sourceField.type != linkType && sourceField.type != listOf) {
@@ -309,7 +317,6 @@ extension FieldElementEx on FieldElement {
           // everything is kosher, just need to account for @MapTo!
           linkOriginProperty = sourceField.remappedRealmName ?? sourceField.name;
         }
-
         // Validate object references
         else if (realmType == RealmPropertyType.object && !type.isRealmCollection) {
           if (!type.isNullable) {
@@ -333,7 +340,6 @@ extension FieldElementEx on FieldElement {
             );
           }
         }
-
         // Validate mixed (RealmValue)
         else if (realmType == RealmPropertyType.mixed && type.isNullable) {
           throw RealmInvalidGenerationSourceError(
@@ -398,7 +404,7 @@ extension FieldElementEx on FieldElement {
       ParenthesizedExpression i => _isValidFieldInitializer(i.expression),
       PrefixExpression e => _isValidFieldInitializer(e.operand),
       BinaryExpression b => _isValidFieldInitializer(b.leftOperand) && _isValidFieldInitializer(b.rightOperand),
-      Identifier i => (i.staticElement as PropertyAccessorElement?)?.variable2?.isConst ?? false,
+      Identifier i => (i.element as PropertyAccessorElement?)?.variable.isConst ?? false,
       _ => false,
     };
   }

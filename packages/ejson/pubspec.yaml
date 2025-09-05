@@ -2,7 +2,7 @@ name: ejson
 description: >-
   EJSON serialization.
 
-  BSON is a binary format used to store JSON-like documents efficiently. 
+  BSON is a binary format used to store JSON-like documents efficiently.
   EJSON extends JSON defining how all BSON types should be represented in JSON.
 
 topics:
@@ -17,16 +17,17 @@ repository: https://github.com/realm/realm-dart/ejson/packages/ejson
 
 environment:
   sdk: ^3.6.0
+resolution: workspace
 
 dependencies:
-  collection: ^1.19.0
+  collection: ^1.19.1
   ejson_annotation: ^0.4.1
   objectid: ^4.0.0
   sane_uuid: ^1.0.0
-  type_plus: ^2.0.0
+  type_plus: ^2.1.1
 
 dev_dependencies:
-  build_runner: ^2.4.14
+  build_runner: ^2.5.3
   ejson_generator: ^0.4.1
-  lints: ^5.1.1
+  lints: ^6.0.0
   test: ^1.25.9

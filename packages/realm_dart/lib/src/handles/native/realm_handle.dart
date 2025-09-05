@@ -6,7 +6,9 @@ import 'dart:ffi';
 import 'dart:io';
 
 import 'package:cancellation_token/cancellation_token.dart';
+
 import 'ffi.dart';
+
 import 'package:realm_common/realm_common.dart';
 
 import '../../logging.dart';
@@ -43,9 +45,11 @@ class RealmHandle extends HandleBase<shared_realm> implements intf.RealmHandle {
 
     final configHandle = ConfigHandle.from(config);
 
-    return RealmHandle(realmLib
-        .realm_open(configHandle.pointer) //
-        .raiseLastErrorIfNull());
+    return RealmHandle(
+      realmLib
+          .realm_open(configHandle.pointer) //
+          .raiseLastErrorIfNull(),
+    );
   }
 
   @override
@@ -92,15 +96,7 @@ class RealmHandle extends HandleBase<shared_realm> implements intf.RealmHandle {
     return using((arena) {
       final realmValue = primaryKey.toNative(arena);
       final didCreate = arena<Bool>();
-      return ObjectHandle(
-        realmLib.realm_object_get_or_create_with_primary_key(
-          pointer,
-          classKey,
-          realmValue.ref,
-          didCreate,
-        ),
-        this,
-      );
+      return ObjectHandle(realmLib.realm_object_get_or_create_with_primary_key(pointer, classKey, realmValue.ref, didCreate), this);
     });
   }
 
@@ -127,16 +123,7 @@ class RealmHandle extends HandleBase<shared_realm> implements intf.RealmHandle {
       for (var i = 0; i < length; ++i) {
         intoRealmQueryArg(args[i], argsPointer + i, arena);
       }
-      final queryHandle = QueryHandle(
-        realmLib.realm_query_parse(
-          pointer,
-          classKey,
-          query.toCharPtr(arena),
-          length,
-          argsPointer,
-        ),
-        this,
-      );
+      final queryHandle = QueryHandle(realmLib.realm_query_parse(pointer, classKey, query.toCharPtr(arena), length, argsPointer), this);
       return queryHandle.findAll();
     });
   }
@@ -177,11 +164,14 @@ class RealmHandle extends HandleBase<shared_realm> implements intf.RealmHandle {
   @override
   Future<void> beginWriteAsync(CancellationToken? ct) {
     int? id;
-    final completer = CancellableCompleter<void>(ct, onCancel: () {
-      if (id != null) {
-        _cancelAsync(id!);
-      }
-    });
+    final completer = CancellableCompleter<void>(
+      ct,
+      onCancel: () {
+        if (id != null) {
+          _cancelAsync(id!);
+        }
+      },
+    );
     if (ct?.isCancelled != true) {
       using((arena) {
         final transactionId = arena<UnsignedInt>();
@@ -204,11 +194,14 @@ class RealmHandle extends HandleBase<shared_realm> implements intf.RealmHandle {
   @override
   Future<void> commitWriteAsync(CancellationToken? ct) {
     int? id;
-    final completer = CancellableCompleter<void>(ct, onCancel: () {
-      if (id != null) {
-        _cancelAsync(id!);
-      }
-    });
+    final completer = CancellableCompleter<void>(
+      ct,
+      onCancel: () {
+        if (id != null) {
+          _cancelAsync(id!);
+        }
+      },
+    );
     if (ct?.isCancelled != true) {
       using((arena) {
         final transactionId = arena<UnsignedInt>();
@@ -320,13 +313,7 @@ class RealmHandle extends HandleBase<shared_realm> implements intf.RealmHandle {
   void renameProperty(String objectType, String oldName, String newName, covariant SchemaHandle schema) {
     using((arena) {
       realmLib
-          .realm_schema_rename_property(
-            pointer,
-            schema.pointer,
-            objectType.toCharPtr(arena),
-            oldName.toCharPtr(arena),
-            newName.toCharPtr(arena),
-          )
+          .realm_schema_rename_property(pointer, schema.pointer, objectType.toCharPtr(arena), oldName.toCharPtr(arena), newName.toCharPtr(arena))
           .raiseLastErrorIfFalse();
     });
   }
@@ -381,8 +368,10 @@ class RealmHandle extends HandleBase<shared_realm> implements intf.RealmHandle {
       realmLib.realm_get_class(pointer, classKey, classInfo).raiseLastErrorIfFalse();
 
       final name = classInfo.ref.name.cast<Utf8>().toDartString();
-      final baseType = ObjectType.values.firstWhere((element) => element.flags == classInfo.ref.flags,
-          orElse: () => throw RealmError('No object type found for flags ${classInfo.ref.flags}'));
+      final baseType = ObjectType.values.firstWhere(
+        (element) => element.flags == classInfo.ref.flags,
+        orElse: () => throw RealmError('No object type found for flags ${classInfo.ref.flags}'),
+      );
       final schema = _getSchemaForClassKey(classKey, name, baseType, arena, expectedSize: classInfo.ref.num_properties + classInfo.ref.num_computed_properties);
       schemas.add(schema);
     }
@@ -457,8 +446,15 @@ class RealmHandle extends HandleBase<shared_realm> implements intf.RealmHandle {
       final linkOriginProperty = property.ref.link_origin_property_name.cast<Utf8>().toRealmDartString(treatEmptyAsNull: true);
       final isNullable = property.ref.flags & realm_property_flags.RLM_PROPERTY_NULLABLE.value != 0;
       final isPrimaryKey = propertyName == primaryKeyName;
-      final propertyMeta = RealmPropertyMetadata(property.ref.key, objectType, linkOriginProperty, RealmPropertyType.values.elementAt(property.ref.type),
-          isNullable, isPrimaryKey, RealmCollectionType.values.elementAt(property.ref.collection_type));
+      final propertyMeta = RealmPropertyMetadata(
+        property.ref.key,
+        objectType,
+        linkOriginProperty,
+        RealmPropertyType.values.elementAt(property.ref.typeAsInt),
+        isNullable,
+        isPrimaryKey,
+        RealmCollectionType.values.elementAt(property.ref.collection_typeAsInt),
+      );
       result[propertyName] = propertyMeta;
     }
     return result;

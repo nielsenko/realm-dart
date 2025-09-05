@@ -5,6 +5,7 @@ publish_to: "none"
 
 version: 2.0.0-alpha.2
 
+resolution: workspace
 environment:
   sdk: ^3.6.0
   flutter: ^3.27.0
@@ -22,11 +23,11 @@ dependencies:
 
 dev_dependencies:
   flutter_test:
-    sdk: flutter  
+    sdk: flutter
   flutter_lints: ^5.0.0
   integration_test:
     sdk: flutter
-  test: ^1.25.13
+  test: ^1.26.1
   timezone: ^0.10.0
   universal_platform: ^1.1.0
 
@@ -34,5 +35,5 @@ flutter:
   assets:
     # test/data is a symlink to the test/data directory in
     # the realm_dart package.
-    - test/data/ 
+    - test/data/
     - test/data/realm_files/

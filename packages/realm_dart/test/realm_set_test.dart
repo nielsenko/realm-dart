@@ -5,7 +5,6 @@ import 'dart:typed_data';
 
 import 'package:collection/collection.dart';
 import 'package:realm_dart/realm.dart';
-import 'package:test/test.dart' hide test, throws;
 
 import 'test.dart';
 
@@ -48,7 +47,7 @@ List<Type> supportedTypes = [
   _NullableDateTime,
   _NullableObjectId,
   _NullableUuid,
-  _NullableUint8List
+  _NullableUint8List,
 ];
 
 @RealmModel()
@@ -104,11 +103,14 @@ class _TestRealmSets {
       case Uint8List:
         return Sets(binarySet as RealmSet<Uint8List>, [
           Uint8List.fromList([1, 2, 3]),
-          Uint8List.fromList([3, 2, 1])
+          Uint8List.fromList([3, 2, 1]),
         ]);
       case RealmValue:
-        return Sets(mixedSet as RealmSet<RealmValue>, [RealmValue.nullValue(), RealmValue.int(1), RealmValue.realmObject(Car("Tesla"))],
-            (realm, value) => realm.find<Car>((value as Car).make));
+        return Sets(mixedSet as RealmSet<RealmValue>, [
+          RealmValue.nullValue(),
+          RealmValue.int(1),
+          RealmValue.realmObject(Car("Tesla")),
+        ], (realm, value) => realm.find<Car>((value as Car).make));
       case RealmObject:
         return Sets(objectsSet as RealmSet<Car>, [Car("Tesla"), Car("VW"), Car("Audi")], (realm, value) => realm.find<Car>((value as Car).make));
       case _NullableBool:
@@ -542,19 +544,20 @@ void main() {
       });
 
       expectLater(
-          set.changes,
-          emitsInOrder(<Matcher>[
-            isA<RealmSetChanges<Object?>>()
-                .having((changes) => changes.inserted, 'inserted', <int>[])
-                .having((changes) => changes.isCleared, 'isCleared', false)
-                .having((changes) => changes.isCollectionDeleted, 'isCollectionDeleted', false), // always an empty event on subscription
-            isA<RealmSetChanges<Object?>>()
-                .having((changes) => changes.isCleared, 'isCleared', true)
-                .having((changes) => changes.isCollectionDeleted, 'isCollectionDeleted', false),
-            isA<RealmSetChanges<Object?>>()
-                .having((changes) => changes.isCollectionDeleted, 'isCollectionDeleted', true)
-                .having((changes) => changes.isCleared, 'isCleared', false),
-          ]));
+        set.changes,
+        emitsInOrder(<Matcher>[
+          isA<RealmSetChanges<Object?>>()
+              .having((changes) => changes.inserted, 'inserted', <int>[])
+              .having((changes) => changes.isCleared, 'isCleared', false)
+              .having((changes) => changes.isCollectionDeleted, 'isCollectionDeleted', false), // always an empty event on subscription
+          isA<RealmSetChanges<Object?>>()
+              .having((changes) => changes.isCleared, 'isCleared', true)
+              .having((changes) => changes.isCollectionDeleted, 'isCollectionDeleted', false),
+          isA<RealmSetChanges<Object?>>()
+              .having((changes) => changes.isCollectionDeleted, 'isCollectionDeleted', true)
+              .having((changes) => changes.isCleared, 'isCleared', false),
+        ]),
+      );
       realm.write(() => set.clear());
       realm.refresh();
       realm.write(() => realm.delete(testSet));
@@ -706,11 +709,12 @@ void main() {
     });
     final carsResult = testSets.objectsSet.asResults();
     expectLater(
-        carsResult.changes,
-        emitsInOrder(<Matcher>[
-          isA<RealmResultsChanges<Object?>>().having((changes) => changes.inserted, 'inserted', <int>[]), // always an empty event on subscription
-          isA<RealmResultsChanges<Object?>>().having((changes) => changes.results.isEmpty, 'isCleared', true),
-        ]));
+      carsResult.changes,
+      emitsInOrder(<Matcher>[
+        isA<RealmResultsChanges<Object?>>().having((changes) => changes.inserted, 'inserted', <int>[]), // always an empty event on subscription
+        isA<RealmResultsChanges<Object?>>().having((changes) => changes.results.isEmpty, 'isCleared', true),
+      ]),
+    );
     realm.write(() => testSets.objectsSet.clear());
   });
 
@@ -719,9 +723,7 @@ void main() {
     var realm = getRealm(config);
 
     final liveCars = realm.write(() {
-      return realm.add(TestRealmSets(1, objectsSet: {
-        Car('Tesla'),
-      }));
+      return realm.add(TestRealmSets(1, objectsSet: {Car('Tesla')}));
     }).objectsSet;
 
     final frozenCars = freezeSet(liveCars);
@@ -745,10 +747,7 @@ void main() {
     var realm = getRealm(config);
 
     realm.write(() {
-      realm.add(TestRealmSets(1, objectsSet: {
-        Car("Tesla"),
-        Car("Audi"),
-      }));
+      realm.add(TestRealmSets(1, objectsSet: {Car("Tesla"), Car("Audi")}));
     });
 
     final frozenBools = freezeSet(realm.all<TestRealmSets>().single.boolSet);
@@ -769,14 +768,12 @@ void main() {
     expect(() => set.objectsSet.changesFor(["test"]), throws<RealmStateError>("Unmanaged sets don't support changes"));
   });
 
-  test('RealmSet.changes - await for with yield ', () async {
+  test('RealmSet.changes - await for with yield', () async {
     var config = Configuration.local([TestRealmSets.schema, Car.schema]);
     var realm = getRealm(config);
 
     final cars = realm.write(() {
-      return realm.add(TestRealmSets(1, objectsSet: {
-        Car('Tesla'),
-      }));
+      return realm.add(TestRealmSets(1, objectsSet: {Car('Tesla')}));
     }).objectsSet;
 
     final wait = const Duration(seconds: 1);
@@ -885,7 +882,7 @@ void main() {
       realm.add(testSets);
     });
     final result = testSets.objectsSet.query(r'make IN $0', [
-      ['Tesla', 'Audi']
+      ['Tesla', 'Audi'],
     ]);
     expect(result.length, 2);
   });

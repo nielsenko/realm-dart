@@ -6,7 +6,7 @@ import 'dart:collection';
 import 'dart:math';
 import 'dart:typed_data';
 
-import 'package:path/path.dart' as _path;
+import 'package:path/path.dart' as p;
 import 'package:realm_dart/realm.dart';
 import 'package:realm_dart/src/handles/realm_core.dart';
 import 'package:realm_dart/src/logging.dart';
@@ -446,7 +446,7 @@ void setupTests() {
 Matcher throws<T>([String? message]) => throwsA(isA<T>().having((dynamic exception) => exception.message, 'message', contains(message ?? '')));
 
 String generateRandomRealmPath({bool useUnicodeCharacters = false}) {
-  final path = _path.join(platformUtil.createTempPathSync(), "${useUnicodeCharacters ? generateRandomUnicodeString() : generateRandomString(10)}.realm");
+  final path = p.join(platformUtil.createTempPathSync(), "${useUnicodeCharacters ? generateRandomUnicodeString() : generateRandomString(10)}.realm");
   return path;
 }
 
@@ -554,8 +554,13 @@ Future<void> waitForCondition(
   return waitForConditionWithResult<bool>(() => condition(), (value) => value == true, timeout: timeout, retryDelay: retryDelay, message: message);
 }
 
-Future<T> waitForConditionWithResult<T>(FutureOr<T> Function() getter, FutureOr<bool> Function(T value) condition,
-    {Duration timeout = const Duration(seconds: 1), Duration retryDelay = const Duration(milliseconds: 100), String? message}) async {
+Future<T> waitForConditionWithResult<T>(
+  FutureOr<T> Function() getter,
+  FutureOr<bool> Function(T value) condition, {
+  Duration timeout = const Duration(seconds: 1),
+  Duration retryDelay = const Duration(milliseconds: 100),
+  String? message,
+}) async {
   final start = DateTime.now();
   while (true) {
     final value = await getter();
@@ -590,11 +595,7 @@ extension DateTimeTest on DateTime {
     // use nanoseconds, and drop iso8601 utc Z at the end
     return iso8601
         .replaceFirst('T', ' ') //
-        .replaceRange(
-          iso8601.indexOf('.'),
-          null,
-          nanoseconds != 0 ? '.${nanoseconds.pad(9)}' : '',
-        );
+        .replaceRange(iso8601.indexOf('.'), null, nanoseconds != 0 ? '.${nanoseconds.pad(9)}' : '');
   }
 }
 
@@ -602,10 +603,14 @@ extension StreamEx<T> on Stream<Stream<T>> {
   Stream<T> switchLatest() async* {
     StreamSubscription<T>? inner;
     final controller = StreamController<T>();
-    final outer = listen((stream) {
-      inner?.cancel();
-      inner = stream.listen(controller.add, onError: controller.addError, onDone: controller.close);
-    }, onError: controller.addError, onDone: controller.close);
+    final outer = listen(
+      (stream) {
+        inner?.cancel();
+        inner = stream.listen(controller.add, onError: controller.addError, onDone: controller.close);
+      },
+      onError: controller.addError,
+      onDone: controller.close,
+    );
     yield* controller.stream;
     await outer.cancel();
     await inner?.cancel();

@@ -11,11 +11,12 @@ issue_tracker: https://github.com/realm/realm-dart/issues
 
 environment:
   sdk: ^3.6.0
+resolution: workspace  
 
 dependencies:
-  collection: ^1.18.0
+  collection: ^1.19.1
   objectid: ^4.0.0
   sane_uuid: ^1.0.0
 
 dev_dependencies:
-  lints: ^5.1.1
+  lints: ^6.0.0

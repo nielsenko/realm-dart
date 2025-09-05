@@ -2,3 +2,4 @@
 // SPDX-License-Identifier: Apache-2.0
 
 export 'src/builder.dart';
+export 'src/generator.dart' show EJsonGenerator, EJsonSourceError;

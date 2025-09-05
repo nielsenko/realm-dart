@@ -41,55 +41,56 @@ class EJsonGenerator extends Generator {
       return ctors.isNotEmpty || isEJsonAnnotated(cls);
     });
 
-    return annotated.map((x) {
-      final (cls, annotatedCtors) = x;
-      final className = cls.name;
+    return annotated
+        .map((x) {
+          final (cls, annotatedCtors) = x;
+          final className = cls.name;
 
-      if (annotatedCtors.length > 1) {
-        EJsonError.tooManyAnnotatedConstructors.raise();
-      }
+          if (annotatedCtors.length > 1) {
+            EJsonError.tooManyAnnotatedConstructors.raise();
+          }
 
-      if (annotatedCtors.isEmpty) {
-        // class is directly annotated, and no constructors are annotated.
-        final annotation = getEJsonAnnotation(cls);
-        if (annotation.decoder != null && annotation.encoder != null) {
-          return ''; // class has custom defined encoder and decoder
-        }
-        if (cls.constructors.length > 1) {
-          EJsonError.tooManyConstructorsOnAnnotatedClass.raise();
-        }
-      }
+          if (annotatedCtors.isEmpty) {
+            // class is directly annotated, and no constructors are annotated.
+            final annotation = getEJsonAnnotation(cls);
+            if (annotation.decoder != null && annotation.encoder != null) {
+              return ''; // class has custom defined encoder and decoder
+            }
+            if (cls.constructors.length > 1) {
+              EJsonError.tooManyConstructorsOnAnnotatedClass.raise();
+            }
+          }
 
-      final ctor = annotatedCtors.singleOrNull ?? cls.constructors.singleOrNull;
-      if (ctor == null) {
-        // class is annotated, but has no explicit constructors
-        EJsonError.noExplicitConstructor.raise();
-      }
+          final ctor = annotatedCtors.singleOrNull ?? cls.constructors.singleOrNull;
+          if (ctor == null) {
+            // class is annotated, but has no explicit constructors
+            EJsonError.noExplicitConstructor.raise();
+          }
 
-      for (final p in ctor.parameters) {
-        // check that all ctor parameters have a getter with the same name and type
-        final getter = cls.getGetter(p.name);
-        if (getter == null) {
-          EJsonError.missingGetter.raise();
-        }
-        if (!TypeChecker.fromStatic(p.type).isAssignableFromType(getter.returnType)) {
-          EJsonError.mismatchedGetterType.raise();
-        }
-      }
+          for (final p in ctor.formalParameters) {
+            // check that all ctor parameters have a getter with the same name and type
+            final getter = cls.getGetter(p.name!);
+            if (getter == null) {
+              EJsonError.missingGetter.raise();
+            }
+            if (!TypeChecker.fromStatic(p.type).isAssignableFromType(getter.returnType)) {
+              EJsonError.mismatchedGetterType.raise();
+            }
+          }
 
-      // generate the codec pair
-      log.info('Generating EJson for $className');
-      return '''
+          // generate the codec pair
+          log.info('Generating EJson for $className');
+          return '''
         EJsonValue _encode$className($className value) {
           return {
-            ${ctor.parameters.map((p) => "'${p.name}': value.${p.name}.toEJson()").join(',\n')}
+            ${ctor.formalParameters.map((p) => "'${p.name}': value.${p.name}.toEJson()").join(',\n')}
           };
         }
 
         $className _decode$className(EJsonValue ejson) {
           return switch (ejson) {
-              ${decodePattern(ctor.parameters)} => $className${ctor.name.isEmpty ? '' : '.${ctor.name}'}(
-              ${ctor.parameters.map((p) => "${p.isNamed ? '${p.name} : ' : ''}fromEJson(${p.name})").join(',\n')}
+              ${decodePattern(ctor.formalParameters)} => $className${ctor.name == 'new' ? '' : '.${ctor.name}'}(
+              ${ctor.formalParameters.map((p) => "${p.isNamed ? '${p.name} : ' : ''}fromEJson(${p.name})").join(',\n')}
             ),
             _ => raiseInvalidEJson(ejson),
           };
@@ -102,15 +103,16 @@ class EJsonGenerator extends Generator {
 
         void register$className() => register(_encode$className, _decode$className);
       ''';
-    }).join('\n\n');
+        })
+        .join('\n\n');
   }
 }
 
-String decodePattern(Iterable<ParameterElement> parameters) {
+String decodePattern(Iterable<FormalParameterElement> parameters) {
   if (parameters.isEmpty) {
     return 'Map m when m.isEmpty';
   }
   return '''{
-    ${parameters.map((p) => "'${p.name}': EJsonValue ${p.name}").join(',\n')} 
+    ${parameters.map((p) => "'${p.name}': EJsonValue ${p.name}").join(',\n')}
   }''';
 }

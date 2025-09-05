@@ -9,28 +9,20 @@ import 'package:ejson_analyzer/ejson_analyzer.dart';
 
 class MissingGetter extends DartLintRule {
   MissingGetter()
-      : super(
-          code: const LintCode(
-            name: 'missing_getter',
-            problemMessage: 'Missing getter for constructor parameter',
-            errorSeverity: error.ErrorSeverity.ERROR,
-          ),
-        );
+    : super(
+        code: const LintCode(name: 'missing_getter', problemMessage: 'Missing getter for constructor parameter', errorSeverity: error.DiagnosticSeverity.ERROR),
+      );
 
   @override
-  void run(
-    CustomLintResolver resolver,
-    ErrorReporter reporter,
-    CustomLintContext context,
-  ) {
+  void run(CustomLintResolver resolver, DiagnosticReporter reporter, CustomLintContext context) {
     context.registry.addConstructorDeclaration((node) {
-      final ctor = node.declaredElement;
+      final ctor = node.declaredFragment;
       if (ctor == null) return; // not resolved;
-      if (isEJsonAnnotated(ctor)) {
-        final cls = ctor.enclosingElement3 as ClassElement;
-        for (final param in ctor.parameters) {
-          final getter = cls.getGetter(param.name);
-          if (getter == null) reporter.atElement(param, code);
+      if (isEJsonAnnotated(ctor.element)) {
+        final cls = ctor.enclosingFragment as ClassFragment;
+        for (final param in ctor.formalParameters) {
+          final getter = cls.element.getGetter(param.element.name!);
+          if (getter == null) reporter.atElement2(param.element, code);
         }
       }
     });

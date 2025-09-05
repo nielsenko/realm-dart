@@ -67,19 +67,12 @@ String _getLibName(String stem) => switch (targetOsType) {
   TargetOsType.windows => '$stem.dll',
 };
 
-String? _getNearestProjectRoot(String dir) {
-  while (dir != p.dirname(dir)) {
-    if (File(p.join(dir, 'pubspec.yaml')).existsSync()) return dir;
-    dir = p.dirname(dir);
-  }
-  return null;
-}
-
 File? _getPackageConfigJson(Directory d) {
-  final root = _getNearestProjectRoot(d.path);
-  if (root != null) {
-    final file = File(p.join(root, '.dart_tool', 'package_config.json'));
+  var dir = d.absolute.path;
+  while (dir != p.dirname(dir)) {
+    final file = File(p.join(dir, '.dart_tool', 'package_config.json'));
     if (file.existsSync()) return file;
+    dir = p.dirname(dir);
   }
   return null;
 }

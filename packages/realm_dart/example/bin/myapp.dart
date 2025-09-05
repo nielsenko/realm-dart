@@ -4,6 +4,7 @@
 import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
+
 import 'package:realm_dart/realm.dart';
 
 part 'myapp.realm.dart';
@@ -48,7 +49,7 @@ void main(List<String> arguments) async {
 
     print("Changing the owner of the car.");
     myCar.owner = Person("me", age: 18);
-    print("The car has a new owner ${car.owner!.name}");
+    print("The car has a new owner ${car.owner.name}");
   });
 
   print("Getting all cars from the Realm.");

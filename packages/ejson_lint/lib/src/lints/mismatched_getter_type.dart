@@ -9,31 +9,27 @@ import 'package:ejson_analyzer/ejson_analyzer.dart';
 
 class MismatchedGetterType extends DartLintRule {
   MismatchedGetterType()
-      : super(
-          code: const LintCode(
-            name: 'mismatched_getter_type',
-            problemMessage: 'Type of getter does not match type of constructor parameter',
-            errorSeverity: error.ErrorSeverity.ERROR,
-          ),
-        );
+    : super(
+        code: const LintCode(
+          name: 'mismatched_getter_type',
+          problemMessage: 'Type of getter does not match type of constructor parameter',
+          errorSeverity: error.DiagnosticSeverity.ERROR,
+        ),
+      );
 
   @override
-  void run(
-    CustomLintResolver resolver,
-    ErrorReporter reporter,
-    CustomLintContext context,
-  ) {
+  void run(CustomLintResolver resolver, DiagnosticReporter reporter, CustomLintContext context) {
     context.registry.addConstructorDeclaration((node) {
-      final ctor = node.declaredElement;
+      final ctor = node.declaredFragment;
       if (ctor == null) return; // not resolved;
-      if (isEJsonAnnotated(ctor)) {
-        final cls = ctor.enclosingElement3 as ClassElement;
-        for (final param in ctor.parameters) {
-          final getter = cls.getGetter(param.name);
+      if (isEJsonAnnotated(ctor.element)) {
+        final cls = ctor.enclosingFragment as ClassFragment;
+        for (final param in ctor.formalParameters) {
+          final getter = cls.element.getGetter(param.element.name!);
           if (getter == null) continue;
-          if (getter.returnType != param.type) {
-            reporter.atElement(getter, code);
-            reporter.atElement(param, code);
+          if (getter.returnType != param.element.type) {
+            reporter.atElement2(getter, code);
+            reporter.atElement2(param.element, code);
           }
         }
       }
