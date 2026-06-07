@@ -1,3 +1,9 @@
 /binary/
 /build-native/
 /mongodb-realm/
+
+# Zig build artifacts
+/.zig-cache/
+/zig-out/
+# Zig package cache (restored from build.zig.zon hashes)
+/zig-pkg/

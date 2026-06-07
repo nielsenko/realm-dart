@@ -1,0 +1,34 @@
+Make realm/util/file.cpp build with clang/libc++ targeting *-windows-gnu.
+
+1. libc++ does not implement std::chrono::clock_cast (P0355 is
+   incomplete there); gate it on the feature-test macro so the portable
+   pre-C++20 fallback right below is used instead.
+2. libc++'s std::filesystem::directory_iterator has a potentially-
+   throwing destructor, so DirScanner's defaulted destructor no longer
+   matches its `noexcept` declaration; state it explicitly (legal since
+   C++17, identical behavior on MSVC).
+
+Apply from packages/realm_dart with:
+  git -C src/realm-core apply ../../zig/patches/0001-mingw-libcxx-compat.patch
+---
+diff --git a/src/realm/util/file.cpp b/src/realm/util/file.cpp
+--- a/src/realm/util/file.cpp
++++ b/src/realm/util/file.cpp
+@@ -1838,7 +1838,7 @@ std::time_t File::last_write_time(const std::string& path)
+     auto time = std::filesystem::last_write_time(u8path(path));
+
+     using namespace std::chrono;
+-#if __cplusplus >= 202002L
++#if defined(__cpp_lib_chrono) && __cpp_lib_chrono >= 201907L
+     auto system_time = clock_cast<system_clock>(time);
+ #else
+     auto system_time =
+@@ -1877,7 +1877,7 @@ DirScanner::DirScanner(const std::string& path, bool allow_missing)
+         throw std::filesystem::filesystem_error("directory_iterator::directory_iterator", u8path(path), ec);
+ }
+
+-DirScanner::~DirScanner() = default;
++DirScanner::~DirScanner() noexcept = default;
+
+ bool DirScanner::next(std::string& name)
+ {

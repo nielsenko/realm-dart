@@ -29,10 +29,15 @@ String _getLibPathFlutter() {
     TargetOsType.android => nativeLibraryName,
     TargetOsType.ios => p.join(root, 'Frameworks', 'realm_dart.framework', nativeLibraryName),
     TargetOsType.linux => p.join(root, 'lib', nativeLibraryName),
-    TargetOsType.macos => p.join(p.dirname(root), 'Frameworks', nativeLibraryName),
+    TargetOsType.macos => _firstExisting([
+      p.join(p.dirname(root), 'Frameworks', 'realm_dart.framework', 'realm_dart'),
+      p.join(p.dirname(root), 'Frameworks', nativeLibraryName),
+    ]),
     TargetOsType.windows => nativeLibraryName,
   };
 }
+
+String _firstExisting(List<String> paths) => paths.firstWhere((path) => File(path).existsSync(), orElse: () => paths.last);
 
 String _getLibPathFlutterTest(Package realmPackage) {
   assert(realmPackage.name == 'realm');
@@ -55,12 +60,12 @@ String _getLibPathDart(Package realmDartPackage) {
 }
 
 String _getLibName(String stem) => switch (targetOsType) {
-      TargetOsType.android => 'lib$stem.so',
-      TargetOsType.ios => stem, // xcframeworks are a directory
-      TargetOsType.linux => 'lib$stem.so',
-      TargetOsType.macos => 'lib$stem.dylib',
-      TargetOsType.windows => '$stem.dll',
-    };
+  TargetOsType.android => 'lib$stem.so',
+  TargetOsType.ios => stem, // xcframeworks are a directory
+  TargetOsType.linux => 'lib$stem.so',
+  TargetOsType.macos => 'lib$stem.dylib',
+  TargetOsType.windows => '$stem.dll',
+};
 
 String? _getNearestProjectRoot(String dir) {
   while (dir != p.dirname(dir)) {
@@ -99,7 +104,7 @@ DynamicLibrary _openRealmLib() {
         candidatePaths.map((p) => '- "$p"').join('\n'),
         isFlutterPlatform //
             ? 'Hint: Did you forget to add a dependency on the realm package?'
-            : 'Hint: Did you forget to run `dart run realm_dart install`?'
+            : 'Hint: Did you forget to run `dart run realm_dart install`?',
       ].join('\n'),
     );
   }
@@ -142,9 +147,9 @@ DynamicLibrary _openRealmLib() {
 EJsonValue encodeDecimal128(Decimal128 value) => {'\$numberDecimal': value.toString()};
 
 impl.Decimal128 decodeDecimal128(EJsonValue ejson) => switch (ejson) {
-      {'\$numberDecimal': String x} => impl.Decimal128.parse(x),
-      _ => raiseInvalidEJson(ejson),
-    };
+  {'\$numberDecimal': String x} => impl.Decimal128.parse(x),
+  _ => raiseInvalidEJson(ejson),
+};
 
 EJsonValue encodeRealmValue(RealmValue value) {
   final v = value.value;
