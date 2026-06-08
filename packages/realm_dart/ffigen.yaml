@@ -2,6 +2,9 @@
 name: RealmLibrary
 description: Realm native lib bindings.
 output: "lib/src/handles/native/realm_bindings.dart"
+ffi-native:
+  # Must match the CodeAsset registered by hook/build.dart.
+  asset-id: 'package:realm_dart/realm_dart.dart' 
 headers:
   entry-points:
     - 'src/realm-core/src/realm.h'
@@ -34,8 +37,10 @@ functions:
     - 'Dart_.*' # exclude all starting with Dart_
   symbol-address:
     include:
-      - 'realm_dart_.*'
-      - 'realm_release'
+      # Only what is actually used via `addresses.` (note: ffigen 20's
+      # ffi-native mode generates broken addressOf getters for functions
+      # with enum parameters, e.g. realm_dart_log).
+      - 'realm_dart_delete_persistent_handle'
 structs:
   exclude:
     - '_.*'

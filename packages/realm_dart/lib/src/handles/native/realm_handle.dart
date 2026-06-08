@@ -46,8 +46,7 @@ class RealmHandle extends HandleBase<shared_realm> implements intf.RealmHandle {
     final configHandle = ConfigHandle.from(config);
 
     return RealmHandle(
-      realmLib
-          .realm_open(configHandle.pointer) //
+      realm_open(configHandle.pointer) //
           .raiseLastErrorIfNull(),
     );
   }
@@ -82,13 +81,13 @@ class RealmHandle extends HandleBase<shared_realm> implements intf.RealmHandle {
   ObjectHandle createWithPrimaryKey(int classKey, Object? primaryKey) {
     return using((arena) {
       final realmValue = primaryKey.toNative(arena);
-      return ObjectHandle(realmLib.realm_object_create_with_primary_key(pointer, classKey, realmValue.ref), this);
+      return ObjectHandle(realm_object_create_with_primary_key(pointer, classKey, realmValue.ref), this);
     });
   }
 
   @override
   ObjectHandle create(int classKey) {
-    return ObjectHandle(realmLib.realm_object_create(pointer, classKey), this);
+    return ObjectHandle(realm_object_create(pointer, classKey), this);
   }
 
   @override
@@ -96,7 +95,7 @@ class RealmHandle extends HandleBase<shared_realm> implements intf.RealmHandle {
     return using((arena) {
       final realmValue = primaryKey.toNative(arena);
       final didCreate = arena<Bool>();
-      return ObjectHandle(realmLib.realm_object_get_or_create_with_primary_key(pointer, classKey, realmValue.ref, didCreate), this);
+      return ObjectHandle(realm_object_get_or_create_with_primary_key(pointer, classKey, realmValue.ref, didCreate), this);
     });
   }
 
@@ -104,7 +103,7 @@ class RealmHandle extends HandleBase<shared_realm> implements intf.RealmHandle {
   bool compact() {
     return using((arena) {
       final outDidCompact = arena<Bool>();
-      realmLib.realm_compact(pointer, outDidCompact).raiseLastErrorIfFalse();
+      realm_compact(pointer, outDidCompact).raiseLastErrorIfFalse();
       return outDidCompact.value;
     });
   }
@@ -112,7 +111,7 @@ class RealmHandle extends HandleBase<shared_realm> implements intf.RealmHandle {
   @override
   void writeCopy(Configuration config) {
     final configHandle = ConfigHandle.from(config);
-    realmLib.realm_convert_with_config(pointer, configHandle.pointer, false).raiseLastErrorIfFalse();
+    realm_convert_with_config(pointer, configHandle.pointer, false).raiseLastErrorIfFalse();
   }
 
   @override
@@ -123,42 +122,42 @@ class RealmHandle extends HandleBase<shared_realm> implements intf.RealmHandle {
       for (var i = 0; i < length; ++i) {
         intoRealmQueryArg(args[i], argsPointer + i, arena);
       }
-      final queryHandle = QueryHandle(realmLib.realm_query_parse(pointer, classKey, query.toCharPtr(arena), length, argsPointer), this);
+      final queryHandle = QueryHandle(realm_query_parse(pointer, classKey, query.toCharPtr(arena), length, argsPointer), this);
       return queryHandle.findAll();
     });
   }
 
   @override
-  RealmHandle freeze() => RealmHandle(realmLib.realm_freeze(pointer));
+  RealmHandle freeze() => RealmHandle(realm_freeze(pointer));
 
   @override
   bool get isFrozen {
-    return realmLib.realm_is_frozen(pointer.cast());
+    return realm_is_frozen(pointer.cast());
   }
 
   @override
   void disableAutoRefreshForTesting() {
-    realmLib.realm_set_auto_refresh(pointer, false);
+    realm_set_auto_refresh(pointer, false);
   }
 
   @override
   void close() {
-    realmLib.realm_close(pointer).raiseLastErrorIfFalse();
+    realm_close(pointer).raiseLastErrorIfFalse();
   }
 
   @override
   bool get isClosed {
-    return realmLib.realm_is_closed(pointer);
+    return realm_is_closed(pointer);
   }
 
   @override
   void beginWrite() {
-    realmLib.realm_begin_write(pointer).raiseLastErrorIfFalse();
+    realm_begin_write(pointer).raiseLastErrorIfFalse();
   }
 
   @override
   void commitWrite() {
-    realmLib.realm_commit(pointer).raiseLastErrorIfFalse();
+    realm_commit(pointer).raiseLastErrorIfFalse();
   }
 
   @override
@@ -175,16 +174,14 @@ class RealmHandle extends HandleBase<shared_realm> implements intf.RealmHandle {
     if (ct?.isCancelled != true) {
       using((arena) {
         final transactionId = arena<UnsignedInt>();
-        realmLib
-            .realm_async_begin_write(
-              pointer,
-              Pointer.fromFunction(_completeAsyncBeginWrite),
-              completer.toPersistentHandle(),
-              realmLib.addresses.realm_dart_delete_persistent_handle,
-              true,
-              transactionId,
-            )
-            .raiseLastErrorIfFalse();
+        realm_async_begin_write(
+          pointer,
+          Pointer.fromFunction(_completeAsyncBeginWrite),
+          completer.toPersistentHandle(),
+          addresses.realm_dart_delete_persistent_handle,
+          true,
+          transactionId,
+        ).raiseLastErrorIfFalse();
         id = transactionId.value;
       });
     }
@@ -205,16 +202,14 @@ class RealmHandle extends HandleBase<shared_realm> implements intf.RealmHandle {
     if (ct?.isCancelled != true) {
       using((arena) {
         final transactionId = arena<UnsignedInt>();
-        realmLib
-            .realm_async_commit(
-              pointer,
-              Pointer.fromFunction(_completeAsyncCommit),
-              completer.toPersistentHandle(),
-              realmLib.addresses.realm_dart_delete_persistent_handle,
-              false,
-              transactionId,
-            )
-            .raiseLastErrorIfFalse();
+        realm_async_commit(
+          pointer,
+          Pointer.fromFunction(_completeAsyncCommit),
+          completer.toPersistentHandle(),
+          addresses.realm_dart_delete_persistent_handle,
+          false,
+          transactionId,
+        ).raiseLastErrorIfFalse();
         id = transactionId.value;
       });
     }
@@ -224,7 +219,7 @@ class RealmHandle extends HandleBase<shared_realm> implements intf.RealmHandle {
   bool _cancelAsync(int cancellationId) {
     return using((arena) {
       final didCancel = arena<Bool>();
-      realmLib.realm_async_cancel(pointer, cancellationId, didCancel).raiseLastErrorIfFalse();
+      realm_async_cancel(pointer, cancellationId, didCancel).raiseLastErrorIfFalse();
       return didCancel.value;
     });
   }
@@ -245,19 +240,19 @@ class RealmHandle extends HandleBase<shared_realm> implements intf.RealmHandle {
 
   @override
   bool get isWritable {
-    return realmLib.realm_is_writable(pointer);
+    return realm_is_writable(pointer);
   }
 
   @override
   void rollbackWrite() {
-    realmLib.realm_rollback(pointer).raiseLastErrorIfFalse();
+    realm_rollback(pointer).raiseLastErrorIfFalse();
   }
 
   @override
   bool refresh() {
     return using((arena) {
       final didRefresh = arena<Bool>();
-      realmLib.realm_refresh(pointer, didRefresh).raiseLastErrorIfFalse();
+      realm_refresh(pointer, didRefresh).raiseLastErrorIfFalse();
       return didRefresh.value;
     });
   }
@@ -266,8 +261,8 @@ class RealmHandle extends HandleBase<shared_realm> implements intf.RealmHandle {
   Future<bool> refreshAsync() async {
     final completer = Completer<bool>();
     final callback = Pointer.fromFunction<Void Function(Pointer<Void>)>(_realmRefreshAsyncCallback);
-    final completerPtr = realmLib.realm_dart_object_to_persistent_handle(completer);
-    final result = realmLib.realm_add_realm_refresh_callback(pointer, callback.cast(), completerPtr, realmLib.addresses.realm_dart_delete_persistent_handle);
+    final completerPtr = realm_dart_object_to_persistent_handle(completer);
+    final result = realm_add_realm_refresh_callback(pointer, callback.cast(), completerPtr, addresses.realm_dart_delete_persistent_handle);
 
     if (result == nullptr) {
       return false;
@@ -280,13 +275,13 @@ class RealmHandle extends HandleBase<shared_realm> implements intf.RealmHandle {
       return;
     }
 
-    final completer = realmLib.realm_dart_persistent_handle_to_object(userdata) as Completer<bool>;
+    final completer = realm_dart_persistent_handle_to_object(userdata) as Completer<bool>;
     completer.complete(true);
   }
 
   @override
   ResultsHandle findAll(int classKey) {
-    return ResultsHandle(realmLib.realm_object_find_all(pointer, classKey), this);
+    return ResultsHandle(realm_object_find_all(pointer, classKey), this);
   }
 
   @override
@@ -294,7 +289,7 @@ class RealmHandle extends HandleBase<shared_realm> implements intf.RealmHandle {
     return using((arena) {
       final realmValue = primaryKey.toNative(arena);
       final found = arena<Bool>();
-      final ptr = realmLib.realm_object_find_with_primary_key(pointer, classKey, realmValue.ref, found);
+      final ptr = realm_object_find_with_primary_key(pointer, classKey, realmValue.ref, found);
       if (!found.value) {
         assert(ptr == nullptr); // If not found, the pointer should be null. Otherwise we have a leak
         return null;
@@ -305,16 +300,20 @@ class RealmHandle extends HandleBase<shared_realm> implements intf.RealmHandle {
 
   @override
   ObjectHandle? findExisting(int classKey, covariant ObjectHandle other) {
-    final key = realmLib.realm_object_get_key(other.pointer);
-    return ObjectHandle(realmLib.realm_get_object(pointer, classKey, key), this);
+    final key = realm_object_get_key(other.pointer);
+    return ObjectHandle(realm_get_object(pointer, classKey, key), this);
   }
 
   @override
   void renameProperty(String objectType, String oldName, String newName, covariant SchemaHandle schema) {
     using((arena) {
-      realmLib
-          .realm_schema_rename_property(pointer, schema.pointer, objectType.toCharPtr(arena), oldName.toCharPtr(arena), newName.toCharPtr(arena))
-          .raiseLastErrorIfFalse();
+      realm_schema_rename_property(
+        pointer,
+        schema.pointer,
+        objectType.toCharPtr(arena),
+        oldName.toCharPtr(arena),
+        newName.toCharPtr(arena),
+      ).raiseLastErrorIfFalse();
     });
   }
 
@@ -322,24 +321,24 @@ class RealmHandle extends HandleBase<shared_realm> implements intf.RealmHandle {
   bool deleteType(String objectType) {
     return using((arena) {
       final tableDeleted = arena<Bool>();
-      realmLib.realm_remove_table(pointer, objectType.toCharPtr(arena), tableDeleted).raiseLastErrorIfFalse();
+      realm_remove_table(pointer, objectType.toCharPtr(arena), tableDeleted).raiseLastErrorIfFalse();
       return tableDeleted.value;
     });
   }
 
   @override
   ObjectHandle getObject(int classKey, int objectKey) {
-    return ObjectHandle(realmLib.realm_get_object(pointer, classKey, objectKey), this);
+    return ObjectHandle(realm_get_object(pointer, classKey, objectKey), this);
   }
 
   @override
   CallbackTokenHandle subscribeForSchemaNotifications(Realm realm) {
     return CallbackTokenHandle(
-      realmLib.realm_add_schema_changed_callback(
+      realm_add_schema_changed_callback(
         pointer,
         Pointer.fromFunction(_schemaChangeCallback),
         realm.toPersistentHandle(),
-        realmLib.addresses.realm_dart_delete_persistent_handle,
+        addresses.realm_dart_delete_persistent_handle,
       ),
       this,
     );
@@ -355,7 +354,7 @@ class RealmHandle extends HandleBase<shared_realm> implements intf.RealmHandle {
   RealmSchema _readSchema(Arena arena, {int expectedSize = 10}) {
     final classesPtr = arena<Uint32>(expectedSize);
     final actualCount = arena<Size>();
-    realmLib.realm_get_class_keys(pointer, classesPtr, expectedSize, actualCount).raiseLastErrorIfFalse();
+    realm_get_class_keys(pointer, classesPtr, expectedSize, actualCount).raiseLastErrorIfFalse();
     if (expectedSize < actualCount.value) {
       arena.free(classesPtr);
       return _readSchema(arena, expectedSize: actualCount.value);
@@ -365,7 +364,7 @@ class RealmHandle extends HandleBase<shared_realm> implements intf.RealmHandle {
     for (var i = 0; i < actualCount.value; i++) {
       final classInfo = arena<realm_class_info>();
       final classKey = (classesPtr + i).value;
-      realmLib.realm_get_class(pointer, classKey, classInfo).raiseLastErrorIfFalse();
+      realm_get_class(pointer, classKey, classInfo).raiseLastErrorIfFalse();
 
       final name = classInfo.ref.name.cast<Utf8>().toDartString();
       final baseType = ObjectType.values.firstWhere(
@@ -382,7 +381,7 @@ class RealmHandle extends HandleBase<shared_realm> implements intf.RealmHandle {
   SchemaObject _getSchemaForClassKey(int classKey, String name, ObjectType baseType, Arena arena, {int expectedSize = 10}) {
     final actualCount = arena<Size>();
     final propertiesPtr = arena<realm_property_info>(expectedSize);
-    realmLib.realm_get_class_properties(pointer, classKey, propertiesPtr, expectedSize, actualCount).raiseLastErrorIfFalse();
+    realm_get_class_properties(pointer, classKey, propertiesPtr, expectedSize, actualCount).raiseLastErrorIfFalse();
 
     if (expectedSize < actualCount.value) {
       // The supplied array was too small - resize it
@@ -423,7 +422,7 @@ class RealmHandle extends HandleBase<shared_realm> implements intf.RealmHandle {
     return using((arena) {
       final found = arena<Bool>();
       final classInfo = arena<realm_class_info_t>();
-      realmLib.realm_find_class(pointer, schema.name.toCharPtr(arena), found, classInfo).raiseLastErrorIfFalse();
+      realm_find_class(pointer, schema.name.toCharPtr(arena), found, classInfo).raiseLastErrorIfFalse();
       final primaryKey = classInfo.ref.primary_key.cast<Utf8>().toRealmDartString(treatEmptyAsNull: true);
       return RealmObjectMetadata(schema, classInfo.ref.key, _getPropertiesMetadata(classInfo.ref.key, primaryKey, arena));
     });
@@ -431,11 +430,11 @@ class RealmHandle extends HandleBase<shared_realm> implements intf.RealmHandle {
 
   Map<String, RealmPropertyMetadata> _getPropertiesMetadata(int classKey, String? primaryKeyName, Arena arena) {
     final propertyCountPtr = arena<Size>();
-    realmLib.realm_get_property_keys(pointer, classKey, nullptr, 0, propertyCountPtr).raiseLastErrorIfFalse();
+    realm_get_property_keys(pointer, classKey, nullptr, 0, propertyCountPtr).raiseLastErrorIfFalse();
 
     var propertyCount = propertyCountPtr.value;
     final propertiesPtr = arena<realm_property_info_t>(propertyCount);
-    realmLib.realm_get_class_properties(pointer, classKey, propertiesPtr, propertyCount, propertyCountPtr).raiseLastErrorIfFalse();
+    realm_get_class_properties(pointer, classKey, propertiesPtr, propertyCount, propertyCountPtr).raiseLastErrorIfFalse();
 
     propertyCount = propertyCountPtr.value;
     Map<String, RealmPropertyMetadata> result = <String, RealmPropertyMetadata>{};
@@ -476,7 +475,7 @@ class RealmHandle extends HandleBase<shared_realm> implements intf.RealmHandle {
         keypathsNative[i] = keyPaths[i].toCharPtr(arena);
       }
 
-      return realmLib.realm_create_key_path_array(pointer, classKey, length, keypathsNative).raiseLastErrorIfNull();
+      return realm_create_key_path_array(pointer, classKey, length, keypathsNative).raiseLastErrorIfNull();
     });
   }
 

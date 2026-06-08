@@ -79,7 +79,7 @@ class SchemaHandle extends HandleBase<realm_schema> implements intf.SchemaHandle
         (schemaProperties + i).value = properties;
       }
 
-      return SchemaHandle(realmLib.realm_schema_new(schemaClasses, classCount, schemaProperties));
+      return SchemaHandle(realm_schema_new(schemaClasses, classCount, schemaProperties));
     });
   }
 }

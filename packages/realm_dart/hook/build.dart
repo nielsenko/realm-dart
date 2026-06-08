@@ -24,13 +24,6 @@ void main(List<String> args) async {
       throw Exception('zig build succeeded but ${builtLib.path} is missing');
     }
 
-    // Keep the legacy loader working for plain Dart on the host.
-    if (code.targetOS == OS.current && code.targetArchitecture == Architecture.current) {
-      final legacyDir = Directory.fromUri(packageRoot.resolve('binary/${code.targetOS.name.toLowerCase()}/'));
-      await legacyDir.create(recursive: true);
-      await builtLib.copy('${legacyDir.path}/$libName');
-    }
-
     output.assets.code.add(CodeAsset(package: input.packageName, name: 'realm_dart.dart', linkMode: DynamicLoadingBundled(), file: builtLib.uri));
   });
 }

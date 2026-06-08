@@ -14,7 +14,7 @@ class QueryHandle extends RootedHandleBase<realm_query> {
 
   ResultsHandle findAll() {
     try {
-      return ResultsHandle(realmLib.realm_query_find_all(pointer), root);
+      return ResultsHandle(realm_query_find_all(pointer), root);
     } finally {
       release();
     }

@@ -26,7 +26,7 @@ class MapHandle extends CollectionHandleBase<realm_dictionary> implements intf.M
   int get size {
     return using((arena) {
       final outSize = arena<Size>();
-      realmLib.realm_dictionary_size(pointer, outSize).raiseLastErrorIfFalse();
+      realm_dictionary_size(pointer, outSize).raiseLastErrorIfFalse();
       return outSize.value;
     });
   }
@@ -36,7 +36,7 @@ class MapHandle extends CollectionHandleBase<realm_dictionary> implements intf.M
     return using((arena) {
       final keyNative = key.toNative(arena);
       final outErased = arena<Bool>();
-      realmLib.realm_dictionary_erase(pointer, keyNative.ref, outErased).raiseLastErrorIfFalse();
+      realm_dictionary_erase(pointer, keyNative.ref, outErased).raiseLastErrorIfFalse();
       return outErased.value;
     });
   }
@@ -47,12 +47,12 @@ class MapHandle extends CollectionHandleBase<realm_dictionary> implements intf.M
       final keyNative = key.toNative(arena);
       final outValue = arena<realm_value_t>();
       final outFound = arena<Bool>();
-      realmLib.realm_dictionary_find(pointer, keyNative.ref, outValue, outFound).raiseLastErrorIfFalse();
+      realm_dictionary_find(pointer, keyNative.ref, outValue, outFound).raiseLastErrorIfFalse();
       if (outFound.value) {
         return outValue.toDartValue(
           realm,
-          () => realmLib.realm_dictionary_get_list(pointer, keyNative.ref),
-          () => realmLib.realm_dictionary_get_dictionary(pointer, keyNative.ref),
+          () => realm_dictionary_get_list(pointer, keyNative.ref),
+          () => realm_dictionary_get_dictionary(pointer, keyNative.ref),
         );
       }
       return null;
@@ -61,12 +61,12 @@ class MapHandle extends CollectionHandleBase<realm_dictionary> implements intf.M
 
   @override
   bool get isValid {
-    return realmLib.realm_dictionary_is_valid(pointer);
+    return realm_dictionary_is_valid(pointer);
   }
 
   @override
   void clear() {
-    realmLib.realm_dictionary_clear(pointer).raiseLastErrorIfFalse();
+    realm_dictionary_clear(pointer).raiseLastErrorIfFalse();
   }
 
   @override
@@ -74,14 +74,14 @@ class MapHandle extends CollectionHandleBase<realm_dictionary> implements intf.M
     return using((arena) {
       final outSize = arena<Size>();
       final outKeys = arena<Pointer<realm_results>>();
-      realmLib.realm_dictionary_get_keys(pointer, outSize, outKeys).raiseLastErrorIfFalse();
+      realm_dictionary_get_keys(pointer, outSize, outKeys).raiseLastErrorIfFalse();
       return ResultsHandle(outKeys.value, root);
     });
   }
 
   @override
   ResultsHandle get values {
-    return ResultsHandle(realmLib.realm_dictionary_to_results(pointer), root);
+    return ResultsHandle(realm_dictionary_to_results(pointer), root);
   }
 
   @override
@@ -89,7 +89,7 @@ class MapHandle extends CollectionHandleBase<realm_dictionary> implements intf.M
     return using((arena) {
       final keyNative = key.toNative(arena);
       final found = arena<Bool>();
-      realmLib.realm_dictionary_contains_key(pointer, keyNative.ref, found).raiseLastErrorIfFalse();
+      realm_dictionary_contains_key(pointer, keyNative.ref, found).raiseLastErrorIfFalse();
       return found.value;
     });
   }
@@ -100,7 +100,7 @@ class MapHandle extends CollectionHandleBase<realm_dictionary> implements intf.M
       // TODO: how should this behave for collections
       final valueNative = value.toNative(arena);
       final index = arena<Size>();
-      realmLib.realm_dictionary_contains_value(pointer, valueNative.ref, index).raiseLastErrorIfFalse();
+      realm_dictionary_contains_value(pointer, valueNative.ref, index).raiseLastErrorIfFalse();
       return index.value;
     });
   }
@@ -112,7 +112,7 @@ class MapHandle extends CollectionHandleBase<realm_dictionary> implements intf.M
   ObjectHandle insertEmbedded(String key) {
     return using((arena) {
       final keyNative = key.toNative(arena);
-      return ObjectHandle(realmLib.realm_dictionary_insert_embedded(pointer, keyNative.ref), root);
+      return ObjectHandle(realm_dictionary_insert_embedded(pointer, keyNative.ref), root);
     });
   }
 
@@ -121,15 +121,7 @@ class MapHandle extends CollectionHandleBase<realm_dictionary> implements intf.M
     using((arena) {
       final keyNative = key.toNative(arena);
       final valueNative = value.toNative(arena);
-      realmLib
-          .realm_dictionary_insert(
-            pointer,
-            keyNative.ref,
-            valueNative.ref,
-            nullptr,
-            nullptr,
-          )
-          .raiseLastErrorIfFalse();
+      realm_dictionary_insert(pointer, keyNative.ref, valueNative.ref, nullptr, nullptr).raiseLastErrorIfFalse();
     });
   }
 
@@ -140,8 +132,8 @@ class MapHandle extends CollectionHandleBase<realm_dictionary> implements intf.M
       createCollection(
         realm,
         value,
-        () => realmLib.realm_dictionary_insert_list(pointer, keyNative.ref),
-        () => realmLib.realm_dictionary_insert_dictionary(pointer, keyNative.ref),
+        () => realm_dictionary_insert_list(pointer, keyNative.ref),
+        () => realm_dictionary_insert_dictionary(pointer, keyNative.ref),
       );
     });
   }
@@ -155,15 +147,7 @@ class MapHandle extends CollectionHandleBase<realm_dictionary> implements intf.M
         intoRealmQueryArg(args[i], argsPointer + i, arena);
       }
 
-      final queryHandle = QueryHandle(
-        realmLib.realm_query_parse_for_results(
-          values.pointer,
-          query.toCharPtr(arena),
-          length,
-          argsPointer,
-        ),
-        root,
-      );
+      final queryHandle = QueryHandle(realm_query_parse_for_results(values.pointer, query.toCharPtr(arena), length, argsPointer), root);
       return queryHandle.findAll();
     });
   }
@@ -172,7 +156,7 @@ class MapHandle extends CollectionHandleBase<realm_dictionary> implements intf.M
   MapHandle? resolveIn(covariant RealmHandle frozenRealm) {
     return using((arena) {
       final resultPtr = arena<Pointer<realm_dictionary>>();
-      realmLib.realm_dictionary_resolve_in(pointer, frozenRealm.pointer, resultPtr).raiseLastErrorIfFalse();
+      realm_dictionary_resolve_in(pointer, frozenRealm.pointer, resultPtr).raiseLastErrorIfFalse();
       return resultPtr == nullptr ? null : MapHandle(resultPtr.value, root);
     });
   }
@@ -183,10 +167,10 @@ class MapHandle extends CollectionHandleBase<realm_dictionary> implements intf.M
       final kpNative = root.buildAndVerifyKeyPath(keyPaths, classKey);
 
       return NotificationTokenHandle(
-        realmLib.realm_dictionary_add_notification_callback(
+        realm_dictionary_add_notification_callback(
           pointer,
           controller.toPersistentHandle(),
-          realmLib.addresses.realm_dart_delete_persistent_handle,
+          addresses.realm_dart_delete_persistent_handle,
           kpNative,
           Pointer.fromFunction(_mapChangeCallback),
         ),
@@ -205,7 +189,7 @@ void _mapChangeCallback(Pointer<Void> userdata, Pointer<realm_dictionary_changes
   }
 
   try {
-    final clonedData = realmLib.realm_clone(data.cast());
+    final clonedData = realm_clone(data.cast());
     if (clonedData == nullptr) {
       controller.onError(RealmError("Error while cloning notifications data"));
       return;

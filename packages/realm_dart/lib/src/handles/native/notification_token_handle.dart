@@ -23,7 +23,7 @@ void collectionChangeCallback(Pointer<Void> userdata, Pointer<realm_collection_c
   }
 
   try {
-    final clonedData = realmLib.realm_clone(data.cast());
+    final clonedData = realm_clone(data.cast());
     if (clonedData == nullptr) {
       controller.onError(RealmError("Error while cloning notifications data"));
       return;

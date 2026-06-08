@@ -19,18 +19,18 @@ class ConfigHandle extends HandleBase<realm_config> {
 
   factory ConfigHandle.from(Configuration config) {
     return using((arena) {
-      final configHandle = ConfigHandle(realmLib.realm_config_new());
+      final configHandle = ConfigHandle(realm_config_new());
 
       if (config.schemaObjects.isNotEmpty) {
         final schemaHandle = SchemaHandle.from(config.schemaObjects);
-        realmLib.realm_config_set_schema(configHandle.pointer, schemaHandle.pointer);
+        realm_config_set_schema(configHandle.pointer, schemaHandle.pointer);
       }
 
-      realmLib.realm_config_set_path(configHandle.pointer, config.path.toCharPtr(arena));
-      realmLib.realm_config_set_scheduler(configHandle.pointer, schedulerHandle.pointer);
+      realm_config_set_path(configHandle.pointer, config.path.toCharPtr(arena));
+      realm_config_set_scheduler(configHandle.pointer, schedulerHandle.pointer);
 
       if (config.fifoFilesFallbackPath != null) {
-        realmLib.realm_config_set_fifo_path(configHandle.pointer, config.fifoFilesFallbackPath!.toCharPtr(arena));
+        realm_config_set_fifo_path(configHandle.pointer, config.fifoFilesFallbackPath!.toCharPtr(arena));
       }
 
       // Setting schema version only makes sense for local realms, but core insists it is always set,
@@ -40,55 +40,55 @@ class ConfigHandle extends HandleBase<realm_config> {
         (LocalConfiguration lc) => lc.schemaVersion,
         _ => 0,
       };
-      realmLib.realm_config_set_schema_version(configHandle.pointer, schemaVersion);
+      realm_config_set_schema_version(configHandle.pointer, schemaVersion);
       if (config.maxNumberOfActiveVersions != null) {
-        realmLib.realm_config_set_max_number_of_active_versions(configHandle.pointer, config.maxNumberOfActiveVersions!);
+        realm_config_set_max_number_of_active_versions(configHandle.pointer, config.maxNumberOfActiveVersions!);
       }
       if (config is LocalConfiguration) {
         if (config.initialDataCallback != null) {
-          realmLib.realm_config_set_data_initialization_function(
+          realm_config_set_data_initialization_function(
             configHandle.pointer,
             Pointer.fromFunction(_initialDataCallback, false),
             config.toPersistentHandle(),
-            realmLib.addresses.realm_dart_delete_persistent_handle,
+            addresses.realm_dart_delete_persistent_handle,
           );
         }
         if (config.isReadOnly) {
-          realmLib.realm_config_set_schema_mode(configHandle.pointer, realm_schema_mode.RLM_SCHEMA_MODE_IMMUTABLE);
+          realm_config_set_schema_mode(configHandle.pointer, realm_schema_mode.RLM_SCHEMA_MODE_IMMUTABLE);
         } else if (config.shouldDeleteIfMigrationNeeded) {
-          realmLib.realm_config_set_schema_mode(configHandle.pointer, realm_schema_mode.RLM_SCHEMA_MODE_SOFT_RESET_FILE);
+          realm_config_set_schema_mode(configHandle.pointer, realm_schema_mode.RLM_SCHEMA_MODE_SOFT_RESET_FILE);
         }
         if (config.disableFormatUpgrade) {
-          realmLib.realm_config_set_disable_format_upgrade(configHandle.pointer, config.disableFormatUpgrade);
+          realm_config_set_disable_format_upgrade(configHandle.pointer, config.disableFormatUpgrade);
         }
         if (config.shouldCompactCallback != null) {
-          realmLib.realm_config_set_should_compact_on_launch_function(
+          realm_config_set_should_compact_on_launch_function(
             configHandle.pointer,
             Pointer.fromFunction(_shouldCompactCallback, false),
             config.toPersistentHandle(),
-            realmLib.addresses.realm_dart_delete_persistent_handle,
+            addresses.realm_dart_delete_persistent_handle,
           );
         }
         if (config.migrationCallback != null) {
-          realmLib.realm_config_set_migration_function(
+          realm_config_set_migration_function(
             configHandle.pointer,
             Pointer.fromFunction(_migrationCallback, false),
             config.toPersistentHandle(),
-            realmLib.addresses.realm_dart_delete_persistent_handle,
+            addresses.realm_dart_delete_persistent_handle,
           );
         }
       } else if (config is InMemoryConfiguration) {
-        realmLib.realm_config_set_in_memory(configHandle.pointer, true);
+        realm_config_set_in_memory(configHandle.pointer, true);
       }
 
       final key = config.encryptionKey;
       if (key != null) {
-        realmLib.realm_config_set_encryption_key(configHandle.pointer, key.toUint8Ptr(arena), key.length);
+        realm_config_set_encryption_key(configHandle.pointer, key.toUint8Ptr(arena), key.length);
       }
 
       // For dynamic Realms, we need to have a complete view of the schema in Core.
       if (config.schemaObjects.isEmpty) {
-        realmLib.realm_config_set_schema_subset_mode(configHandle.pointer, realm_schema_subset_mode.RLM_SCHEMA_SUBSET_MODE_COMPLETE);
+        realm_config_set_schema_subset_mode(configHandle.pointer, realm_schema_subset_mode.RLM_SCHEMA_SUBSET_MODE_COMPLETE);
       }
 
       return configHandle;
@@ -112,7 +112,7 @@ bool _migrationCallback(Pointer<Void> userdata, Pointer<shared_realm> oldRealmHa
   try {
     final LocalConfiguration config = userdata.toObject();
 
-    final oldSchemaVersion = realmLib.realm_get_schema_version(oldRealmHandle);
+    final oldSchemaVersion = realm_get_schema_version(oldRealmHandle);
     final oldConfig = Configuration.local([], path: config.path, isReadOnly: true, schemaVersion: oldSchemaVersion);
     final oldRealm = RealmInternal.getUnowned(oldConfig, oldHandle, isInMigration: true);
 
@@ -122,7 +122,7 @@ bool _migrationCallback(Pointer<Void> userdata, Pointer<shared_realm> oldRealmHa
     config.migrationCallback!(migration, oldSchemaVersion);
     return true;
   } catch (ex) {
-    realmLib.realm_register_user_code_callback_error(ex.toPersistentHandle());
+    realm_register_user_code_callback_error(ex.toPersistentHandle());
   } finally {
     oldHandle.release();
     newHandle.release();
@@ -139,7 +139,7 @@ bool _initialDataCallback(Pointer<Void> userdata, Pointer<shared_realm> realmPtr
     config.initialDataCallback!(realm);
     return true;
   } catch (ex) {
-    realmLib.realm_register_user_code_callback_error(ex.toPersistentHandle());
+    realm_register_user_code_callback_error(ex.toPersistentHandle());
   } finally {
     realmHandle.release();
   }

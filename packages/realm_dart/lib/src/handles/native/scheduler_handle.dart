@@ -16,14 +16,15 @@ class SchedulerHandle extends HandleBase<realm_scheduler> implements intf.Schedu
   SchedulerHandle._(this.sendPort, Pointer<realm_scheduler> pointer) : super(pointer, 24);
 
   factory SchedulerHandle(int isolateId, SendPort sendPort) {
-    final schedulerPtr = realmLib.realm_dart_create_scheduler(isolateId, sendPort.nativePort);
+    ensureRealmInit();
+    final schedulerPtr = realm_dart_create_scheduler(isolateId, sendPort.nativePort);
     return SchedulerHandle._(sendPort, schedulerPtr);
   }
 
   @override
   void invoke(int workQueue) {
     final queuePointer = Pointer<realm_work_queue>.fromAddress(workQueue);
-    realmLib.realm_scheduler_perform_work(queuePointer);
+    realm_scheduler_perform_work(queuePointer);
   }
 }
 

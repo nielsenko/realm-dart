@@ -29,15 +29,7 @@ class ResultsHandle extends RootedHandleBase<realm_results> implements intf.Resu
       for (var i = 0; i < length; ++i) {
         intoRealmQueryArg(args[i], argsPointer + i, arena);
       }
-      final queryHandle = QueryHandle(
-        realmLib.realm_query_parse_for_results(
-          pointer,
-          query.toCharPtr(arena),
-          length,
-          argsPointer,
-        ),
-        root,
-      );
+      final queryHandle = QueryHandle(realm_query_parse_for_results(pointer, query.toCharPtr(arena), length, argsPointer), root);
       return queryHandle.findAll();
     });
   }
@@ -50,28 +42,21 @@ class ResultsHandle extends RootedHandleBase<realm_results> implements intf.Resu
 
       // TODO: how should this behave for collections
       final realmValue = value.toNative(arena);
-      realmLib
-          .realm_results_find(
-            pointer,
-            realmValue,
-            outIndex,
-            outFound,
-          )
-          .raiseLastErrorIfFalse();
+      realm_results_find(pointer, realmValue, outIndex, outFound).raiseLastErrorIfFalse();
       return outFound.value ? outIndex.value : -1;
     });
   }
 
   @override
   ObjectHandle getObjectAt(int index) {
-    return ObjectHandle(realmLib.realm_results_get_object(pointer, index), root);
+    return ObjectHandle(realm_results_get_object(pointer, index), root);
   }
 
   @override
   int get count {
     return using((arena) {
       final countPtr = arena<Size>();
-      realmLib.realm_results_count(pointer, countPtr).raiseLastErrorIfFalse();
+      realm_results_count(pointer, countPtr).raiseLastErrorIfFalse();
       return countPtr.value;
     });
   }
@@ -80,36 +65,32 @@ class ResultsHandle extends RootedHandleBase<realm_results> implements intf.Resu
   bool isValid() {
     return using((arena) {
       final isValid = arena<Bool>();
-      realmLib.realm_results_is_valid(pointer, isValid).raiseLastErrorIfFalse();
+      realm_results_is_valid(pointer, isValid).raiseLastErrorIfFalse();
       return isValid.value;
     });
   }
 
   @override
   void deleteAll() {
-    realmLib.realm_results_delete_all(pointer).raiseLastErrorIfFalse();
+    realm_results_delete_all(pointer).raiseLastErrorIfFalse();
   }
 
   @override
   ResultsHandle snapshot() {
-    return ResultsHandle(realmLib.realm_results_snapshot(pointer), root);
+    return ResultsHandle(realm_results_snapshot(pointer), root);
   }
 
   @override
   ResultsHandle resolveIn(covariant RealmHandle realmHandle) {
-    return ResultsHandle(realmLib.realm_results_resolve_in(pointer, realmHandle.pointer), realmHandle);
+    return ResultsHandle(realm_results_resolve_in(pointer, realmHandle.pointer), realmHandle);
   }
 
   @override
   Object? elementAt(Realm realm, int index) {
     return using((arena) {
       final realmValue = arena<realm_value_t>();
-      realmLib.realm_results_get(pointer, index, realmValue).raiseLastErrorIfFalse();
-      return realmValue.toDartValue(
-        realm,
-        () => realmLib.realm_results_get_list(pointer, index),
-        () => realmLib.realm_results_get_dictionary(pointer, index),
-      );
+      realm_results_get(pointer, index, realmValue).raiseLastErrorIfFalse();
+      return realmValue.toDartValue(realm, () => realm_results_get_list(pointer, index), () => realm_results_get_dictionary(pointer, index));
     });
   }
 
@@ -118,10 +99,10 @@ class ResultsHandle extends RootedHandleBase<realm_results> implements intf.Resu
     return using((Arena arena) {
       final kpNative = root.buildAndVerifyKeyPath(keyPaths, classKey);
       return NotificationTokenHandle(
-        realmLib.realm_results_add_notification_callback(
+        realm_results_add_notification_callback(
           pointer,
           controller.toPersistentHandle(),
-          realmLib.addresses.realm_dart_delete_persistent_handle,
+          addresses.realm_dart_delete_persistent_handle,
           kpNative,
           Pointer.fromFunction(collectionChangeCallback),
         ),

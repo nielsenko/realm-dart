@@ -45,14 +45,8 @@ melos:
 
     build:
       steps:
-        - build:native
         - build:binding
         - build:dart
-
-    build:native:
-      exec: dev build
-      packageFilters:
-        dirExists: src # by convention
 
     build:dart:
       run: dart run build_runner build --delete-conflicting-outputs

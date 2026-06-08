@@ -25,7 +25,7 @@ class CollectionChangesHandle extends HandleBase<realm_collection_changes> imple
       final outNumMoves = arena<Size>();
       final outCollectionCleared = arena<Bool>();
       final outCollectionWasDeleted = arena<Bool>();
-      realmLib.realm_collection_changes_get_num_changes(
+      realm_collection_changes_get_num_changes(
         pointer,
         outNumDeletions,
         outNumInsertions,
@@ -46,7 +46,7 @@ class CollectionChangesHandle extends HandleBase<realm_collection_changes> imple
       final outModificationIndexesAfter = arena<Size>(modificationCount);
       final outMoves = arena<realm_collection_move_t>(moveCount);
 
-      realmLib.realm_collection_changes_get_changes(
+      realm_collection_changes_get_changes(
         pointer,
         outDeletionIndexes,
         deletionsCount,

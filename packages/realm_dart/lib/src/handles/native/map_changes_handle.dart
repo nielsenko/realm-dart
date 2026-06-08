@@ -22,13 +22,7 @@ class MapChangesHandle extends HandleBase<realm_dictionary_changes> implements i
       final outNumInsertions = arena<Size>();
       final outNumModifications = arena<Size>();
       final outCollectionWasDeleted = arena<Bool>();
-      realmLib.realm_dictionary_get_changes(
-        pointer,
-        outNumDeletions,
-        outNumInsertions,
-        outNumModifications,
-        outCollectionWasDeleted,
-      );
+      realm_dictionary_get_changes(pointer, outNumDeletions, outNumInsertions, outNumModifications, outCollectionWasDeleted);
 
       final deletionsCount = outNumDeletions != nullptr ? outNumDeletions.value : 0;
       final insertionCount = outNumInsertions != nullptr ? outNumInsertions.value : 0;
@@ -39,7 +33,7 @@ class MapChangesHandle extends HandleBase<realm_dictionary_changes> implements i
       final outModificationIndexes = arena<realm_value>(modificationCount);
       final outCollectionWasCleared = arena<Bool>();
 
-      realmLib.realm_dictionary_get_changed_keys(
+      realm_dictionary_get_changed_keys(
         pointer,
         outDeletionIndexes,
         outNumDeletions,
@@ -50,8 +44,13 @@ class MapChangesHandle extends HandleBase<realm_dictionary_changes> implements i
         outCollectionWasCleared,
       );
 
-      return MapChanges(outDeletionIndexes.toStringList(deletionsCount), outInsertionIndexes.toStringList(insertionCount),
-          outModificationIndexes.toStringList(modificationCount), outCollectionWasCleared.value, outCollectionWasDeleted.value);
+      return MapChanges(
+        outDeletionIndexes.toStringList(deletionsCount),
+        outInsertionIndexes.toStringList(insertionCount),
+        outModificationIndexes.toStringList(modificationCount),
+        outCollectionWasCleared.value,
+        outCollectionWasDeleted.value,
+      );
     });
   }
 }

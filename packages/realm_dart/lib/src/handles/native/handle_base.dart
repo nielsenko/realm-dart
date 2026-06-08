@@ -3,6 +3,8 @@
 
 import 'dart:ffi';
 
+import 'realm_bindings.dart';
+
 import 'package:realm_dart/realm.dart';
 
 import 'error_handling.dart';
@@ -50,8 +52,9 @@ abstract class HandleBase<T extends NativeType> implements Finalizable, intf.Han
   final bool isUnowned;
 
   HandleBase(this._pointer, int size) : isUnowned = false {
+    ensureRealmInit();
     _pointer.raiseLastErrorIfNull();
-    _finalizableHandle = realmLib.realm_attach_finalizer(this, pointer.cast(), size);
+    _finalizableHandle = realm_attach_finalizer(this, pointer.cast(), size);
 
     if (_enableFinalizerTrace) {
       _setupFinalizationTrace(this, _pointer);
@@ -80,9 +83,9 @@ abstract class HandleBase<T extends NativeType> implements Finalizable, intf.Han
     releaseCore();
 
     if (!isUnowned) {
-      realmLib.realm_detach_finalizer(_finalizableHandle, this);
+      realm_detach_finalizer(_finalizableHandle, this);
 
-      realmLib.realm_release(_pointer.cast());
+      realm_release(_pointer.cast());
     }
 
     _pointer = nullptr;
@@ -96,7 +99,7 @@ abstract class HandleBase<T extends NativeType> implements Finalizable, intf.Han
   // ignore: hash_and_equals
   bool operator ==(Object other) => other is HandleBase<T>
       ? _pointer == other._pointer
-          ? true
-          : realmLib.realm_equals(_pointer.cast(), other._pointer.cast())
+            ? true
+            : realm_equals(_pointer.cast(), other._pointer.cast())
       : false;
 }

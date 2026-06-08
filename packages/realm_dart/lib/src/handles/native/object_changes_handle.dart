@@ -15,16 +15,16 @@ class ObjectChangesHandle extends HandleBase<realm_object_changes> implements in
 
   @override
   bool get isDeleted {
-    return realmLib.realm_object_changes_is_deleted(pointer);
+    return realm_object_changes_is_deleted(pointer);
   }
 
   @override
   List<int> get properties {
     return using((arena) {
-      final count = realmLib.realm_object_changes_get_num_modified_properties(pointer);
+      final count = realm_object_changes_get_num_modified_properties(pointer);
 
       final outModified = arena<realm_property_key_t>(count);
-      realmLib.realm_object_changes_get_modified_properties(pointer, outModified, count);
+      realm_object_changes_get_modified_properties(pointer, outModified, count);
 
       return outModified.asTypedList(count).toList();
     });

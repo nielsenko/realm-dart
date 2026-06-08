@@ -28,10 +28,10 @@ final _pluginLib = () {
   String plugin = Platform.isWindows
       ? 'realm_plugin.dll'
       : Platform.isMacOS
-          ? 'realm.framework/realm' // use catalyst
-          : Platform.isLinux
-              ? "librealm_plugin.so"
-              : throw UnsupportedError("Platform ${Platform.operatingSystem} is not supported");
+      ? 'realm.framework/realm' // use catalyst
+      : Platform.isLinux
+      ? "librealm_plugin.so"
+      : throw UnsupportedError("Platform ${Platform.operatingSystem} is not supported");
 
   final pluginLib = DynamicLibrary.open(plugin);
   return pluginLib;
@@ -44,27 +44,22 @@ class RealmCore implements intf.RealmCore {
 
   // For debugging
   @override
-  int get threadId => realmLib.realm_dart_get_thread_id();
-
-  // for debugging only. Enable in realm_dart.cpp
-  // void invokeGC() {
-  //   realmLib.realm_dart_gc();
-  // }
+  int get threadId => realm_dart_get_thread_id();
 
   @override
   void deleteRealmFiles(String path) {
     using((arena) {
       final realmDeleted = arena<Bool>();
-      realmLib.realm_delete_files(path.toCharPtr(arena), realmDeleted).raiseLastErrorIfFalse();
+      realm_delete_files(path.toCharPtr(arena), realmDeleted).raiseLastErrorIfFalse();
     });
   }
 
   @override
   List<String> getAllCategoryNames() {
     return using((arena) {
-      final count = realmLib.realm_get_category_names(0, nullptr);
+      final count = realm_get_category_names(0, nullptr);
       final outValues = arena<Pointer<Char>>(count);
-      realmLib.realm_get_category_names(count, outValues);
+      realm_get_category_names(count, outValues);
       return [for (int i = 0; i < count; i++) outValues[i].cast<Utf8>().toDartString()];
     });
   }
@@ -102,22 +97,24 @@ class RealmCore implements intf.RealmCore {
   }
 
   @override
-  void loggerAttach() => realmLib.realm_dart_attach_logger(schedulerHandle.sendPort.nativePort);
+  void loggerAttach() => realm_dart_attach_logger(schedulerHandle.sendPort.nativePort);
 
   @override
-  void loggerDetach() => realmLib.realm_dart_detach_logger(schedulerHandle.sendPort.nativePort);
+  void loggerDetach() => realm_dart_detach_logger(schedulerHandle.sendPort.nativePort);
 
   @override
   void logMessage(LogCategory category, LogLevel logLevel, String message) {
+    ensureRealmInit();
     return using((arena) {
-      realmLib.realm_dart_log(logLevel.nativeLevel(), category.toString().toCharPtr(arena), message.toCharPtr(arena));
+      realm_dart_log(logLevel.nativeLevel(), category.toString().toCharPtr(arena), message.toCharPtr(arena));
     });
   }
 
   @override
   void setLogLevel(LogLevel level, {required LogCategory category}) {
+    ensureRealmInit();
     using((arena) {
-      realmLib.realm_set_log_level_category(category.toString().toCharPtr(arena), level.nativeLevel());
+      realm_set_log_level_category(category.toString().toCharPtr(arena), level.nativeLevel());
     });
   }
 
@@ -132,14 +129,14 @@ class RealmCore implements intf.RealmCore {
   }
 
   String _getFilesPath() {
-    return realmLib.realm_dart_get_files_path().cast<Utf8>().toRealmDartString()!;
+    return realm_dart_get_files_path().cast<Utf8>().toRealmDartString()!;
   }
 
   @override
   int setAndGetRLimit(int limit) {
     return using((arena) {
       final outLimit = arena<Long>();
-      realmLib.realm_dart_set_and_get_rlimit(limit, outLimit).raiseLastErrorIfFalse();
+      realm_dart_set_and_get_rlimit(limit, outLimit).raiseLastErrorIfFalse();
       return outLimit.value;
     });
   }
@@ -152,14 +149,14 @@ class RealmCore implements intf.RealmCore {
 
 extension on LogLevel {
   realm_log_level nativeLevel() => switch (this) {
-        LogLevel.all => realm_log_level.RLM_LOG_LEVEL_ALL,
-        LogLevel.debug => realm_log_level.RLM_LOG_LEVEL_DEBUG,
-        LogLevel.detail => realm_log_level.RLM_LOG_LEVEL_DETAIL,
-        LogLevel.trace => realm_log_level.RLM_LOG_LEVEL_TRACE,
-        LogLevel.info => realm_log_level.RLM_LOG_LEVEL_INFO,
-        LogLevel.warn => realm_log_level.RLM_LOG_LEVEL_WARNING,
-        LogLevel.error => realm_log_level.RLM_LOG_LEVEL_ERROR,
-        LogLevel.fatal => realm_log_level.RLM_LOG_LEVEL_FATAL,
-        LogLevel.off => realm_log_level.RLM_LOG_LEVEL_OFF,
-      };
+    LogLevel.all => realm_log_level.RLM_LOG_LEVEL_ALL,
+    LogLevel.debug => realm_log_level.RLM_LOG_LEVEL_DEBUG,
+    LogLevel.detail => realm_log_level.RLM_LOG_LEVEL_DETAIL,
+    LogLevel.trace => realm_log_level.RLM_LOG_LEVEL_TRACE,
+    LogLevel.info => realm_log_level.RLM_LOG_LEVEL_INFO,
+    LogLevel.warn => realm_log_level.RLM_LOG_LEVEL_WARNING,
+    LogLevel.error => realm_log_level.RLM_LOG_LEVEL_ERROR,
+    LogLevel.fatal => realm_log_level.RLM_LOG_LEVEL_FATAL,
+    LogLevel.off => realm_log_level.RLM_LOG_LEVEL_OFF,
+  };
 }

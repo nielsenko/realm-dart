@@ -54,7 +54,7 @@ extension RealmValueEx on realm_value_t {
         return DateTime.fromMicrosecondsSinceEpoch(seconds * _microsecondsPerSecond + nanoseconds ~/ _nanosecondsPerMicrosecond, isUtc: true);
       case realm_value_type.RLM_TYPE_DECIMAL128:
         var decimal = values.decimal128; // NOTE: Does not copy the struct!
-        decimal = realmLib.realm_dart_decimal128_copy(decimal); // This is a workaround to that
+        decimal = realm_dart_decimal128_copy(decimal); // This is a workaround to that
         return Decimal128Internal.fromNative(decimal);
       case realm_value_type.RLM_TYPE_OBJECT_ID:
         return ObjectId.fromBytes(values.object_id.bytes.toList(12));
@@ -105,7 +105,7 @@ extension PointerVoidEx on Pointer<Void> {
   T toObject<T extends Object>() {
     assert(this != nullptr, "Pointer<Void> is null");
 
-    Object object = realmLib.realm_dart_persistent_handle_to_object(this);
+    Object object = realm_dart_persistent_handle_to_object(this);
 
     assert(object is T, "$T expected");
     return object as T;
@@ -114,7 +114,7 @@ extension PointerVoidEx on Pointer<Void> {
   Object? toUserCodeError() {
     if (this != nullptr) {
       final result = toObject();
-      realmLib.realm_dart_delete_persistent_handle(this);
+      realm_dart_delete_persistent_handle(this);
       return result;
     }
 
@@ -137,7 +137,7 @@ extension PointerUtf8Ex on Pointer<Utf8> {
       return result;
     } finally {
       if (freeRealmMemory) {
-        realmLib.realm_free(cast());
+        realm_free(cast());
       }
     }
   }
@@ -145,7 +145,7 @@ extension PointerUtf8Ex on Pointer<Utf8> {
 
 extension ObjectEx on Object {
   Pointer<Void> toPersistentHandle() {
-    return realmLib.realm_dart_object_to_persistent_handle(this);
+    return realm_dart_object_to_persistent_handle(this);
   }
 }
 
