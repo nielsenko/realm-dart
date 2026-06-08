@@ -1,16 +1,25 @@
 ## vNext (TBD)
 
+### Breaking Changes
+* The `realm` and `realm_dart` packages are consolidated into a single `realm` package used by both Flutter and pure-Dart apps. The separate `realm_dart` package and the `realm` Flutter plugin are gone.
+* `dart run realm_dart install` is removed. Native binaries are no longer downloaded - they are bundled in the published package (and built from source via the Dart build hook in a source checkout), so there is no install step.
+* On Android, `Configuration.defaultStoragePath` requires the path to be provided explicitly (the old Flutter plugin's JNI initialization is gone); pass an explicit `path` to `Configuration.local`.
+
 ### Enhancements
-* None
+* The native library is now built with `zig` and orchestrated by Dart build hooks (Dart >= 3.10 / Flutter >= 3.38). It cross-compiles every target - macOS, iOS, Linux (x64/arm64), Windows (x64/arm64), Android (arm64/arm/x64) - from a single host. New: Linux arm64, Windows arm64, and Linux musl.
+* Native bindings use `@Native` external functions bound to a code asset; the runtime locates and loads the library with no lookup logic.
+* The published package bundles prebuilt binaries for every target, so consumers need no toolchain; a source checkout compiles from source with zig.
 
 ### Fixed
 * None
 
 ### Compatibility
 * Realm Studio: 15.0.0 or later.
+* Dart >= 3.10, Flutter >= 3.38.
 
 ### Internal
-* Using Core x.y.z.
+* Using Core 14.14.0.
+* CMake/CocoaPods/Gradle native build glue replaced by `build.zig` + `hook/build.dart`. CI builds via the hook (no prebuilt-binary jobs, no artifact passing) and runs on forks without secrets.
 
 ## 20.2.0 (2025-09-24)
 

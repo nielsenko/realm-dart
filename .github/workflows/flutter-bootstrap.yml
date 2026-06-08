@@ -1,0 +1,106 @@
+name: Flutter bootstrap
+
+# Validates the *real consumer* experience: a fresh `flutter create` app
+# (outside the workspace) that depends on `realm` and builds on the target
+# platform. This exercises the build hook + package layout the way an
+# end user hits them, which the in-repo tests app (a workspace member)
+# can mask.
+
+on:
+  workflow_call:
+    inputs:
+      runner:
+        required: true
+        type: string
+      build:
+        description: The `flutter build` subcommand + flags (e.g. "linux --debug").
+        required: true
+        type: string
+      android:
+        description: Whether this is an Android build (points the hook at the NDK).
+        default: false
+        type: boolean
+
+env:
+  REALM_CI: true
+
+jobs:
+  bootstrap:
+    runs-on: ${{ inputs.runner }}
+    name: Bootstrap ${{ inputs.build }}
+    timeout-minutes: 45
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          submodules: recursive # source build needs realm-core
+
+      - name: Setup GTK on Linux
+        if: ${{ runner.os == 'Linux' && !inputs.android }}
+        run: sudo apt-get update -y && sudo apt-get install -y libgtk-3-dev ninja-build
+
+      - name: Point the build hook at the NDK
+        if: ${{ inputs.android }}
+        run: echo "ANDROID_NDK_HOME=$ANDROID_NDK_LATEST_HOME" >> "$GITHUB_ENV"
+
+      - name: Setup Runner
+        uses: ./.github/actions/setup-runner
+
+      - name: Create a fresh app that depends on realm
+        shell: bash
+        run: |
+          set -e
+          app="$RUNNER_TEMP/bootstrap"
+          rm -rf "$app"
+          flutter create --org dev.realm.bootstrap "$app"
+          cd "$app"
+
+          # realm via path; the sibling packages aren't published yet, so
+          # override them onto the in-repo copies.
+          repo="$GITHUB_WORKSPACE/packages"
+          cat >> pubspec.yaml <<EOF
+
+          dependency_overrides:
+            realm:
+              path: $repo/realm
+            realm_common:
+              path: $repo/realm_common
+            realm_generator:
+              path: $repo/realm_generator
+            ejson:
+              path: $repo/ejson
+            ejson_annotation:
+              path: $repo/ejson_annotation
+            ejson_analyzer:
+              path: $repo/ejson_analyzer
+            ejson_generator:
+              path: $repo/ejson_generator
+          EOF
+
+          flutter pub add realm
+
+          cat > lib/main.dart <<'EOF'
+          import 'package:flutter/material.dart';
+          import 'package:path_provider/path_provider.dart';
+          import 'package:realm/realm.dart';
+
+          Future<String> smoke() async {
+            final dir = await getApplicationDocumentsDirectory();
+            final realm = Realm(Configuration.local(const [], path: '${dir.path}/bootstrap.realm'));
+            final n = realm.schema.length;
+            realm.close();
+            return 'BOOTSTRAP_OK classes=$n';
+          }
+
+          void main() => runApp(MaterialApp(
+                home: Scaffold(
+                  body: FutureBuilder(future: smoke(), builder: (c, s) => Text('${s.data ?? s.error}')),
+                ),
+              ));
+          EOF
+          flutter pub add path_provider
+
+      - name: flutter build ${{ inputs.build }}
+        shell: bash
+        working-directory: ${{ runner.temp }}/bootstrap
+        run: flutter build ${{ inputs.build }}

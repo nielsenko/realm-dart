@@ -5,7 +5,6 @@ import 'collection_changes_handle.dart';
 import 'from_native.dart';
 import 'realm_bindings.dart';
 import 'realm_handle.dart';
-import 'realm_library.dart';
 import 'rooted_handle.dart';
 
 import '../notification_token_handle.dart' as intf;

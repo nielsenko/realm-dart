@@ -21,7 +21,6 @@ import 'handle_base.dart';
 import 'object_handle.dart';
 import 'query_handle.dart';
 import 'realm_bindings.dart';
-import 'realm_library.dart';
 import 'results_handle.dart';
 import 'rooted_handle.dart';
 import 'schema_handle.dart';
@@ -403,8 +402,6 @@ class RealmHandle extends HandleBase<shared_realm> implements intf.RealmHandle {
       case ObjectType.embeddedObject:
         type = EmbeddedObject;
         break;
-      default:
-        throw RealmError('$baseType is not supported yet');
     }
 
     return SchemaObject(baseType, type, name, result);

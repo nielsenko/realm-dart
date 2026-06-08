@@ -90,11 +90,9 @@ For complete samples check the [Realm Flutter and Dart Samples](https://github.c
 ## Documentation
 
 For API documentation go to
- * [Realm Flutter API Docs](https://pub.dev/documentation/realm/latest/)
+ * [Realm API Docs](https://pub.dev/documentation/realm/latest/)
 
- * [Realm Dart API Docs](https://pub.dev/documentation/realm_dart/latest/)
-
-Use [realm](https://pub.dev/packages/realm) package for Flutter and [realm_dart](https://pub.dev/packages/realm_dart) package for Dart applications.
+A single [realm](https://pub.dev/packages/realm) package is used by both Flutter and pure-Dart applications.
 
 For complete documentation of the SDKs, refer to the
 [docs/guides](docs/README.md).
@@ -108,10 +106,9 @@ Realm Flutter package is published to [realm](https://pub.dev/packages/realm).
 ## Environment setup for Realm Flutter
 
 * Realm Flutter supports the platforms iOS, Android, Windows, MacOS and Linux.
-* Flutter 3.10.2 or newer.
+* Flutter 3.38 or newer (Dart 3.10 or newer).
 * For Flutter Desktop environment setup, see [Desktop support for Flutter](https://docs.flutter.dev/desktop).
-* Cocoapods v1.11 or newer.
-* CMake 3.21 or newer.
+* No CMake/CocoaPods setup or `install` step is needed - the native library ships prebuilt in the package and is wired up by the Dart build hook.
 
 ## Usage
 
@@ -121,11 +118,6 @@ Realm Flutter package is published to [realm](https://pub.dev/packages/realm).
 
     ```
     flutter pub add realm
-    ```
-* For running Flutter widget and unit tests run the following command to install the required native binaries.
-
-    ```
-    dart run realm install
     ```
 
 * Import Realm in a dart file (ex. `catalog.dart`).
@@ -283,39 +275,33 @@ realm.close();
 
 # Realm Dart Standalone SDK
 
-Realm Dart package is published to [realm_dart](https://pub.dev/packages/realm_dart).
+The same [realm](https://pub.dev/packages/realm) package is used for pure-Dart (non-Flutter) applications.
 
 ## Environment setup for Realm Dart
 
 * Realm Dart supports the platforms Windows, Mac and Linux.
-* Dart SDK 3.0.2 or newer.
+* Dart SDK 3.10 or newer.
 
 ## Usage
 
-* Add `realm_dart` package to a Dart application.
+* Add the `realm` package to a Dart application.
 
     ```
-    dart pub add realm_dart
+    dart pub add realm
     ```
 
-* Install the `realm_dart` package into the application. This downloads and copies the required native binaries to the app directory.
+  No install step is needed - the native library is provided automatically by the build hook.
 
-    ```
-    dart run realm_dart install
-    ```
-
-* Import realm_dart in a dart file (ex. `catalog.dart`).
+* Import realm in a dart file (ex. `catalog.dart`).
 
     ```dart
-    import 'package:realm_dart/realm.dart';
+    import 'package:realm/realm.dart';
     ```
 
-* To generate RealmObject classes with realm_dart use this command.
-
-    _*On Dart use `dart run realm_dart` to run `realm_dart` package commands*_
+* To generate RealmObject classes use this command.
 
     ```
-    dart run realm_dart generate
+    dart run realm generate
     ```
     A new file `catalog.realm.dart` will be created next to the `catalog.dart`.
 

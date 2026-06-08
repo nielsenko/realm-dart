@@ -4,17 +4,11 @@ using the Realm Flutter SDK. You likely will have to adapt the examples
 on this page significantly to work with your app.
 
 ## Test
-To run tests on the Flutter SDK using the
+You can run tests on the SDK directly with
 [flutter_test](https://api.flutter.dev/flutter/flutter_test/flutter_test-library.html)
-and [test](https://dart.dev/tools/dart-test), you must first run
-the following command:
-
-```shell
-dart run realm install
-```
-
-This command installs native binaries needed to run tests for the
-Flutter app.
+and [test](https://dart.dev/tools/dart-test). No setup step is needed -
+the native library is built/provided automatically by the Dart build
+hook when tests run.
 
 > **NOTE:**
 > *If you are developing with the Realm Flutter SDK on macOS*,

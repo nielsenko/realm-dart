@@ -52,7 +52,7 @@ class UnmanagedRealmMap<T extends Object?> extends collection.DelegatingMap<Stri
   Stream<RealmMapChanges<T>> get changes => throw RealmStateError("Unmanaged maps don't support changes");
 
   @override
-  bool operator ==(Object? other) {
+  bool operator ==(Object other) {
     return _base == other;
   }
 

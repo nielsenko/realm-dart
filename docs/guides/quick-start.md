@@ -51,7 +51,7 @@ class _Car {
 
 #### Dart
 ```dart
-import 'package:realm_dart/realm.dart';
+import 'package:realm/realm.dart';
 
 part 'car.realm.dart';
 
@@ -76,7 +76,7 @@ dart run realm generate
 
 #### Dart
 ```shell
-dart run realm_dart generate
+dart run realm generate
 ```
 
 Running this creates a `Car` class in a `car.realm.dart` file located in the directory
@@ -95,7 +95,7 @@ dart run realm generate --watch
 
 #### Dart
 ```shell
-dart run realm_dart generate --watch
+dart run realm generate --watch
 ```
 
 ## Open a Realm

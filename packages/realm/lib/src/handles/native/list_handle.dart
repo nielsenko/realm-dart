@@ -13,7 +13,6 @@ import 'object_handle.dart';
 import 'query_handle.dart';
 import 'realm_bindings.dart';
 import 'realm_handle.dart';
-import 'realm_library.dart';
 import 'results_handle.dart';
 
 import '../list_handle.dart' as intf;

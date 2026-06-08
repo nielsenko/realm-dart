@@ -5,7 +5,6 @@ import 'dart:ffi';
 
 import 'realm_bindings.dart';
 import 'realm_handle.dart';
-import 'realm_library.dart';
 import 'results_handle.dart';
 import 'rooted_handle.dart';
 

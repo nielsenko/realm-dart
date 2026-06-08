@@ -6,7 +6,6 @@ import 'dart:ffi';
 import 'ffi.dart';
 import 'handle_base.dart';
 import 'realm_bindings.dart';
-import 'realm_library.dart';
 
 import '../object_changes_handle.dart' as intf;
 

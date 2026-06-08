@@ -44,7 +44,7 @@ Update all of the `RealmObject` part declarations in your app to
 use the new naming convention:
 
 ```dart
-import 'package:realm_dart/realm.dart';
+import 'package:realm/realm.dart';
 
 // Update existing declaration from .g.dart to .realm.dart
 // part 'car.g.dart';
@@ -77,7 +77,7 @@ object models with the new `.realm.dart` file extension.
 You can safely delete any `.g.dart` files from your project.
 
 ```shell
-dart run realm_dart generate
+dart run realm generate
 ```
 
 ## Removed Classes and Members

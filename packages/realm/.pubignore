@@ -1,19 +1,37 @@
-# Ignore native code
-/CMakeLists.txt
-/CMakePresets.json
-/src/
+# The published package ships PREBUILT native binaries under binary/ (the
+# release workflow populates them for every target). The hook uses those
+# directly, so consumers need no toolchain and we don't ship the C++ source.
+#
+# Source-from-checkout builds (build.zig + src/) are for the git repo only,
+# and are excluded here.
 
-# Ignore build tools
+# Native source + zig build system (only used in a source checkout)
+/src/
+/build.zig
+/build.zig.zon
+/zig/
+/.zig-version
+
+# Build artifacts and caches (.pubignore overrides .gitignore, so these
+# must be repeated here or they get packaged).
+/zig-out/
+/.zig-cache/
+/zig-pkg/
+/.dart_tool/
+
+# Build tools
 /scripts/
 /tool/
 /dev/
 /ffigen.yaml
 
-# Ignore test resources
+# Dev/test code not needed by consumers
 /test/
-
-# Repeated from .gitignore *sigh*
-/binary/
+/tests/
 /build-native/
 /mongodb-realm/
 *.realm.*
+
+# NOTE: binary/ is intentionally NOT ignored — it carries the prebuilt
+# libraries. (It is in .gitignore, but .pubignore takes precedence for
+# packaging, and the release workflow populates it before `pub publish`.)

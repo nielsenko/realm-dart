@@ -32,6 +32,7 @@ pub fn build(b: *std.Build) void {
         "android-ndk",
         "Path to the Android NDK (required for Android targets)",
     );
+    const strip = b.option(bool, "strip", "Strip debug info (used for release/published binaries)") orelse false;
 
     const os = target.result.os.tag;
     const is_apple = os.isDarwin();
@@ -52,6 +53,7 @@ pub fn build(b: *std.Build) void {
         .optimize = optimize,
         .link_libc = true,
         .link_libcpp = true,
+        .strip = strip,
     });
 
     const lib = b.addLibrary(.{

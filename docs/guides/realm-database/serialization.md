@@ -40,7 +40,7 @@ for serialization and deserialization.
 The following `Pet` object model will be used in the examples on this page:
 
 ```dart
-import 'package:realm_dart/realm.dart';
+import 'package:realm/realm.dart';
 
 part 'pet.realm.dart';
 

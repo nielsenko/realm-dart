@@ -10,7 +10,6 @@ import 'package:realm_common/realm_common.dart';
 import '../../configuration.dart';
 import 'handle_base.dart';
 import 'realm_bindings.dart';
-import 'realm_library.dart';
 import 'to_native.dart';
 
 import '../schema_handle.dart' as intf;

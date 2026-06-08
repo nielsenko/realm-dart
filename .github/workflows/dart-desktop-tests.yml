@@ -25,25 +25,15 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
         with:
-          submodules: false
+          submodules: "recursive"
 
       - name: Check runner.arch
         if: ${{ inputs.arch != runner.arch }}
         run: false # fail if arch is not as expected
         shell: bash
 
-      - id: runner_os_lowercase
-        # there is no such thing as ${{ tolower(runner.os) }}, hence this abomination ¯\_(ツ)_/¯
-        # use with steps.runner_os_lowercase.outputs.os
-        run: echo ${{ runner.os }} | awk '{print "os=" tolower($0)}' >> $GITHUB_OUTPUT
-        shell: bash
-
-      - name: Fetch artifacts
-        uses: actions/download-artifact@v4
-        with:
-          name: librealm-${{ steps.runner_os_lowercase.outputs.os }}
-          path: packages/realm_dart/binary/${{ steps.runner_os_lowercase.outputs.os }}
-
+      # No artifact download: the build hook compiles librealm from source
+      # for the host target when `dart test` runs.
       - name: Setup Runner
         uses: ./.github/actions/setup-runner
 
@@ -65,10 +55,10 @@ jobs:
           path: test-results.json
           reporter: dart-json
           only-summary: true
-          working-directory: packages/realm_dart
+          working-directory: packages/realm
 
       - name: Gather coverage report
-        if: inputs.runner == 'ubuntu-latest'
+        if: inputs.runner == 'ubuntu-latest' && !github.event.pull_request.head.repo.fork
         run: |
           sudo apt-get install lcov
           melos setup
@@ -77,11 +67,11 @@ jobs:
           melos coverage:groom
 
       - name: Publish coverage
-        if: inputs.runner == 'ubuntu-latest'
+        if: inputs.runner == 'ubuntu-latest' && !github.event.pull_request.head.repo.fork
         id: publish-coverage
         uses: coverallsapp/github-action@f350da2c033043742f89e8c0b7b5145a1616da6d
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
-          flag-name: realm_dart
+          flag-name: realm
           path-to-lcov: ./coverage/lcov.info
           parallel: true

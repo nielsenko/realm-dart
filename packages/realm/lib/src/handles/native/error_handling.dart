@@ -8,7 +8,6 @@ import 'ffi.dart';
 import '../../realm_object.dart';
 import 'from_native.dart';
 import 'realm_bindings.dart';
-import 'realm_library.dart';
 
 extension PointerEx<T extends NativeType> on Pointer<T> {
   Pointer<T> raiseLastErrorIfNull() {

@@ -1,282 +1,123 @@
 name: Publish Release
+
+# Publishes the realm packages to pub.dev. Unlike the old flow there is no
+# S3 hosting and no separate realm_dart package: the published `realm`
+# package bundles prebuilt native binaries for every target, so consumers
+# need no toolchain.
+#
+# Everything is built on a single macOS runner: it has the Apple SDK (the
+# only host-locked dependency), zig cross-compiles Linux (bundled glibc)
+# and Windows (bundled mingw) from there, and Android uses the runner's
+# NDK. No cross-runner artifact passing.
+#
+# Publishing uses a PUB_CREDENTIALS secret (the pub.dev uploader's
+# ~/.config/dart/pub-credentials.json). Leave `dry-run: true` (default) to
+# validate the whole flow - build, package, `pub publish --dry-run` - with
+# no secret and no side effects.
+
 on:
   workflow_dispatch:
     inputs:
-      environment:
-        type: environment
-        required: true
-        description: Environment to publish packages to
+      dry-run:
+        description: Validate only - no publishing, no GitHub release.
+        type: boolean
+        default: true
+
+env:
+  REALM_CI: true
+
+permissions:
+  contents: write # create the GitHub release
+
 jobs:
-  prepare-packages:
-    runs-on: ubuntu-latest
-    environment:
-      name: Staging
-      url: ${{ steps.upload-to-s3.outputs.url }}
-    name: Prepare packages
-    outputs:
-      version: ${{ steps.get-version.outputs.version }}
-
+  publish:
+    name: Build all targets and publish
+    runs-on: macos-14
+    timeout-minutes: 90
     steps:
-      - name: Checkout code
+      - name: Checkout
         uses: actions/checkout@v4
         with:
-          submodules: false
-
-      - name: Read version
-        id: get-version
-        run: |
-          pkgVersion=$(sed -ne "s/^version: \(.*\)/\1/p" packages/realm_dart/pubspec.yaml)
-          pkgSuffix="${{ github.event.inputs.environment != 'Production' && format('-{0}', github.sha) || '' }}"
-          echo "version=$pkgVersion$pkgSuffix" >> $GITHUB_OUTPUT
-        shell: bash
+          submodules: recursive
 
       - name: Setup Runner
+        # Installs flutter/dart, melos, and the pinned zig (see setup-runner).
         uses: ./.github/actions/setup-runner
 
-      - name: Download all artifacts
-        uses: dawidd6/action-download-artifact@71072fbb1229e1317f1a8de6b04206afb461bd67 # 3.1.2
-        with:
-          workflow: ci.yml
-          commit: ${{ github.sha }}
-          path: ${{ github.workspace }}/binary/
-          workflow_conclusion: completed
-          github_token: ${{ secrets.REALM_CI_PAT }}
-
-      # The rename is necessary because action-download-artifact will put things in a folder named the same
-      # as the artifact name - i.e. librealm-linux, etc.
-      - name: Archive binaries
+      - name: Build native binaries for every target
+        working-directory: packages/realm
+        env:
+          ANDROID_NDK_HOME: ${{ env.ANDROID_NDK_LATEST_HOME }}
         run: |
-          mkdir -p ${{ github.workspace }}/release
+          set -euo pipefail
 
-          for directory in ${{ github.workspace }}/binary/*; do
-            artifactFolder=$(basename $directory)
-            targetFile="${{ github.workspace }}/release/${artifactFolder#*-}.tar.gz"
-            dart run realm_dart archive --source-dir "$directory" --output-file "$targetFile"
-          done
-        working-directory: packages/realm_dart
-        shell: bash
+          # <zig-target> <platform-dir> <libname> [apple-sdk | android]
+          build() {
+            local target="$1" dir="$2" lib="$3" mode="${4:-}"
+            local extra=()
+            case "$mode" in
+              android) extra=(-Dandroid-ndk="$ANDROID_NDK_HOME") ;;
+              ?*)      extra=(--sysroot "$(xcrun --sdk "$mode" --show-sdk-path)") ;;
+            esac
+            zig build -Dtarget="$target" -Dstrip=true --release=fast "${extra[@]}" -p "zig-out/$dir"
+            mkdir -p "binary/$dir"
+            local sub=lib; [ "$lib" = "realm_dart.dll" ] && sub=bin
+            cp "zig-out/$dir/$sub/$lib" "binary/$dir/$lib"
+          }
 
-      - name: Update pubspec.yaml version (Staging)
-        if: ${{ github.event.inputs.environment != 'Production' }}
-        run: REALM_VERSION=${{ steps.get-version.outputs.version }} melos run update:version:realm
+          # Apple (need the matching SDK sysroot)
+          build x86_64-macos          macos-x64           librealm_dart.dylib macosx
+          build aarch64-macos         macos-arm64         librealm_dart.dylib macosx
+          build aarch64-ios           ios-arm64           librealm_dart.dylib iphoneos
+          build aarch64-ios-simulator ios-arm64-simulator librealm_dart.dylib iphonesimulator
+          build x86_64-ios-simulator  ios-x64-simulator   librealm_dart.dylib iphonesimulator
 
-      - name: Package ejson
+          # Desktop (zig bundles glibc / mingw - no sysroot needed)
+          build x86_64-linux-gnu      linux-x64     librealm_dart.so
+          build aarch64-linux-gnu     linux-arm64   librealm_dart.so
+          build x86_64-windows-gnu    windows-x64   realm_dart.dll
+          build aarch64-windows-gnu   windows-arm64 realm_dart.dll
+
+          # Android (NDK sysroot)
+          build aarch64-linux-android.21 android-arm64 librealm_dart.so android
+          build arm-linux-androideabi.21 android-arm   librealm_dart.so android
+          build x86_64-linux-android.21  android-x64   librealm_dart.so android
+
+          echo "Bundled native binaries:"
+          du -ah binary/*/
+
+      - name: Configure pub credentials
+        if: ${{ !inputs.dry-run }}
         run: |
-          cp -Lr ../packages/ejson .
-          cd ejson
-          dart pub publish --dry-run || true
-        working-directory: release
+          mkdir -p "$HOME/.config/dart"
+          echo '${{ secrets.PUB_CREDENTIALS }}' > "$HOME/.config/dart/pub-credentials.json"
 
-      - name: Package ejson_analyzer
+      - name: Publish (dry-run)
+        if: ${{ inputs.dry-run }}
+        run: melos exec --no-published --no-private -- dart pub publish --dry-run
+
+      - name: Publish to pub.dev
+        if: ${{ !inputs.dry-run }}
+        # --no-published skips packages whose version is already on pub.dev,
+        # so this publishes exactly what changed (realm + any bumped deps).
+        run: melos exec --no-published --no-private -- dart pub publish --force
+
+      - name: Read realm version
+        id: version
+        if: ${{ !inputs.dry-run }}
         run: |
-          cp -Lr ../packages/ejson_analyzer .
-          cd ejson_analyzer
-          dart pub publish --dry-run || true
-        working-directory: release
+          echo "version=$(sed -ne 's/^version: \(.*\)/\1/p' packages/realm/pubspec.yaml)" >> "$GITHUB_OUTPUT"
 
-      - name: Package ejson_annotation
-        run: |
-          cp -Lr ../packages/ejson_annotation .
-          cd ejson_annotation
-          dart pub publish --dry-run || true
-        working-directory: release
+      - name: Extract changelog
+        if: ${{ !inputs.dry-run }}
+        run: awk '/^## /{n++} n==1' CHANGELOG.md > release-notes.md
 
-      - name: Package ejson_generator
-        run: |
-          cp -Lr ../packages/ejson_generator .
-          cd ejson_generator
-          dart pub publish --dry-run || true
-        working-directory: release
-
-      - name: Package ejson_lint
-        run: |
-          cp -Lr ../packages/ejson_lint .
-          cd ejson_lint
-          dart pub publish --dry-run || true
-        working-directory: release
-
-      - name: Package realm_common
-        run: |
-          cp -Lr ../packages/realm_common .
-          cd realm_common
-          dart pub publish --dry-run || true
-        working-directory: release
-
-      - name: Package realm_generator
-        run: |
-          cp -Lr ../packages/realm_generator .
-          cd realm_generator
-          dart pub publish --dry-run || true
-        working-directory: release
-
-      # realm_flutter has symlinks to native binaries which should not be packaged
-      - name: Cleanup symlinks
-        run: |
-          rm packages/realm/android/src/main/cpp/lib
-          rm packages/realm/ios/realm_dart.xcframework
-          rm packages/realm/linux/binary
-          rm packages/realm/windows/binary
-          rm -rf packages/realm/tests/linux/flutter/ephemeral
-          rm -rf packages/realm/tests/windows/flutter/ephemeral
-
-      - name: Package realm (flutter)
-        run: |
-          cp -Lr ../packages/realm realm
-          cd realm
-          flutter pub publish --dry-run || true
-        working-directory: release
-
-      - name: Package realm_dart
-        run: |
-          mkdir realm_dart
-          cp -Lr ../packages/realm_dart/bin ../packages/realm_dart/example ../packages/realm_dart/lib ../packages/realm_dart/test realm_dart
-          rsync -vtL ../packages/realm_dart/* realm_dart/
-          cd realm_dart
-          dart pub publish --dry-run || true
-        working-directory: release
-
-      - name: Extract Changelog
-        run: |
-          $match = Get-Content ../CHANGELOG.md -Raw | select-string -pattern "(?ms)^(?<latestVersionChanges>.+?)(?=(\n|\r\n)## )"
-          $latestChanges = $match.Matches[0].Groups["latestVersionChanges"].Value;
-          $latestChanges | Out-File ExtractedChangelog.md
-        working-directory: release
-        shell: pwsh
-
-      - name: Upload release folder
-        uses: actions/upload-artifact@v4
-        with:
-          name: release-bundle
-          path: release/**
-          retention-days: 30
-
-      - name: Configure AWS Credentials
-        uses: aws-actions/configure-aws-credentials@v1
-        with:
-          aws-access-key-id: ${{ secrets.AWS_S3_ACCESS_KEY }}
-          aws-secret-access-key: ${{ secrets.AWS_S3_SECRET_KEY }}
-          aws-region: us-east-1
-
-      - name: Upload release folder to S3
-        id: upload-to-s3
-        run: |
-          tar -zcvf packages.tar.gz realm_common realm_generator realm_dart realm ExtractedChangelog.md
-          rm -rf common generator realm_dart realm ExtractedChangelog.md
-
-          s3_folder="static.realm.io/downloads/dart/${{ steps.get-version.outputs.version }}"
-          aws s3 sync --acl public-read . "s3://$s3_folder"
-          echo "url=https://$s3_folder/packages.tar.gz" >> $GITHUB_OUTPUT
-        working-directory: release
-
-  publish-packages:
-    runs-on: ubuntu-latest
-    if: ${{ github.event.inputs.environment == 'Production' }}
-    environment:
-      name: "Production"
-      url: https://pub.dev/packages/realm/versions/${{ needs.prepare-packages.outputs.version }}
-    name: Publish release
-    needs:
-      - prepare-packages
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-        with:
-          submodules: false
-
-      - name: Download release folder
-        uses: actions/download-artifact@v4
-        with:
-          name: release-bundle
-          path: release
-
-      - name: Setup Runner
-        uses: ./.github/actions/setup-runner
-
-      # realm_flutter has symlinks to native binaries which should not be packaged
-      - name: Cleanup symlinks
-        run: |
-          rm packages/realm/android/src/main/cpp/lib
-          rm packages/realm/ios/realm_dart.xcframework
-          rm packages/realm/linux/binary
-          rm packages/realm/windows/binary
-          rm -rf packages/realm/tests/linux/flutter/ephemeral
-          rm -rf packages/realm/tests/windows/flutter/ephemeral
-
-      - name: Publish packages to pub.dev
-        run: |
-          mkdir -p $HOME/.config/dart
-          echo '${{ secrets.PUB_CREDENTIALS }}' >> $HOME/.config/dart/pub-credentials.json
-          melos exec --no-published --no-private -- dart pub publish --force --skip-validation
-
-      - name: Reset repo state
-        run: git reset --hard
-
-      - name: Find Release PR
-        uses: juliangruber/find-pull-request-action@f9f7484f8237cf8485e5ab826e542ba5dd9e9c6e
-        id: find-pull-request
-        with:
-          branch: ${{ github.ref }}
-
-      - name: Merge Pull Request
-        uses: juliangruber/merge-pull-request-action@8a13f2645ad8b6ada32f829b2fae9c0955a5265d
-        with:
-          github-token: ${{ secrets.REALM_CI_PAT }}
-          number: ${{ steps.find-pull-request.outputs.number }}
-          method: squash
-
-      - name: Publish Github Release
+      - name: Create GitHub release
+        if: ${{ !inputs.dry-run }}
         uses: ncipollo/release-action@10c84d509b28aae3903113151bfd832314964f2e
         with:
-          bodyFile: release/ExtractedChangelog.md
-          name: ${{ needs.prepare-packages.outputs.version }}
-          commit: community
-          tag: ${{ needs.prepare-packages.outputs.version }}
-          token: ${{ secrets.REALM_CI_PAT }}
+          bodyFile: release-notes.md
+          name: ${{ steps.version.outputs.version }}
+          tag: v${{ steps.version.outputs.version }}
+          token: ${{ secrets.GITHUB_TOKEN }}
           draft: false
-
-      - name: "Post to #appx-releases"
-        uses: realm/ci-actions/release-to-slack@338bf3e7575015a28faec8b67614385d122aece7
-        continue-on-error: true
-        with:
-          changelog: release/ExtractedChangelog.md
-          sdk: Flutter/Dart
-          webhook-url: ${{ secrets.SLACK_RELEASES_WEBHOOK }}
-          version: ${{ needs.prepare-packages.outputs.version }}
-
-      - name: Update Changelog
-        run: |
-          echo "## vNext (TBD)
-
-          ### Enhancements
-          * None
-
-          ### Fixed
-          * None
-
-          ### Compatibility
-          * Realm Studio: 15.0.0 or later.
-
-          ### Internal
-          * Using Core x.y.z.
-          " | cat - CHANGELOG.md >> temp
-          mv temp CHANGELOG.md
-        shell: bash
-
-      - name: Add vNext Changelog header
-        id: vnext-pr
-        uses: peter-evans/create-pull-request@7380612b49221684fefa025244f2ef4008ae50ad
-        with:
-          branch: vnext-changelog
-          title: Add vNext Changelog header
-          body: Update Changelog for vNext
-          labels: no-jira-ticket
-          delete-branch: true
-          base: community
-          commit-message: Add vNext Changelog header
-
-      - name: Merge Pull Request
-        uses: juliangruber/merge-pull-request-action@8a13f2645ad8b6ada32f829b2fae9c0955a5265d
-        with:
-          github-token: ${{ secrets.GITHUB_TOKEN }}
-          number: ${{ steps.vnext-pr.outputs.pull-request-number }}
-          method: squash

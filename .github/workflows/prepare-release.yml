@@ -41,20 +41,13 @@ jobs:
       - name: Update pubspec.yaml files
         run: REALM_VERSION=${{ steps.update-changelog.outputs.new-version }} melos run update:version:realm
 
-      - name: Update realm.podspec
-        uses: jacobtomlinson/gha-find-replace@b76729678e8d52dadb12e0e16454a93e301a919d #! 2.0.0
-        with:
-          find: "  s.version(\\s+)= '[^']*'"
-          replace: "  s.version$1= '${{ steps.update-changelog.outputs.new-version }}'"
-          include: '**realm.podspec'
-
       - name: Update libraryVersion in realm_library.dart
         id: update-libraryVersion
         uses: jacobtomlinson/gha-find-replace@b76729678e8d52dadb12e0e16454a93e301a919d #! 2.0.0
         with:
           find: "const libraryVersion = '[^']*';"
           replace: "const libraryVersion = '${{ steps.update-changelog.outputs.new-version }}';"
-          include: 'packages/realm_dart/lib/src/handles/native/realm_library.dart'
+          include: 'packages/realm/lib/src/handles/native/realm_library.dart'
 
       - name: Make sure we updated libraryVersion in realm_library.dart
         run: |
@@ -69,7 +62,7 @@ jobs:
         with:
           find: 'RLM_API const char\* realm_dart_library_version\(\) \{ return "[^"]*"; \}'
           replace: 'RLM_API const char* realm_dart_library_version() { return "${{ steps.update-changelog.outputs.new-version }}"; }'
-          include: 'packages/realm_dart/src/realm_dart.cpp'
+          include: 'packages/realm/src/realm_dart.cpp'
 
       - name: Make sure we updated realm_dart_library_version in realm_dart.cpp
         run: |

@@ -29,7 +29,7 @@ import 'package:realm/realm.dart';
 
 #### Dart
 ```dart
-import 'package:realm_dart/realm.dart';
+import 'package:realm/realm.dart';
 ```
 
 #### Create Generated File Part Directive
@@ -95,7 +95,7 @@ dart run realm generate
 
 #### Dart
 ```shell
-dart run realm_dart generate
+dart run realm generate
 ```
 
 This command generates the file in the same directory as your model file.
@@ -313,7 +313,7 @@ dart run realm generate
 #### Dart
 
 ```
-dart run realm_dart generate
+dart run realm generate
 ```
 
 Running this creates a public class in a new file in the directory
@@ -349,7 +349,7 @@ dart run realm generate --watch
 #### Dart
 
 ```
-dart run realm_dart generate --watch
+dart run realm generate --watch
 ```
 
 To clean the generator caches, include the `--clean` flag in your command.
@@ -364,5 +364,5 @@ dart run realm generate --clean
 #### Dart
 
 ```
-dart run realm_dart generate --clean
+dart run realm generate --clean
 ```

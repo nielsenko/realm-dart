@@ -10,7 +10,6 @@ import 'list_handle.dart';
 import 'map_handle.dart';
 import 'realm_bindings.dart';
 import 'realm_handle.dart';
-import 'realm_library.dart';
 
 // TODO: Duplicated in to_native.dart
 const int _microsecondsPerSecond = 1000 * 1000;
@@ -75,8 +74,6 @@ extension RealmValueEx on realm_value_t {
 
         final mapHandle = MapHandle(getMap(), realm.handle as RealmHandle);
         return realm.createMap<RealmValue>(mapHandle, null);
-      default:
-        throw RealmException("realm_value_type $type not supported");
     }
   }
 }

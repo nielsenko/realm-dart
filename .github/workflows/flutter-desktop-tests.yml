@@ -29,7 +29,7 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
         with:
-          submodules: false
+          submodules: "recursive"
 
       - name: Check runner.arch
         if: ${{ inputs.arch != runner.arch }}
@@ -42,17 +42,11 @@ jobs:
         run: echo ${{ runner.os }} | awk '{print "os=" tolower($0)}' >> $GITHUB_OUTPUT
         shell: bash
 
-      - name: Setup GTK & Ninja on Linux
+      - name: Setup GTK on Linux
         if: ${{ runner.os == 'linux' }}
         run: |
           sudo apt-get update -y
           sudo apt-get install -y libgtk-3-dev xvfb ninja-build
-
-      - name: Fetch artifacts
-        uses: actions/download-artifact@v4
-        with:
-          name: librealm-${{ steps.runner_os_lowercase.outputs.os }}
-          path: packages/realm_dart/binary/${{ steps.runner_os_lowercase.outputs.os }}
 
       - name: Setup Runner
         uses: ./.github/actions/setup-runner

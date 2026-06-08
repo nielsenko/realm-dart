@@ -4,7 +4,6 @@
 import 'dart:ffi';
 
 import 'package:ejson/ejson.dart';
-import 'package:realm_common/realm_common.dart' hide Decimal128;
 import 'package:type_plus/type_plus.dart';
 
 import '../../realm_class.dart';

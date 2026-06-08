@@ -237,7 +237,7 @@ class UnmanagedRealmList<T extends Object?> extends collection.DelegatingList<T>
   Stream<RealmListChanges<T>> get changes => throw RealmStateError("Unmanaged lists don't support changes");
 
   @override
-  bool operator ==(Object? other) {
+  bool operator ==(Object other) {
     return _base == other;
   }
 

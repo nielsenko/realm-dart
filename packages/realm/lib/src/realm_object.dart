@@ -180,8 +180,6 @@ class RealmCoreAccessor implements RealmAccessor {
                 return object.realm.createList<RealmObject>(handle, listMetadata);
               case ObjectType.embeddedObject:
                 return object.realm.createList<EmbeddedObject>(handle, listMetadata);
-              default:
-                throw RealmError('List of ${listMetadata.schema.baseType} is not supported yet');
             }
           }
           return object.realm.createList<T>(handle, listMetadata);
@@ -194,8 +192,6 @@ class RealmCoreAccessor implements RealmAccessor {
                 return object.realm.createSet<RealmObject>(handle, setMetadata);
               case ObjectType.embeddedObject:
                 return object.realm.createSet<EmbeddedObject>(handle, setMetadata);
-              default:
-                throw RealmError('Set of ${setMetadata.schema.baseType} is not supported yet');
             }
           }
 
@@ -214,8 +210,6 @@ class RealmCoreAccessor implements RealmAccessor {
                 return object.realm.createMap<RealmObject>(handle, mapMetadata);
               case ObjectType.embeddedObject:
                 return object.realm.createMap<EmbeddedObject>(handle, mapMetadata);
-              default:
-                throw RealmError('Map of ${mapMetadata.schema.baseType} is not supported yet');
             }
           }
           return object.realm.createMap<T>(handle, mapMetadata);
@@ -404,8 +398,6 @@ mixin RealmObjectBase on RealmEntity implements RealmObjectBaseMarker {
             return _ConcreteRealmObject();
           case ObjectType.embeddedObject:
             return _ConcreteEmbeddedObject();
-          default:
-            throw RealmException("ObjectType ${metadata.schema.baseType} not supported");
         }
       }
 

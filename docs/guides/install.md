@@ -34,15 +34,8 @@ The Flutter SDK supports the following platforms:
 >
 
 ## Install the SDK
-The Realm SDK for Flutter has two packages available to install,
-depending on whether you are developing a Flutter or Dart standalone app:
-
-- `realm`: The Flutter SDK package for use in Flutter applications.
-- `realm_dart`: The standalone Dart SDK package for use in Dart applications,
-such as CLI apps or running Dart in a server environment.
-
-The standalone Dart package has the same usage as the Flutter package except
-where otherwise noted.
+A single `realm` package is used for both Flutter applications and
+standalone Dart applications (such as CLI apps or Dart on a server).
 
 > **TIP**:
 > The Flutter SDK uses Realm Core database for device data persistence. When you install the Flutter SDK, the package names reflect Realm naming.
@@ -102,27 +95,21 @@ Use Realm with the macOS App Sandbox.
 To add the SDK to your project, run the following command:
 
 ```shell
-dart pub add realm_dart
+dart pub add realm
 ```
 
-This downloads the [realm_dart](https://pub.dev/packages/realm_dart)
+This downloads the [realm](https://pub.dev/packages/realm)
 package, and adds it to your project.
 
 In your `pubspec.yaml` file, you should see:
 
 ```yaml
 dependencies:
-   realm_dart: <latest_version>
+   realm: <latest_version>
 ```
 
-After the package is added, run the following command to install it:
-
-```shell
-dart run realm_dart install
-```
-
-This downloads and copies the required native binaries to the app
-directory.
+No install step is needed: the native library ships prebuilt in the
+package and is wired up automatically by the Dart build hook.
 
 #### Import the Package into Files
 To use the SDK in your app, import the package into any files where you
@@ -135,48 +122,29 @@ import 'package:realm/realm.dart';
 
 #### Dart
 ```dart
-import 'package:realm_dart/realm.dart';
+import 'package:realm/realm.dart';
 ```
 
 ## Update the Package Version
-To change the version of the SDK in your project, perform the following steps,
-depending on whether you are using the `realm` or `realm_dart` package:
+To change the version of the SDK in your project:
 
 ### Update the `pubspec.yaml` File
 Update the package version in your `pubspec.yaml` file dependencies.
 
-#### Flutter
 ```yaml
 dependencies:
    realm: <updated_version>
-```
-
-#### Dart
-```yaml
-dependencies:
-   realm_dart: <updated_version>
 ```
 
 ### Install the Updated Package
-#### Flutter
-Run the following command to install the updated version:
+Run the following command to fetch the updated version:
 
-```yaml
-dependencies:
-   realm: <updated_version>
-```
-
-#### Dart
-Run the following command to install the updated version:
 ```shell
-dart pub upgrade realm_dart
+dart pub upgrade realm
 ```
 
-Then, run the following command to install the updated SDK's native
-binaries:
-```shell
-dart run realm_dart install
-```
+The matching native library is provided automatically - there is no
+separate install step.
 
 ### Regenerate Object Models
 #### Flutter
@@ -186,7 +154,7 @@ dart run realm generate
 
 #### Dart
 ```shell
-dart run realm_dart generate
+dart run realm generate
 ```
 
 > **IMPORTANT:**

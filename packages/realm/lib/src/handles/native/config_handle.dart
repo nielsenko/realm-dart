@@ -10,7 +10,6 @@ import 'ffi.dart';
 import 'handle_base.dart';
 import 'realm_bindings.dart';
 import 'realm_handle.dart';
-import 'realm_library.dart';
 import 'scheduler_handle.dart';
 import 'schema_handle.dart';
 

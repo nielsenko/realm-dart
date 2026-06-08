@@ -480,6 +480,7 @@ class Realm {
   ///
   /// Returns a [Stream] of [RealmSchemaChanges] that can be listened to.
   // TODO: this is private due to https://github.com/realm/realm-core/issues/7426. Once that is fixed, we can expose it.
+  // ignore: unused_element  (kept private until realm-core#7426 is fixed)
   Stream<RealmSchemaChanges> get _schemaChanges {
     late StreamController<RealmSchemaChanges> controller;
     controller = StreamController<RealmSchemaChanges>(
