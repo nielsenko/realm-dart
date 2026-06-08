@@ -46,6 +46,10 @@ jobs:
       - name: Run tests ${{ runner.os }} ${{ runner.arch }}
         run: melos test:unit
 
+      - name: Run serial-only tests (excluded from the parallel run)
+        run: dart test -P serialize
+        working-directory: packages/realm
+
       # TODO: Publish all reports
       - name: Publish Test Report
         uses: dorny/test-reporter@v1.8.0

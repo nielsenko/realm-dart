@@ -1,2 +1,13 @@
 tags:
   baas: { timeout: 2x }
+  serialize:
+
+# Skip serial-only tests on a normal `dart test`.
+exclude_tags: serialize
+
+presets:
+  # `dart test -P serialize` - run ONLY the serial tests, one at a time.
+  serialize:
+    include_tags: serialize
+    exclude_tags: __none__ # sentinel: exclude nothing (override the default)
+    concurrency: 1

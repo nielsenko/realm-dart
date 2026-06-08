@@ -1,6 +1,9 @@
 // Copyright 2023 MongoDB, Inc.
 // SPDX-License-Identifier: Apache-2.0
 
+@Tags(['serialize'])
+library;
+
 import 'dart:async';
 import 'dart:isolate';
 
