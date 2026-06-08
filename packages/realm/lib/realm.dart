@@ -1,4 +1,7 @@
-// Copyright 2024 MongoDB, Inc.
+// Copyright 2021 MongoDB, Inc.
 // SPDX-License-Identifier: Apache-2.0
 
-export 'package:realm_dart/realm.dart';
+// dart.library.cli is available only on dart desktop
+export 'src/realm_flutter.dart' if (dart.library.cli) 'src/realm_dart.dart';
+
+export 'package:ejson/ejson.dart';

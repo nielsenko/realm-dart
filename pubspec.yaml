@@ -12,11 +12,9 @@ workspace:
   - packages/ejson_generator/
   - packages/ejson_lint/
   - packages/ejson_lint/example/
-  #  - packages/realm/
-  #  - packages/realm/example/
   - packages/realm_common/
-  - packages/realm_dart/
-  - packages/realm_dart/example/
+  - packages/realm/
+  - packages/realm/example/
   - packages/realm_generator/
 
 dev_dependencies:
@@ -41,7 +39,6 @@ melos:
         - dart pub global activate ffigen
         - dart pub global activate melos
         - dart pub global activate pana
-        - dart pub global activate --source path $MELOS_ROOT_PATH/packages/realm_dart/dev/
 
     build:
       steps:
@@ -215,9 +212,8 @@ melos:
       run: >-
         melos version --no-git-commit-version --no-changelog --no-dependent-versions --yes
         -V realm_common:$REALM_VERSION
-        -V realm_dart:$REALM_VERSION
-        -V realm_generator:$REALM_VERSION
         -V realm:$REALM_VERSION
+        -V realm_generator:$REALM_VERSION
 
     # TODO: This is actually stricter than on CI, but we should aim for this
     ci:

@@ -1,16 +1,15 @@
 targets:
   $default:
-    sources:
-      exclude:
-        - '**/ephemeral/**'
-
     builders:
+      build_cli:
+        generate_for:
+          - lib/src/cli/**/**.dart
       realm_generator:
         generate_for:
           include:
             - test/**.dart
             - example/**.dart
-            
+
 builders:
   realm_generator:
     import: "package:realm_generator/realm_generator.dart"
@@ -18,3 +17,4 @@ builders:
     build_extensions: { ".dart": [".realm.dart"] }
     auto_apply: dependents
     build_to: source
+    runs_before: ["ejson_generator|ejson_generator"]

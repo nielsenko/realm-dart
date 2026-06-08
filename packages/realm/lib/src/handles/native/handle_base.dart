@@ -1,0 +1,96 @@
+// Copyright 2024 MongoDB, Inc.
+// SPDX-License-Identifier: Apache-2.0
+
+import 'dart:ffi';
+
+import 'realm_bindings.dart';
+
+import 'package:realm/realm.dart';
+
+import 'error_handling.dart';
+import 'realm_library.dart';
+
+import '../handle_base.dart' as intf;
+
+const _enableFinalizerTrace = false;
+
+void _traceFinalization(Object o) {
+  print('Finalizing: $o');
+}
+
+final _debugFinalizer = Finalizer<Object>(_traceFinalization);
+
+void _setupFinalizationTrace(Object value, Object finalizationToken) {
+  _debugFinalizer.attach(value, finalizationToken, detach: value);
+}
+
+void _tearDownFinalizationTrace(Object value, Object finalizationToken) {
+  _debugFinalizer.detach(value);
+  _traceFinalization(finalizationToken);
+}
+
+abstract class HandleBase<T extends NativeType> implements Finalizable, intf.HandleBase {
+  late Pointer<Void> _finalizableHandle;
+  Pointer<T> _pointer;
+  Pointer<T> get pointer {
+    if (released) throw RealmError('Trying to access a released handle');
+    return _pointer;
+  }
+
+  @override
+  bool get released => _pointer == nullptr;
+  @override
+  final bool isUnowned;
+
+  HandleBase(this._pointer, int size) : isUnowned = false {
+    ensureRealmInit();
+    _pointer.raiseLastErrorIfNull();
+    _finalizableHandle = realm_attach_finalizer(this, pointer.cast(), size);
+
+    if (_enableFinalizerTrace) {
+      _setupFinalizationTrace(this, _pointer);
+    }
+  }
+
+  HandleBase.unowned(this._pointer) : isUnowned = true {
+    _pointer.raiseLastErrorIfNull();
+  }
+
+  @override
+  String toString() => "${_pointer.toString()} value=${_pointer.cast<IntPtr>().value}${isUnowned ? ' (unowned)' : ''}";
+
+  /// @nodoc
+  /// A method that will be invoked just before the handle is released. Allows to cleanup
+  /// any custom data that inheritors are storing.
+  @override
+  void releaseCore() {}
+
+  @override
+  void release() {
+    if (released) {
+      return;
+    }
+
+    releaseCore();
+
+    if (!isUnowned) {
+      realm_detach_finalizer(_finalizableHandle, this);
+
+      realm_release(_pointer.cast());
+    }
+
+    _pointer = nullptr;
+
+    if (_enableFinalizerTrace) {
+      _tearDownFinalizationTrace(this, _pointer);
+    }
+  }
+
+  @override
+  // ignore: hash_and_equals
+  bool operator ==(Object other) => other is HandleBase<T>
+      ? _pointer == other._pointer
+            ? true
+            : realm_equals(_pointer.cast(), other._pointer.cast())
+      : false;
+}

@@ -1,6 +1,6 @@
 name: realm_common
 description: >-
-             Hosts the common code shared between realm, realm_dart and realm_generator packages.
+             Hosts the common code shared between the realm and realm_generator packages.
              This package is part of the official Realm Flutter and Realm Dart SDKs.
 
 version: 20.2.0

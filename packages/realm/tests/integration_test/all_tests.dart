@@ -7,25 +7,25 @@ import 'package:flutter/services.dart' show rootBundle;
 import 'package:integration_test/integration_test.dart';
 import 'package:test/test.dart';
 
-import '../../../realm_dart/test/test.dart' as test;
+import '../../test/test.dart' as test;
 
-import '../../../realm_dart/test/backlinks_test.dart' as backlinks_test;
-import '../../../realm_dart/test/configuration_test.dart' as configuration_test;
-import '../../../realm_dart/test/decimal128_test.dart' as decimal128_test;
-import '../../../realm_dart/test/dynamic_realm_test.dart' as dynamic_realm_test;
-import '../../../realm_dart/test/embedded_test.dart' as embedded_test;
-import '../../../realm_dart/test/geospatial_test.dart' as geospatial_test;
-import '../../../realm_dart/test/indexed_test.dart' as indexed_test;
-import '../../../realm_dart/test/list_test.dart' as list_test;
-import '../../../realm_dart/test/migration_test.dart' as migration_test;
-import '../../../realm_dart/test/realm_logger_test.dart' as realm_logger_test;
-import '../../../realm_dart/test/realm_map_test.dart' as realm_map_test;
-import '../../../realm_dart/test/realm_object_test.dart' as realm_object_test;
-import '../../../realm_dart/test/realm_set_test.dart' as realm_set_test;
-import '../../../realm_dart/test/realm_test.dart' as realm_test;
-import '../../../realm_dart/test/realm_value_test.dart' as realm_value_test;
-import '../../../realm_dart/test/results_test.dart' as results_test;
-import '../../../realm_dart/test/serialization_test.dart' as serialization_test;
+import '../../test/backlinks_test.dart' as backlinks_test;
+import '../../test/configuration_test.dart' as configuration_test;
+import '../../test/decimal128_test.dart' as decimal128_test;
+import '../../test/dynamic_realm_test.dart' as dynamic_realm_test;
+import '../../test/embedded_test.dart' as embedded_test;
+import '../../test/geospatial_test.dart' as geospatial_test;
+import '../../test/indexed_test.dart' as indexed_test;
+import '../../test/list_test.dart' as list_test;
+import '../../test/migration_test.dart' as migration_test;
+import '../../test/realm_logger_test.dart' as realm_logger_test;
+import '../../test/realm_map_test.dart' as realm_map_test;
+import '../../test/realm_object_test.dart' as realm_object_test;
+import '../../test/realm_set_test.dart' as realm_set_test;
+import '../../test/realm_test.dart' as realm_test;
+import '../../test/realm_value_test.dart' as realm_value_test;
+import '../../test/results_test.dart' as results_test;
+import '../../test/serialization_test.dart' as serialization_test;
 
 Future<void> _copyBundledFile(String fromPath, String toPath) async {
   final data = await rootBundle.load(fromPath);

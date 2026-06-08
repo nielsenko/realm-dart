@@ -1,0 +1,57 @@
+# Regenerate bindings with `dart run ffigen --config ffigen.yaml`.
+name: RealmLibrary
+description: Realm native lib bindings.
+output: "lib/src/handles/native/realm_bindings.dart"
+ffi-native:
+  # Must match the CodeAsset registered by hook/build.dart.
+  asset-id: 'package:realm/realm_dart.dart' 
+headers:
+  entry-points:
+    - 'src/realm-core/src/realm.h'
+    - 'src/realm_dart.h'
+    - 'src/realm_dart_logger.h'
+    - 'src/realm_dart_decimal128.h'
+    - 'src/realm_dart_scheduler.h'
+  include-directives: # generate only for these headers
+    - 'src/realm-core/src/realm.h'
+    - 'src/realm_dart.h'
+    - 'src/realm_dart_logger.h'
+    - 'src/realm_dart_decimal128.h'
+    - 'src/realm_dart_scheduler.h'
+preamble: |
+  // ignore_for_file: always_specify_types
+  // ignore_for_file: camel_case_types
+  // ignore_for_file: non_constant_identifier_names
+comments:
+  style: any
+  length: full
+compiler-opts:
+  - '-DRLM_NO_ANON_UNIONS'
+  - '-DFFI_GEN'
+  - '-I src/realm-core/src'
+  - '-I src/dart-dl'
+sort: true
+functions:
+  exclude:
+    - '_.*' # exclude all starting with _
+    - 'Dart_.*' # exclude all starting with Dart_
+  symbol-address:
+    include:
+      # Only what is actually used via `addresses.` (note: ffigen 20's
+      # ffi-native mode generates broken addressOf getters for functions
+      # with enum parameters, e.g. realm_dart_log).
+      - 'realm_dart_delete_persistent_handle'
+structs:
+  exclude:
+    - '_.*'
+    - 'Dart_.*' # exclude all starting with Dart_
+globals:
+  exclude:
+    - '_.*'
+    - 'RLM_.*' # exclude RLM_ globals constants since they are not exported from binary
+unions:
+  exclude:
+    - '_.*'
+enums:
+  exclude:
+    - '_.*'

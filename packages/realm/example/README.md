@@ -1,22 +1,35 @@
-![Realm](https://github.com/realm/realm-dart/raw/master/logo.png)
+![Realm](https://github.com/realm/realm-dart/raw/main/logo.png)
 
 [![License](https://img.shields.io/badge/License-Apache-blue.svg)](LICENSE)
 
-# realm_example
+## A simple command-line application using Realm Dart SDK
 
-Demonstrates how to use the Realm SDK for Flutter™
+### Setup 
+Run these commands to setup the application
 
-## Getting Started
+*  Get all dependencies
+    ```
+    dart pub get
+    ```
 
-This project is a starting point for a Flutter application.
+* Install the `realm_dart` package into the application. This downloads and copies the required native binaries to the app directory.
+    ```
+    dart run realm_dart install
+    ```
 
-A few resources to get you started if this is your first Flutter project:
+* To generate RealmObject classes with realm_dart use this command.
+    
+    _*On Dart use `dart run realm_dart` to run `realm_dart` package commands*_
 
-- [Lab: Write your first Flutter app](https://flutter.dev/docs/get-started/codelab)
-- [Cookbook: Useful Flutter samples](https://flutter.dev/docs/cookbook)
+    ```
+    dart run realm_dart generate
+    ```
+    A new file `bin/myapp.g.dart` will be created next to the `bin/myapp.dart`.
+    
+*  Run the application
+    ```
+    dart run
+    ```
 
-For help getting started with Flutter, view our
-[online documentation](https://flutter.dev/docs), which offers tutorials,
-samples, guidance on mobile development, and a full API reference.
+##### The "Dart" name and logo and the "Flutter" name and logo are trademarks owned by Google. 
 
-##### The "Dart" name and logo and the "Flutter" name and logo are trademarks owned by Google.

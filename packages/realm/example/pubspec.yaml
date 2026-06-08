@@ -1,22 +1,15 @@
-name: realm_example
-description: Demonstrates how to use the Realm SDK for Flutter.
-version: 2.0.0-alpha.2
+name: myapp
+description: A simple command-line application using Realm Dart SDK.
 
-publish_to: "none"
+publish_to: none
 
-resolution: workspace
 environment:
   sdk: ^3.6.0
-  flutter: ^3.27.0
+resolution: workspace
 
 dependencies:
-  flutter:
-    sdk: flutter
-  realm: ^20.2.0
-  characters: ^1.4.0
+  realm:
+    path: ../
 
 dev_dependencies:
-  flutter_lints: ^6.0.0
-
-flutter:
-  uses-material-design: true
+  lints: ^6.0.0

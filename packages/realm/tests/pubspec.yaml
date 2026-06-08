@@ -5,7 +5,9 @@ publish_to: "none"
 
 version: 2.0.0-alpha.2
 
-resolution: workspace
+# Deliberately NOT part of the pub workspace: this is a Flutter app, and
+# including it would make every workspace resolution require a Flutter SDK,
+# breaking the pure-Dart `git clone && dart test` flow.
 environment:
   sdk: ^3.6.0
   flutter: ^3.27.0
@@ -20,6 +22,16 @@ dependencies:
     # The tests app is bundled with the plugin so we use a path dependency on
     # the parent directory to use the current plugin's version.
     path: ../
+
+# Resolving standalone means realm's dependencies would come from pub.dev;
+# point the ones that live in this repo at their local packages instead.
+dependency_overrides:
+  realm_common:
+    path: ../../realm_common
+  ejson:
+    path: ../../ejson
+  ejson_annotation:
+    path: ../../ejson_annotation
 
 dev_dependencies:
   flutter_test:
