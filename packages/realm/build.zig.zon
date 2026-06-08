@@ -7,6 +7,17 @@
             .url = "https://github.com/madler/zlib/releases/download/v1.3.1/zlib-1.3.1.tar.gz",
             .hash = "N-V-__8AAJj_QgDBhU17TCtcvdjOZZPDfkvxrEAyZkc14VN8",
         },
+        .openssl = .{
+            .url = "git+https://github.com/allyourcodebase/openssl#0ac677650d43eadf669067d050992118b13338d2",
+            .hash = "openssl-3.3.2-TC9C3Ze3ZABaKR5hc8KRnRPhTClKrKQKqTnXTUYkvmSR",
+        },
+        // The recipe package's own upstream source dependency, declared here
+        // too so the Android build can compile libcrypto from source itself
+        // (same content hash - fetched once).
+        .openssl_src = .{
+            .url = "git+https://github.com/openssl/openssl?ref=openssl-3.3.2#fb7fab9fa6f4869eaa8fbb97e0d593159f03ffe4",
+            .hash = "N-V-__8AAB4K3gN87j2XVRV4lWznICWpINb_g79iOtl4Cl30",
+        },
     },
     .paths = .{""},
     .fingerprint = 0xee8c540081fc4b15,

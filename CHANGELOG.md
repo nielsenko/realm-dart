@@ -6,7 +6,7 @@
 * On Android, `Configuration.defaultStoragePath` requires the path to be provided explicitly (the old Flutter plugin's JNI initialization is gone); pass an explicit `path` to `Configuration.local`.
 
 ### Enhancements
-* The native library is now built with `zig` and orchestrated by Dart build hooks (Dart >= 3.10 / Flutter >= 3.38). It cross-compiles every target - macOS, iOS, Linux (x64/arm64), Windows (x64/arm64), Android (arm64/arm/x64) - from a single host. New: Linux arm64, Windows arm64, and Linux musl.
+* The native library is now built with `zig` and orchestrated by Dart build hooks (Dart >= 3.10 / Flutter >= 3.38). It cross-compiles every target - macOS, iOS, Linux (x64/arm64, glibc), Windows (x64/arm64), Android (arm64/arm/x64) - from a single host. New targets: Linux arm64 and Windows arm64.
 * Native bindings use `@Native` external functions bound to a code asset; the runtime locates and loads the library with no lookup logic.
 * The published package bundles prebuilt binaries for every target, so consumers need no toolchain; a source checkout compiles from source with zig.
 
@@ -20,6 +20,7 @@
 ### Internal
 * Using Core 20.1.5.
 * CMake/CocoaPods/Gradle native build glue replaced by `build.zig` + `hook/build.dart`. CI builds via the hook (no prebuilt-binary jobs, no artifact passing) and runs on forks without secrets.
+* Encryption crypto backend: CommonCrypto (Apple), bcrypt (Windows), and OpenSSL built from source via zig (Linux/Android) - replacing the prebuilt OpenSSL that was downloaded from static.realm.io. AES is currently software-only on Linux/Android (OpenSSL built with `OPENSSL_NO_ASM`); hardware-accelerated AES is a future optimization. Statically-linked crypto symbols are hidden so they can't collide with another crypto library in the same process (e.g. Flutter's BoringSSL).
 
 ## 20.2.0 (2025-09-24)
 

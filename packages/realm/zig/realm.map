@@ -1,0 +1,9 @@
+# Export only the realm C API; hide everything else (statically-linked
+# OpenSSL/zlib symbols) so they can't collide with another crypto library
+# in the same process (e.g. the Flutter engine's BoringSSL on Android).
+{
+  global:
+    realm_*;
+  local:
+    *;
+};

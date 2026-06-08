@@ -66,9 +66,6 @@ Future<Uri> _zigBuild({required Uri packageRoot, required CodeConfig code, requi
   await prefix.create(recursive: true);
 
   final targetOS = code.targetOS;
-  if (targetOS == OS.windows) {
-    await _applyMingwFixes(packageRoot);
-  }
   final ndk = targetOS == OS.android ? _ndkPath(code) : null;
   final zig = await _zigLauncher(packageRoot);
   final cliArgs = [
@@ -86,11 +83,7 @@ Future<Uri> _zigBuild({required Uri packageRoot, required CodeConfig code, requi
     zig,
     cliArgs,
     workingDirectory: packageRoot.toFilePath(),
-    environment: {
-      ...Platform.environment,
-      if (ndk != null) 'ANDROID_NDK_HOME': ndk,
-      if (!Platform.environment.containsKey('ZIG_GLOBAL_CACHE_DIR')) 'ZIG_GLOBAL_CACHE_DIR': packageRoot.resolve('.zig-cache').toFilePath(),
-    },
+    environment: {if (!Platform.environment.containsKey('ZIG_GLOBAL_CACHE_DIR')) 'ZIG_GLOBAL_CACHE_DIR': packageRoot.resolve('.zig-cache').toFilePath()},
   );
   if (result.exitCode != 0) {
     throw Exception(
@@ -107,25 +100,6 @@ Future<Uri> _zigBuild({required Uri packageRoot, required CodeConfig code, requi
     throw Exception('zig build succeeded but ${builtLib.path} is missing');
   }
   return builtLib.uri;
-}
-
-const _mingwFixes = [
-  (file: 'src/realm/util/file.cpp', from: '#if __cplusplus >= 202002L', to: '#if defined(__cpp_lib_chrono) && __cpp_lib_chrono >= 201907L'),
-  (file: 'src/realm/util/file.cpp', from: 'DirScanner::~DirScanner() = default;', to: 'DirScanner::~DirScanner() noexcept = default;'),
-];
-
-/// Patches the realm-core submodule so it builds for *-windows-gnu.
-/// Idempotent: fixes already present are skipped.
-Future<void> _applyMingwFixes(Uri packageRoot) async {
-  for (final fix in _mingwFixes) {
-    final file = File.fromUri(packageRoot.resolve('src/realm-core/${fix.file}'));
-    final source = await file.readAsString();
-    if (source.contains(fix.to)) continue; // already applied
-    if (!source.contains(fix.from)) {
-      throw Exception('Cannot patch ${file.path} for mingw: "${fix.from}" not found - has realm-core moved?');
-    }
-    await file.writeAsString(source.replaceFirst(fix.from, fix.to));
-  }
 }
 
 String _zigTarget(CodeConfig code) {

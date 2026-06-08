@@ -11,6 +11,7 @@
 //   src/realm-core/src/realm/object-store/CMakeLists.txt (commit helper)
 const std = @import("std");
 const sources = @import("zig/sources.zig");
+const openssl_sources = @import("zig/openssl_sources.zig");
 
 const realm_version = .{ .major = 20, .minor = 0, .patch = 1 };
 
@@ -173,11 +174,12 @@ pub fn build(b: *std.Build) void {
         module.addCSourceFiles(.{ .files = &.{file}, .flags = core_cpp_flags });
     }
 
-    // Bundled SHA implementations for platforms without a native one
-    // (realm/CMakeLists.txt). Apple uses CommonCrypto, Windows uses
-    // bcrypt for SHA-1/SHA-256 but still needs the bundled SHA-2 for
-    // SHA-224; everything else (no OpenSSL yet) needs both.
-    if (!is_apple) {
+    // Bundled SHA-2 (realm/CMakeLists.txt): needed only when there is no
+    // native/OpenSSL SHA - i.e. Windows (bcrypt lacks SHA-224). Apple uses
+    // CommonCrypto; Linux/Android use OpenSSL (linked below), which also
+    // provides SHA, so the bundled copies would collide there.
+    const have_openssl = is_linux_like;
+    if (!is_apple and !have_openssl) {
         module.addIncludePath(b.path("src/realm-core/src/external/sha-2"));
         module.addCSourceFiles(.{
             .files = &.{
@@ -233,6 +235,76 @@ pub fn build(b: *std.Build) void {
         }
     } else {
         addZlib(b, module, c_extra, is_windows);
+    }
+
+    // Encryption AES backend on Linux/Android: OpenSSL libcrypto, built
+    // from source by the openssl zig package (Apple uses CommonCrypto,
+    // Windows uses bcrypt - both free). linkLibrary also propagates the
+    // package's installed openssl/* headers to our compiles.
+    if (is_linux_like) {
+        // The allyourcodebase/openssl package is a build recipe: generated
+        // config headers plus a build of the upstream openssl sources (its
+        // `upstream` dependency, which our zon also declares as openssl_src).
+        const openssl = b.dependency("openssl", .{ .target = target, .optimize = optimize });
+        const openssl_src = b.dependency("openssl_src", .{});
+        if (!is_android and target.result.cpu.arch == .x86_64) {
+            // The recipe's own artifact is x86_64-only (hardwired asm).
+            module.linkLibrary(openssl.artifact("openssl"));
+        } else {
+            // Androids of any ABI (zig bundles no bionic libc, so the
+            // recipe's artifact cannot target them) and non-x86_64 Linux:
+            // compile the same libcrypto sources here, where the NDK libc
+            // is wired up (no-asm: the C files carry portable fallbacks
+            // for every arch).
+            const ossl_flags: []const []const u8 = &.{
+                "-DNDEBUG",
+                "-DOPENSSL_NO_ASM",
+                "-DOPENSSLDIR=\"/etc/ssl\"",
+                "-DENGINESDIR=\"/dev/null\"",
+                "-DMODULESDIR=\"/dev/null\"",
+                "-DL_ENDIAN",
+                "-DOPENSSL_BUILDING_OPENSSL",
+                "-DOPENSSL_USE_NODELETE",
+            };
+            // The recipe's generated config hardwires 64-bit longs; on
+            // 32-bit arm shadow the affected headers (see the shim).
+            if (target.result.ptrBitWidth() == 32) {
+                module.addIncludePath(b.path("zig/shim/openssl32"));
+            }
+            module.addIncludePath(openssl_src.path("."));
+            module.addIncludePath(openssl_src.path("providers/common/include"));
+            module.addIncludePath(openssl_src.path("providers/implementations/include"));
+            module.addIncludePath(openssl.path("crypto"));
+            inline for (openssl_sources.groups) |group| {
+                module.addCSourceFiles(.{
+                    .root = switch (group.root) {
+                        .upstream => openssl_src.path(group.prefix),
+                        .recipe => openssl.path(group.prefix),
+                    },
+                    // 32-bit: no __uint128_t; the shim config gates the
+                    // references off, skip the implementations.
+                    .files = if (target.result.ptrBitWidth() == 32)
+                        filterOut(b, group.files, &.{
+                            "ec/ecp_nistp224.c",
+                            "ec/ecp_nistp384.c",
+                            "ec/ecp_nistp256.c",
+                            "ec/ecp_nistp521.c",
+                        })
+                    else
+                        group.files,
+                    .flags = ossl_flags,
+                });
+            }
+        }
+        // Public openssl/*.h headers (realm-core's sha_crypto.cpp includes
+        // <openssl/evp.h>) plus the recipe's generated config headers.
+        module.addIncludePath(openssl_src.path("include"));
+        module.addIncludePath(openssl.path("include"));
+        // Export only the realm C API; localize the statically-linked
+        // OpenSSL/zlib symbols (ELF would otherwise export all ~960 of
+        // them) so they can't collide with another crypto lib in-process,
+        // e.g. the Flutter engine's BoringSSL on Android.
+        lib.setVersionScript(b.path("zig/realm.map"));
     }
 
     if (is_windows) {
@@ -366,7 +438,7 @@ fn generatedHeaders(b: *std.Build, opts: struct {
         \\#define REALM_HAVE_READDIR64 {[readdir64]d}
         \\#define REALM_HAVE_POSIX_FALLOCATE {[fallocate]d}
         \\#define REALM_USE_SYSTEM_OPENSSL_PATHS 0
-        \\#define REALM_HAVE_OPENSSL 0
+        \\#define REALM_HAVE_OPENSSL {[have_openssl]d}
         \\#define REALM_HAVE_SECURE_TRANSPORT {[secure_transport]d}
         \\#define REALM_HAVE_PTHREAD_GETNAME {[pthread_getname]d}
         \\#define REALM_HAVE_PTHREAD_SETNAME {[pthread_setname]d}
@@ -376,7 +448,7 @@ fn generatedHeaders(b: *std.Build, opts: struct {
         \\#define REALM_BACKTRACE_HEADER <execinfo.h>
         \\#define REALM_ENABLE_ASSERTIONS 0
         \\#define REALM_ENABLE_ALLOC_SET_ZERO 0
-        \\#define REALM_ENABLE_ENCRYPTION 0
+        \\#define REALM_ENABLE_ENCRYPTION 1
         \\#define REALM_ENABLE_MEMDEBUG 0
         \\#define REALM_ENABLE_GEOSPATIAL 1
         \\#define REALM_VALGRIND 0
@@ -386,6 +458,9 @@ fn generatedHeaders(b: *std.Build, opts: struct {
     , .{
         .readdir64 = @as(u1, if (opts.is_linux_like) 1 else 0),
         .fallocate = @as(u1, if (opts.is_linux_like) 1 else 0),
+        // Encryption AES backend: Apple=CommonCrypto, Windows=bcrypt (both
+        // free), Linux/Android=OpenSSL libcrypto.
+        .have_openssl = @as(u1, if (opts.is_linux_like) 1 else 0),
         .secure_transport = @as(u1, if (opts.is_apple) 1 else 0),
         // bionic only gained pthread_getname_np at API 26.
         .pthread_getname = @as(u1, if (opts.is_apple or (opts.is_linux_like and !opts.is_android)) 1 else 0),
@@ -434,6 +509,17 @@ fn filterFiles(b: *std.Build, files: []const []const u8, is_apple: bool) []const
     outer: for (files) |file| {
         for (apple_only) |excluded| {
             if (std.mem.eql(u8, file, excluded)) continue :outer;
+        }
+        list.append(b.allocator, file) catch @panic("OOM");
+    }
+    return list.items;
+}
+
+fn filterOut(b: *std.Build, files: []const []const u8, excluded: []const []const u8) []const []const u8 {
+    var list: std.ArrayList([]const u8) = .empty;
+    outer: for (files) |file| {
+        for (excluded) |e| {
+            if (std.mem.eql(u8, file, e)) continue :outer;
         }
         list.append(b.allocator, file) catch @panic("OOM");
     }
