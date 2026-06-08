@@ -1,4 +1,4 @@
-[submodule "packages/realm_dart/src/realm-core"]
-	path = packages/realm_dart/src/realm-core
+[submodule "packages/realm/src/realm-core"]
+	path = packages/realm/src/realm-core
 	url = https://github.com/realm/realm-core.git
 	branch = master

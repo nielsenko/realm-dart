@@ -1,7 +1,7 @@
 // Build librealm_dart with zig instead of CMake.
 //
 // Scope: the local-database subset of realm-core (sync OFF - the sync
-// server is discontinued; encryption OFF for now) plus the realm_dart
+// server is discontinued) plus the realm_dart
 // wrapper, as a shared library for Dart/Flutter to load.
 //
 // The common source manifest (zig/sources.zig) is generated from the
@@ -12,7 +12,7 @@
 const std = @import("std");
 const sources = @import("zig/sources.zig");
 
-const realm_version = .{ .major = 14, .minor = 14, .patch = 0 };
+const realm_version = .{ .major = 20, .minor = 0, .patch = 1 };
 
 // Files present in the (macOS-harvested) manifest that must only be
 // compiled on Apple platforms.

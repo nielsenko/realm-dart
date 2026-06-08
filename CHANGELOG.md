@@ -18,7 +18,7 @@
 * Dart >= 3.10, Flutter >= 3.38.
 
 ### Internal
-* Using Core 14.14.0.
+* Using Core 20.1.5.
 * CMake/CocoaPods/Gradle native build glue replaced by `build.zig` + `hook/build.dart`. CI builds via the hook (no prebuilt-binary jobs, no artifact passing) and runs on forks without secrets.
 
 ## 20.2.0 (2025-09-24)
