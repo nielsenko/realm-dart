@@ -123,6 +123,18 @@ void main() {
     Realm.logger.log(LogLevel.error, 'error', category: LogCategory.realm.sdk);
   });
 
+  test('RealmLogger logs under the category it was given', () async {
+    Realm.logger.setLogLevel(LogLevel.off);
+    Realm.logger.setLogLevel(LogLevel.all, category: LogCategory.realm.storage);
+
+    expectLater(
+      Realm.logger.onRecord,
+      emits(isA<LogRecord>().having((r) => r.category.toString(), 'category', 'Realm.Storage').having((r) => r.message, 'message', 'to storage')),
+    );
+
+    Realm.logger.log(LogLevel.error, 'to storage', category: LogCategory.realm.storage);
+  });
+
   group('Category mapping', () {
     // Filter out sync/app category names since this is a local-only build
     final nativeCategoryNames = realmCore.getAllCategoryNames().where((name) => !name.startsWith("Realm.Sync") && !name.contains("Realm.App")).toList();

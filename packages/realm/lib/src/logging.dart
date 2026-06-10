@@ -152,7 +152,7 @@ class RealmLogger {
 
   void _log(LogLevel level, Object message, {LogCategory? category}) {
     category ??= LogCategory.realm.sdk;
-    realmCore.logMessage(LogCategory.realm.sdk, level, message.toString());
+    realmCore.logMessage(category, level, message.toString());
   }
 }
 

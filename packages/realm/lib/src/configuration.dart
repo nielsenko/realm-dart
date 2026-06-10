@@ -142,10 +142,10 @@ abstract class Configuration {
       throw RealmException("Wrong encryption key size (must be $encryptionKeySize, but was ${key.length})");
     }
 
-    int notAByteElement = key.firstWhere((e) => e > 255, orElse: () => -1);
-    if (notAByteElement >= 0) {
-      throw RealmException('''Encryption key must be a list of bytes with allowed values form 0 to 255.
-      Invalid value $notAByteElement found at index ${key.indexOf(notAByteElement)}.''');
+    final badIndex = key.indexWhere((e) => e < 0 || e > 255);
+    if (badIndex >= 0) {
+      throw RealmException('''Encryption key must be a list of bytes with allowed values from 0 to 255.
+      Invalid value ${key[badIndex]} found at index $badIndex.''');
     }
   }
 }

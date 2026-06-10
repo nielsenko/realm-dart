@@ -472,10 +472,19 @@ void main() {
   });
 
   test('Configuration set encryption key not a list of bytes', () {
-    List<int> byteExceedingKey = List<int>.generate(encryptionKeySize, (i) => random.nextInt(4294967296));
+    List<int> byteExceedingKey = List<int>.generate(encryptionKeySize, (i) => 256 + random.nextInt(4294967296 - 256));
     expect(
       () => Configuration.local([Car.schema], encryptionKey: byteExceedingKey),
-      throws<RealmException>("Encryption key must be a list of bytes with allowed values form 0 to 255"),
+      throws<RealmException>("Encryption key must be a list of bytes with allowed values from 0 to 255"),
+    );
+  });
+
+  test('Configuration set encryption key with negative byte', () {
+    final negativeByteKey = List<int>.generate(encryptionKeySize, (i) => 0);
+    negativeByteKey[encryptionKeySize ~/ 2] = -1;
+    expect(
+      () => Configuration.local([Car.schema], encryptionKey: negativeByteKey),
+      throws<RealmException>("Encryption key must be a list of bytes with allowed values from 0 to 255"),
     );
   });
 
