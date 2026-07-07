@@ -9,7 +9,7 @@ version: 2.0.0-alpha.2
 # including it would make every workspace resolution require a Flutter SDK,
 # breaking the pure-Dart `git clone && dart test` flow.
 environment:
-  sdk: ^3.6.0
+  sdk: ^3.11.0
   flutter: ^3.27.0
 
 dependencies:

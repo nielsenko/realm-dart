@@ -4,6 +4,7 @@
 import 'dart:convert';
 import 'dart:math';
 import 'dart:typed_data';
+
 import 'package:objectid/objectid.dart';
 import 'package:sane_uuid/uuid.dart';
 
@@ -73,7 +74,7 @@ enum RealmIndexType {
   /// * Token prefix or suffix search like `query("bio TEXT \$0", "comp* *cing")` is not supported.
   /// * Only ASCII and Latin-1 alphanumerical chars are included in the index (most western languages).
   /// * Only boolean match is supported, i.e. "found" or "not found". It is not possible to sort results by "relevance".
-  fullText
+  fullText,
 }
 
 /// All supported `Realm` collection types.
@@ -86,11 +87,11 @@ enum RealmCollectionType {
   map;
 
   String get plural => switch (this) {
-        RealmCollectionType.list => 'lists',
-        RealmCollectionType.set => 'sets',
-        RealmCollectionType.map => 'maps',
-        _ => 'none',
-      };
+    RealmCollectionType.list => 'lists',
+    RealmCollectionType.set => 'sets',
+    RealmCollectionType.map => 'maps',
+    _ => 'none',
+  };
 }
 
 /// A base class of all Realm errors.

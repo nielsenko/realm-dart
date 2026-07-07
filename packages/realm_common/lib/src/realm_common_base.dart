@@ -60,16 +60,11 @@ class RealmModel {
 
   // NOTE: To avoid a breaking change, we keep this old constructor and add a new one
   /// Creates a new instance of [RealmModel] optionally specifying the [baseType].
-  const RealmModel([
-    ObjectType baseType = ObjectType.realmObject,
-  ]) : this.using(baseType: baseType);
+  const RealmModel([ObjectType baseType = ObjectType.realmObject]) : this.using(baseType: baseType);
 
   /// Creates a new instance of [RealmModel] optionally specifying the [baseType]
   /// and [generatorConfig].
-  const RealmModel.using({
-    this.baseType = ObjectType.realmObject,
-    this.generatorConfig = const GeneratorConfig(),
-  });
+  const RealmModel.using({this.baseType = ObjectType.realmObject, this.generatorConfig = const GeneratorConfig()});
 }
 
 /// MapTo annotation for class level and class member level.

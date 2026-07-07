@@ -7,14 +7,19 @@ description: >-
 
 version: 0.4.1
 repository: https://github.com/realm/realm-dart/ejson/packages/ejson_analyzer
+publish_to: none # depends on ejson_annotation by path, see below
 
 environment:
-  sdk: ^3.6.0
+  sdk: ^3.11.0
 resolution: workspace
 
 dependencies:
-  analyzer: ^8.1.1
-  ejson_annotation: ^0.4.1
+  analyzer: ">=13.3.0 <15.0.0"
+  # The analysis server resolves plugins in an isolated synthetic package where
+  # workspace resolution does not apply, but path dependencies are followed.
+  # Pin to version before publishing
+  ejson_annotation:
+    path: ../ejson_annotation
   source_gen: ^4.0.1
 
 dev_dependencies:

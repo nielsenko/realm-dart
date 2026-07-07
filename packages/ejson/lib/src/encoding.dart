@@ -18,7 +18,6 @@ var customEncoders = <Type, Function>{};
 var relaxed = false;
 
 @pragma('vm:prefer-inline')
-
 /// Converts [value] to EJson
 ///
 /// Throws [MissingEncoder] if no encoder is registered for [value]'s type.
@@ -67,16 +66,13 @@ EJsonValue _encodeDate(DateTime value) {
   return switch (relaxed) {
     true => {'\$date': value.toIso8601String()},
     false => {
-        '\$date': {'\$numberLong': value.millisecondsSinceEpoch.toString()},
-      },
+      '\$date': {'\$numberLong': value.millisecondsSinceEpoch.toString()},
+    },
   };
 }
 
 EJsonValue _encodeDBRef(DBRef<dynamic> d) {
-  return {
-    '\$ref': d.collection,
-    '\$id': toEJson(d.id),
-  };
+  return {'\$ref': d.collection, '\$id': toEJson(d.id)};
 }
 
 EJsonValue _encodeDefined(Defined<dynamic> defined) => toEJson(defined.value);
@@ -91,9 +87,9 @@ EJsonValue _encodeDouble(double value) {
     double.infinity => {'\$numberDouble': 'Infinity'},
     double.negativeInfinity => {'\$numberDouble': '-Infinity'},
     _ => switch (relaxed) {
-        true => value,
-        false => {'\$numberDouble': '$value'},
-      }
+      true => value,
+      false => {'\$numberDouble': '$value'},
+    },
   };
 }
 
@@ -128,11 +124,8 @@ EJsonValue _encodeUndefined(Undefined<dynamic> undefined) => {'\$undefined': 1};
 EJsonValue _encodeUuid(Uuid uuid) => _encodeBinary(uuid.bytes, subtype: '04');
 
 EJsonValue _encodeBinary(Uint8List buffer, {required String subtype}) => {
-      '\$binary': {
-        'base64': base64.encode(buffer),
-        'subType': subtype,
-      },
-    };
+  '\$binary': {'base64': base64.encode(buffer), 'subType': subtype},
+};
 
 EJsonValue _encodeObjectId(ObjectId objectId) => {'\$oid': objectId.hexString};
 

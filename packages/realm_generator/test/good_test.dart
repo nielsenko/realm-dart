@@ -1,5 +1,7 @@
 import 'dart:io';
+
 import 'package:path/path.dart' as path;
+
 import 'test_util.dart';
 
 void main() async {
@@ -12,13 +14,7 @@ void main() async {
 
   testCompileMany(
     'Link to mapped class',
-    [
-      'another_mapto.dart',
-      'mapto.dart',
-    ].map<File>((n) => File(path.join(directory, n))),
-    [
-      'another_mapto.expected_multi',
-      'mapto.expected',
-    ].map<File>((n) => File(path.join(directory, n))),
+    ['another_mapto.dart', 'mapto.dart'].map<File>((n) => File(path.join(directory, n))),
+    ['another_mapto.expected_multi', 'mapto.expected'].map<File>((n) => File(path.join(directory, n))),
   );
 }

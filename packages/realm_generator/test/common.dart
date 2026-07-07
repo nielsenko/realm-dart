@@ -8,7 +8,8 @@ final throwsCompileError = throwsA(isA<CompileError>());
 
 Future<void> compile(String src) async {
   final main = await resolveSources({
-    'realm|test/integration/main.dart': '''
+    'realm|test/integration/main.dart':
+        '''
 library main;
 
 $src

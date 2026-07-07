@@ -19,11 +19,7 @@ String formatSpans(
     if (span != null) {
       final formatted = secondarySpans.isEmpty && primaryLabel == null
           ? span.highlight(color: color)
-          : span.highlightMultiple(
-              primaryLabel ?? '!',
-              secondarySpans,
-              color: color,
-            );
+          : span.highlightMultiple(primaryLabel ?? '!', secondarySpans, color: color);
       buffer
         ..write('${'\n' * 2}in: ')
         ..writeln(span.start.toolString)

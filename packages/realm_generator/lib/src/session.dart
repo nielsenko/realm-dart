@@ -13,24 +13,9 @@ const _sessionKey = #SessionKey;
 // in case multiple libs are processed concurrently, we make session zone local
 Session get session => Zone.current[_sessionKey] as Session;
 
-Future<T> scopeSession<T>(
-  ResolvedLibraryResult resolvedLibrary,
-  FutureOr<T> Function() fn, {
-  String? prefix,
-  String? suffix,
-  bool color = false,
-}) async {
-  final s = Session(
-    resolvedLibrary,
-    prefix: prefix,
-    suffix: suffix,
-    color: color,
-  );
-  return await runZonedGuarded(
-    fn,
-    (e, st) => Error.throwWithStackTrace(e, st),
-    zoneValues: {_sessionKey: s},
-  )!;
+Future<T> scopeSession<T>(ResolvedLibraryResult resolvedLibrary, FutureOr<T> Function() fn, {String? prefix, String? suffix, bool color = false}) async {
+  final s = Session(resolvedLibrary, prefix: prefix, suffix: suffix, color: color);
+  return await runZonedGuarded(fn, (e, st) => Error.throwWithStackTrace(e, st), zoneValues: {_sessionKey: s})!;
 }
 
 class Session {
@@ -41,8 +26,8 @@ class Session {
   final mapping = <String, ClassElement>{}; // shared
 
   Session(this.resolvedLibrary, {String? prefix, String? suffix, this.color = false})
-      : prefix = prefix ?? RegExp(r'[_$]'), // defaults to _ or $
-        suffix = suffix ?? '';
+    : prefix = prefix ?? RegExp(r'[_$]'), // defaults to _ or $
+      suffix = suffix ?? '';
 
   TypeProvider get typeProvider => resolvedLibrary.typeProvider;
   TypeSystem get typeSystem => resolvedLibrary.element.typeSystem;

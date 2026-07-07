@@ -39,6 +39,6 @@ FutureOr<T> measure<T>(FutureOr<T> Function() action, {String tag = '', int repe
           final time = humanReadable(stopwatch.elapsed);
           log.info('[$tag ($i)] completed, took $time');
         }
-      })()
+      })(),
   ].last;
 }

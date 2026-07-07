@@ -110,14 +110,14 @@ extension ClassElementEx on ClassElement {
       }
 
       // Check that no constructor is defined.
-      final explicitCtors = constructors.where((c) => !c.isSynthetic);
+      final explicitCtors = constructors.where((c) => c.isOriginDeclaration);
       if (explicitCtors.isNotEmpty) {
         final ctor = explicitCtors.first;
         final ctorNode = getDeclarationFromElement(ctor)?.node as ConstructorDeclaration?;
         throw RealmInvalidGenerationSourceError(
           'No constructors allowed on realm model classes',
           element: ctor,
-          primarySpan: ctor.span ?? ctorNode?.returnType.span(span!.file),
+          primarySpan: ctor.span ?? ctorNode?.typeName?.span(span!.file),
           primaryLabel: 'has constructor',
           todo: 'Remove constructor',
         );

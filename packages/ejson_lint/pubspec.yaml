@@ -7,15 +7,25 @@ description: >-
 
 version: 0.4.1
 repository: https://github.com/realm/realm-dart/ejson/packages/ejson_lint
+publish_to: none # depends on ejson_analyzer by path, see below
 
 environment:
-  sdk: ^3.6.0
+  sdk: ^3.11.0
 resolution: workspace
 
 dependencies:
-  analyzer: ^8.1.1
-  custom_lint_builder: ^0.8.0
-  ejson_analyzer: ^0.4.1
+  # analysis_server_plugin pins an exact analyzer per release (0.3.18 -> 13.3.0,
+  # 0.3.20 -> 14.1.0), and the analysis server only loads a plugin built against
+  # an analyzer close to its own. Too low a version here makes the plugin load
+  # silently do nothing - lints_test.dart is what catches that. Bump both in
+  # lockstep with the SDK.
+  analysis_server_plugin: ^0.3.18
+  analyzer: ">=13.3.0 <15.0.0"
+  # The analysis server resolves plugins in an isolated synthetic package where
+  # workspace resolution does not apply, but path dependencies are followed.
+  # Pin to version before publishing
+  ejson_analyzer:
+    path: ../ejson_analyzer
 
 dev_dependencies:
   lints: ^6.0.0

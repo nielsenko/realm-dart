@@ -23,14 +23,7 @@ class RealmModelInfo {
   final ObjectType baseType;
   final GeneratorConfig config;
 
-  const RealmModelInfo(
-    this.name,
-    this.modelName,
-    this.realmName,
-    this.fields,
-    this.baseType,
-    this.config,
-  );
+  const RealmModelInfo(this.name, this.modelName, this.realmName, this.fields, this.baseType, this.config);
 
   Iterable<String> toCode() sync* {
     yield 'class $name extends $modelName with RealmEntity, RealmObjectBase, ${baseType.className} {';
@@ -98,10 +91,7 @@ class RealmModelInfo {
       yield '';
 
       // Properties
-      yield* fields.expand((f) => [
-            ...f.toCode(),
-            '',
-          ]);
+      yield* fields.expand((f) => [...f.toCode(), '']);
 
       // Changes
       yield '@override';
@@ -214,7 +204,6 @@ extension<K, V> on Map<K, V> {
           yield '${e.key}: ${e.value}';
         }
       }
-    }()
-        .join(',');
+    }().join(',');
   }
 }

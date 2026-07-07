@@ -172,11 +172,11 @@ double _decodeDouble(EJsonValue ejson) {
   return switch (ejson) {
     double d => d, // relaxed mode
     {'\$numberDouble': String s} => switch (s) {
-        'NaN' => double.nan,
-        'Infinity' => double.infinity,
-        '-Infinity' => double.negativeInfinity,
-        _ => double.tryParse(s) ?? raiseInvalidEJson(ejson),
-      },
+      'NaN' => double.nan,
+      'Infinity' => double.infinity,
+      '-Infinity' => double.negativeInfinity,
+      _ => double.tryParse(s) ?? raiseInvalidEJson(ejson),
+    },
     _ => raiseInvalidEJson(ejson),
   };
 }

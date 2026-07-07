@@ -15,9 +15,11 @@ void main() async {
     testCompile(
       'log from compile $sourceFile',
       sourceFile,
-      completion(predicate((_) {
-        return firstLog?.normalizeLineEndings() == infoFile.readAsStringSync().normalizeLineEndings();
-      })),
+      completion(
+        predicate((_) {
+          return firstLog?.normalizeLineEndings() == infoFile.readAsStringSync().normalizeLineEndings();
+        }),
+      ),
       onLog: (record) {
         if (firstLog == null && record.loggerName == 'testBuilder') {
           firstLog = '$record';

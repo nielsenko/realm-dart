@@ -3,7 +3,7 @@ name: realm_workspace
 publish_to: none
 
 environment:
-  sdk: ^3.6.0
+  sdk: ^3.11.0
 
 workspace:
   - packages/ejson/
@@ -63,7 +63,6 @@ melos:
       steps:
         - test:unit
         - test:widget
-        - test:lints
         - test:integration
 
     test:unit:
@@ -84,13 +83,6 @@ melos:
         noDependsOn: integration_test # integration tests are run separately
         dirExists: test/
         flutter: true
-
-    test:lints:
-      run: dart run custom_lint
-      exec:
-        concurrency: 1 # only one project at a time to keep output sane
-      packageFilters:
-        dependsOn: custom_lint
 
     test:integration:
       run: >-

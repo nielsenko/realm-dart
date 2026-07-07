@@ -7,6 +7,6 @@ class _Bad {
   late int x;
   var listOfLists = [
     [0],
-    [1]
+    [1],
   ];
 }
