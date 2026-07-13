@@ -23,7 +23,14 @@ class GenerateCommand extends Command<void> {
   FutureOr<void>? run() async {
     final options = parseOptionsResult(argResults!);
 
-    final process = await Process.start('dart', [
+    print(
+      'running: ${Platform.resolvedExecutable} run build_runner ${options.clean
+          ? 'clean'
+          : options.watch
+          ? 'watch'
+          : 'build'}',
+    );
+    final process = await Process.start(Platform.resolvedExecutable, [
       'run',
       'build_runner',
       // prioritize clean, then watch, then build
@@ -32,7 +39,6 @@ class GenerateCommand extends Command<void> {
           : options.watch
           ? 'watch'
           : 'build',
-      ...[if (!options.clean) '--delete-conflicting-outputs'], // not legal option to clean
     ]);
 
     await stdout.addStream(process.stdout);
