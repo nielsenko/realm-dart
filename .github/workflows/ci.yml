@@ -43,57 +43,37 @@ jobs:
 
   # Dart desktop tests - the hook builds librealm for the host target.
 
-  dart-tests-linux:
-    name: Dart Tests Linux
+  dart-tests:
+    name: Dart Tests ${{ matrix.name }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - { name: Linux, runner: ubuntu-latest }
+          - { name: Windows, runner: windows-latest }
+          - { name: MacOS, runner: macos-15-intel }
+          - { name: MacOS Arm, runner: macos-14, arch: arm64 }
     uses: ./.github/workflows/dart-desktop-tests.yml
     with:
-      runner: ubuntu-latest
-
-  dart-tests-windows:
-    name: Dart Tests Windows
-    uses: ./.github/workflows/dart-desktop-tests.yml
-    with:
-      runner: windows-latest
-
-  dart-tests-macos:
-    name: Dart Tests MacOS
-    uses: ./.github/workflows/dart-desktop-tests.yml
-    with:
-      runner: macos-15-intel
-
-  dart-tests-macos-arm:
-    name: Dart Tests MacOS Arm
-    uses: ./.github/workflows/dart-desktop-tests.yml
-    with:
-      runner: macos-14
-      arch: arm64
+      runner: ${{ matrix.runner }}
+      arch: ${{ matrix.arch || 'x64' }}
 
   # Flutter desktop tests - the hook builds + Flutter bundles the code asset.
 
-  flutter-tests-linux:
-    name: Flutter Tests Linux
+  flutter-tests:
+    name: Flutter Tests ${{ matrix.name }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - { name: Linux, runner: ubuntu-latest }
+          - { name: Windows, runner: windows-latest }
+          - { name: MacOS, runner: macos-15-intel }
+          - { name: MacOS Arm, runner: macos-14, arch: arm64 }
     uses: ./.github/workflows/flutter-desktop-tests.yml
     with:
-      runner: ubuntu-latest
-
-  flutter-tests-windows:
-    name: Flutter Tests Windows
-    uses: ./.github/workflows/flutter-desktop-tests.yml
-    with:
-      runner: windows-latest
-
-  flutter-tests-macos:
-    name: Flutter Tests MacOS
-    uses: ./.github/workflows/flutter-desktop-tests.yml
-    with:
-      runner: macos-15-intel
-
-  flutter-tests-macos-arm:
-    name: Flutter Tests MacOS Arm
-    uses: ./.github/workflows/flutter-desktop-tests.yml
-    with:
-      runner: macos-14
-      arch: arm64
+      runner: ${{ matrix.runner }}
+      arch: ${{ matrix.arch || 'x64' }}
 
   flutter-tests-ios:
     runs-on: macos-14
@@ -186,41 +166,22 @@ jobs:
   # Bootstrap: a fresh `flutter create` app consuming realm, built on every
   # platform - validates the real consumer path (hook + packaging).
 
-  bootstrap-linux:
-    name: Bootstrap Linux
+  bootstrap:
+    name: Bootstrap ${{ matrix.name }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - { name: Linux, runner: ubuntu-latest, build: "linux --debug" }
+          - { name: macOS, runner: macos-14, build: "macos --debug" }
+          - { name: Windows, runner: windows-latest, build: "windows --debug" }
+          - { name: Android, runner: ubuntu-latest, build: "apk --debug", android: true }
+          - { name: iOS, runner: macos-14, build: "ios --debug --no-codesign" }
     uses: ./.github/workflows/flutter-bootstrap.yml
     with:
-      runner: ubuntu-latest
-      build: linux --debug
-
-  bootstrap-macos:
-    name: Bootstrap macOS
-    uses: ./.github/workflows/flutter-bootstrap.yml
-    with:
-      runner: macos-14
-      build: macos --debug
-
-  bootstrap-windows:
-    name: Bootstrap Windows
-    uses: ./.github/workflows/flutter-bootstrap.yml
-    with:
-      runner: windows-latest
-      build: windows --debug
-
-  bootstrap-android:
-    name: Bootstrap Android
-    uses: ./.github/workflows/flutter-bootstrap.yml
-    with:
-      runner: ubuntu-latest
-      build: apk --debug
-      android: true
-
-  bootstrap-ios:
-    name: Bootstrap iOS
-    uses: ./.github/workflows/flutter-bootstrap.yml
-    with:
-      runner: macos-14
-      build: ios --debug --no-codesign
+      runner: ${{ matrix.runner }}
+      build: ${{ matrix.build }}
+      android: ${{ matrix.android || false }}
 
   # Code generation: realm_generator + ejson + ffigen must produce exactly
   # what is committed.
@@ -294,7 +255,7 @@ jobs:
   coverage-finished:
     name: Finalize coverage
     needs:
-      - dart-tests-linux
+      - dart-tests
     runs-on: ubuntu-latest
     # Coveralls needs the repo token, which fork PRs don't get. Skip on forks.
     if: ${{ !github.event.pull_request.head.repo.fork }}
@@ -308,13 +269,8 @@ jobs:
   slack-on-failure:
     name: Report failure in main branch
     needs:
-      - dart-tests-linux
-      - dart-tests-macos
-      - dart-tests-macos-arm
-      - dart-tests-windows
-      - flutter-tests-linux
-      - flutter-tests-macos
-      - flutter-tests-windows
+      - dart-tests
+      - flutter-tests
       - flutter-tests-ios
       - flutter-tests-android
     runs-on: ubuntu-latest
