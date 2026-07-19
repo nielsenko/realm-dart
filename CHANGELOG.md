@@ -4,6 +4,7 @@
 * The `realm` and `realm_dart` packages are consolidated into a single `realm` package used by both Flutter and pure-Dart apps. The separate `realm_dart` package and the `realm` Flutter plugin are gone.
 * `dart run realm_dart install` is removed. Native binaries are no longer downloaded - they are bundled in the published package (and built from source via the Dart build hook in a source checkout), so there is no install step.
 * On Android, `Configuration.defaultStoragePath` requires the path to be provided explicitly (the old Flutter plugin's JNI initialization is gone); pass an explicit `path` to `Configuration.local`.
+* The bundled `realm` command-line tool is removed. `dart run realm generate` was only a thin wrapper around `build_runner`; run `dart run build_runner build` (or `watch` / `clean`) directly.
 
 ### Enhancements
 * The native library is now built with `zig` and orchestrated by Dart build hooks (Dart >= 3.10 / Flutter >= 3.38). It cross-compiles every target - macOS, iOS, Linux (x64/arm64, glibc), Windows (x64/arm64), Android (arm64/arm/x64) - from a single host. New targets: Linux arm64 and Windows arm64.

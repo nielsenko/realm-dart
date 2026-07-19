@@ -149,12 +149,12 @@ separate install step.
 ### Regenerate Object Models
 #### Flutter
 ```shell
-dart run realm generate
+dart run build_runner build
 ```
 
 #### Dart
 ```shell
-dart run realm generate
+dart run build_runner build
 ```
 
 > **IMPORTANT:**

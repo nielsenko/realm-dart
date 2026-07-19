@@ -68,7 +68,7 @@ object models with the new `.realm.dart` file extension.
 You can safely delete any `.g.dart` files from your project.
 
 ```shell
-dart run realm generate
+dart run build_runner build
 ```
 
 #### Dart
@@ -77,7 +77,7 @@ object models with the new `.realm.dart` file extension.
 You can safely delete any `.g.dart` files from your project.
 
 ```shell
-dart run realm generate
+dart run build_runner build
 ```
 
 ## Removed Classes and Members

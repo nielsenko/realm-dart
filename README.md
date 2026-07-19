@@ -46,7 +46,7 @@ This repository holds the source code for the Realm SDK for Flutterâ„¢ and Dartâ
 * Generate RealmObject class `Car` from data model class `_Car`.
 
     ```
-    dart run realm generate
+    dart run build_runner build
     ```
 
 * Open a Realm and add some objects.
@@ -152,10 +152,8 @@ Realm Flutter package is published to [realm](https://pub.dev/packages/realm).
 
 * Generate RealmObject class `Item` from data model class `_Item`.
 
-    _*On Flutter use `dart run realm` to run `realm` package commands*_
-
     ```
-    dart run realm generate
+    dart run build_runner build
     ```
     A new file `catalog.realm.dart` will be created next to the `catalog.dart`.
 
@@ -301,7 +299,7 @@ The same [realm](https://pub.dev/packages/realm) package is used for pure-Dart (
 * To generate RealmObject classes use this command.
 
     ```
-    dart run realm generate
+    dart run build_runner build
     ```
     A new file `catalog.realm.dart` will be created next to the `catalog.dart`.
 

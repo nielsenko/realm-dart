@@ -90,12 +90,12 @@ Generate the `RealmObject`, which you'll use in your application:
 
 #### Flutter
 ```shell
-dart run realm generate
+dart run build_runner build
 ```
 
 #### Dart
 ```shell
-dart run realm generate
+dart run build_runner build
 ```
 
 This command generates the file in the same directory as your model file.
@@ -307,13 +307,13 @@ Run the following command to generate `RealmObjects`:
 #### Flutter
 
 ```
-dart run realm generate
+dart run build_runner build
 ```
 
 #### Dart
 
 ```
-dart run realm generate
+dart run build_runner build
 ```
 
 Running this creates a public class in a new file in the directory
@@ -343,13 +343,13 @@ include the `--watch` flag in your command.
 #### Flutter
 
 ```
-dart run realm generate --watch
+dart run build_runner watch
 ```
 
 #### Dart
 
 ```
-dart run realm generate --watch
+dart run build_runner watch
 ```
 
 To clean the generator caches, include the `--clean` flag in your command.
@@ -358,11 +358,11 @@ Cleaning the generator cache can be useful when debugging.
 #### Flutter
 
 ```
-dart run realm generate --clean
+dart run build_runner clean
 ```
 
 #### Dart
 
 ```
-dart run realm generate --clean
+dart run build_runner clean
 ```

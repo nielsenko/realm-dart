@@ -71,12 +71,12 @@ Now generate a `RealmObject` class `Car` from the data model class `Car`:
 
 #### Flutter
 ```shell
-dart run realm generate
+dart run build_runner build
 ```
 
 #### Dart
 ```shell
-dart run realm generate
+dart run build_runner build
 ```
 
 Running this creates a `Car` class in a `car.realm.dart` file located in the directory
@@ -90,12 +90,12 @@ there's a change to `_Car`, run:
 
 #### Flutter
 ```shell
-dart run realm generate --watch
+dart run build_runner watch
 ```
 
 #### Dart
 ```shell
-dart run realm generate --watch
+dart run build_runner watch
 ```
 
 ## Open a Realm
