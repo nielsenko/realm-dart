@@ -119,11 +119,7 @@ class Realm {
   Realm._(this.config, [RealmHandle? handle, this._isInMigration = false]) : _handle = handle ?? _openRealm(config) {
     _populateMetadata();
 
-    if (config.schemaObjects.isEmpty) {
-      _schemaCallbackHandle = null;
-    } else {
-      _schemaCallbackHandle = null;
-    }
+    _schemaCallbackHandle = config.schemaObjects.isEmpty ? _handle.subscribeForSchemaNotifications(this) : null;
   }
 
   /// A method for asynchronously opening a [Realm].
@@ -479,9 +475,7 @@ class Realm {
   /// Realms will emit schema change notifications.
   ///
   /// Returns a [Stream] of [RealmSchemaChanges] that can be listened to.
-  // TODO: this is private due to https://github.com/realm/realm-core/issues/7426. Once that is fixed, we can expose it.
-  // ignore: unused_element  (kept private until realm-core#7426 is fixed)
-  Stream<RealmSchemaChanges> get _schemaChanges {
+  Stream<RealmSchemaChanges> get schemaChanges {
     late StreamController<RealmSchemaChanges> controller;
     controller = StreamController<RealmSchemaChanges>(
       onListen: () => _schemaChangeListeners.add(controller),

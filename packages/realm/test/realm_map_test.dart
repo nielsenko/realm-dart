@@ -675,7 +675,6 @@ void testNotifications<T>(RealmMap<T> Function(TestRealmMaps) accessor, TestCase
   });
 
   test('$T key notifications', () async {
-    // TODO: for some reason, we don't appear to be getting key notifications: https://github.com/realm/realm-core/issues/7219
     final config = Configuration.local([TestRealmMaps.schema, Car.schema, EmbeddedValue.schema]);
     final realm = getRealm(config);
 
@@ -708,7 +707,7 @@ void testNotifications<T>(RealmMap<T> Function(TestRealmMaps) accessor, TestCase
     realm.write(() {
       map.remove('a');
     });
-  }, skip: 'Key notifications are not working: https://github.com/realm/realm-core/issues/7219');
+  });
 
   test('$T value notifications', () async {
     final config = Configuration.local([TestRealmMaps.schema, Car.schema, EmbeddedValue.schema]);
