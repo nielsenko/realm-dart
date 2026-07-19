@@ -23,7 +23,7 @@ jobs:
 
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
         with:
           submodules: "recursive"
 
@@ -52,7 +52,7 @@ jobs:
 
       # TODO: Publish all reports
       - name: Publish Test Report
-        uses: dorny/test-reporter@v1.8.0
+        uses: dorny/test-reporter@v3
         if: success() || failure()
         with:
           name: Test Results Dart ${{ runner.os }} ${{ runner.arch }}

@@ -39,7 +39,7 @@ runs:
       # restore can never produce wrong outputs. It also holds zig's package
       # store, sparing the ~100 MB openssl source fetch per job.
       if: inputs.zig == 'true'
-      uses: actions/cache@v4
+      uses: actions/cache@v6
       with:
         path: packages/realm/.zig-cache
         key: zig-build-${{ runner.os }}-${{ runner.arch }}-${{ hashFiles('packages/realm/.zig-version', 'packages/realm/build.zig', 'packages/realm/build.zig.zon', 'packages/realm/zig/**') }}
@@ -69,7 +69,7 @@ runs:
       # (see https://github.com/pingbird/puro/issues/87)
       if: runner.os != 'Windows'
       id: restore
-      uses: actions/cache/restore@v4
+      uses: actions/cache/restore@v5
       with:
         path: ${{ env.PURO_ROOT }}
         key: setup-runner-${{ runner.os }}-${{ runner.arch }}-${{ steps.setup.outputs.week }}-${{ inputs.cache-key }}
@@ -114,7 +114,7 @@ runs:
       # Feature branches inherit the cache from the main branch anyway.
       # This saves on cache storage.
       if: github.ref == 'refs/heads/main' && steps.restore.outputs.cache-hit != 'true'
-      uses: actions/cache/save@v4
+      uses: actions/cache/save@v5
       with:
         path: ${{ env.PURO_ROOT }}
         key: ${{ steps.restore.outputs.cache-primary-key }}

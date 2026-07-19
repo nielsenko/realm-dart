@@ -26,7 +26,7 @@ jobs:
     timeout-minutes: 30
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
         with:
           submodules: false
       - name: Setup Runner
@@ -104,7 +104,7 @@ jobs:
         working-directory: packages/realm/tests
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
         with:
           submodules: "recursive"
       - name: Setup Runner
@@ -112,7 +112,7 @@ jobs:
       - name: Bump ulimit
         run: ulimit -n 10240
       - name: Launch Simulator
-        uses: futureware-tech/simulator-action@v3
+        uses: futureware-tech/simulator-action@v5
         with:
           model: "iPhone SE (3rd generation)"
           os: "iOS"
@@ -123,7 +123,7 @@ jobs:
             --file-reporter=json:test-results.json \
             --suppress-analytics
       - name: Publish Test Report
-        uses: dorny/test-reporter@v1.8.0
+        uses: dorny/test-reporter@v3
         if: success() || failure()
         with:
           name: Test Results Flutter iOS
@@ -141,7 +141,7 @@ jobs:
         working-directory: packages/realm/tests
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
         with:
           submodules: "recursive"
       - name: Point the build hook at the runner's NDK
@@ -154,7 +154,7 @@ jobs:
           sudo udevadm control --reload-rules
           sudo udevadm trigger --name-match=kvm
       - name: Setup Java
-        uses: actions/setup-java@v4
+        uses: actions/setup-java@v5
         with:
           distribution: "temurin"
           java-version: 21
@@ -174,7 +174,7 @@ jobs:
           working-directory: packages/realm/tests
           script: flutter test integration_test/all_tests.dart --file-reporter=json:test-results.json --suppress-analytics
       - name: Publish Test Report
-        uses: dorny/test-reporter@v1.8.0
+        uses: dorny/test-reporter@v3
         if: success() || failure()
         with:
           name: Test Results Flutter Android
@@ -238,7 +238,7 @@ jobs:
     timeout-minutes: 30
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
         with:
           # ffigen parses src/realm_dart.h, which includes realm.h from the
           # realm-core submodule.
@@ -277,7 +277,7 @@ jobs:
     timeout-minutes: 30
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
         with:
           submodules: false
       - name: Setup Runner
