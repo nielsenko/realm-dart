@@ -1,4 +1,4 @@
 [submodule "packages/realm/src/realm-core"]
 	path = packages/realm/src/realm-core
-	url = https://github.com/realm/realm-core.git
-	branch = master
+	url = https://github.com/nielsenko/realm-core.git
+	branch = kn/zig-rescue
