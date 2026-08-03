@@ -1070,7 +1070,8 @@ void main() {
           embedded.dynamic.set('value', 'updated child 1');
         });
 
-        await Future<void>.delayed(Duration(milliseconds: 20));
+        dynamicRealm.refresh();
+        await pumpEventQueue();
 
         expect(topLevel.dynamic.get<Uuid?>('differentiator'), newUuid);
         expect(embedded.dynamic.get<String>('value'), 'updated child 1');
@@ -1126,7 +1127,8 @@ void main() {
           map['new map value'] = null;
         });
 
-        await Future<void>.delayed(Duration(milliseconds: 20));
+        dynamicRealm.refresh();
+        await pumpEventQueue();
 
         expect(listChanges, hasLength(2));
         expect(listChanges[1].inserted, isEmpty);
@@ -1189,7 +1191,8 @@ void main() {
           map['new map value'] = null;
         });
 
-        await Future<void>.delayed(Duration(milliseconds: 20));
+        dynamicRealm.refresh();
+        await pumpEventQueue();
 
         expect(listChanges, hasLength(2));
         expect(listChanges[1].inserted, isEmpty);

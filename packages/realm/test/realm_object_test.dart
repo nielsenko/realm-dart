@@ -114,7 +114,8 @@ void main() {
       List<String>? changedProperties, {
       bool isDeleted = false,
     }) async {
-      await Future<void>.delayed(Duration(milliseconds: 20));
+      obj.realm.refresh();
+      await pumpEventQueue();
 
       if (changedProperties == null) {
         expect(changeList, hasLength(0));
@@ -929,8 +930,9 @@ void main() {
     await Future<void>.delayed(Duration(milliseconds: 20));
   });
 
-  void testPrimaryKey<T extends RealmObject, K extends Object>(SchemaObject schema, T Function() createObject, K? key) {
+  void testPrimaryKey<T extends RealmObject, K extends Object>(SchemaObject Function() schemaOf, T Function() createObject, K? key) {
     test("$T primary key: $key", () {
+      final schema = schemaOf();
       final pkProp = schema.where((p) => p.primaryKey).single;
       final realm = Realm(Configuration.local([schema]));
       final obj = realm.write(() {
@@ -949,20 +951,20 @@ void main() {
 
   final ints = [1, 0, -1, maxInt, jsMaxInt, minInt, jsMinInt];
   for (final pk in ints) {
-    testPrimaryKey(IntPrimaryKey.schema, () => IntPrimaryKey(pk), pk);
+    testPrimaryKey(() => IntPrimaryKey.schema, () => IntPrimaryKey(pk), pk);
   }
 
   for (final pk in [null, ...ints]) {
-    testPrimaryKey(NullableIntPrimaryKey.schema, () => NullableIntPrimaryKey(pk), pk);
+    testPrimaryKey(() => NullableIntPrimaryKey.schema, () => NullableIntPrimaryKey(pk), pk);
   }
 
   final strings = ["", "1", "abc", "null"];
   for (final pk in strings) {
-    testPrimaryKey(StringPrimaryKey.schema, () => StringPrimaryKey(pk), pk);
+    testPrimaryKey(() => StringPrimaryKey.schema, () => StringPrimaryKey(pk), pk);
   }
 
   for (final pk in [null, ...strings]) {
-    testPrimaryKey(NullableStringPrimaryKey.schema, () => NullableStringPrimaryKey(pk), pk);
+    testPrimaryKey(() => NullableStringPrimaryKey.schema, () => NullableStringPrimaryKey(pk), pk);
   }
 
   final objectIds = [
@@ -972,21 +974,21 @@ void main() {
   ];
 
   for (final pk in objectIds) {
-    testPrimaryKey(ObjectIdPrimaryKey.schema, () => ObjectIdPrimaryKey(pk), pk);
+    testPrimaryKey(() => ObjectIdPrimaryKey.schema, () => ObjectIdPrimaryKey(pk), pk);
   }
 
   for (final pk in [null, ...objectIds]) {
-    testPrimaryKey(NullableObjectIdPrimaryKey.schema, () => NullableObjectIdPrimaryKey(pk), pk);
+    testPrimaryKey(() => NullableObjectIdPrimaryKey.schema, () => NullableObjectIdPrimaryKey(pk), pk);
   }
 
   final uuids = [Uuid.fromString('0f1dea4d-074e-4c72-b505-e2e8a727602f'), Uuid.fromString('00000000-0000-0000-0000-000000000000')];
 
   for (final pk in uuids) {
-    testPrimaryKey(UuidPrimaryKey.schema, () => UuidPrimaryKey(pk), pk);
+    testPrimaryKey(() => UuidPrimaryKey.schema, () => UuidPrimaryKey(pk), pk);
   }
 
   for (final pk in [null, ...uuids]) {
-    testPrimaryKey(NullableUuidPrimaryKey.schema, () => NullableUuidPrimaryKey(pk), pk);
+    testPrimaryKey(() => NullableUuidPrimaryKey.schema, () => NullableUuidPrimaryKey(pk), pk);
   }
 
   test('Remapped property has correct names in Core', () {

@@ -1030,7 +1030,8 @@ void main() {
         externalChanges.add(changes);
       });
 
-      await Future<void>.delayed(const Duration(milliseconds: 20));
+      realm.refresh();
+      await pumpEventQueue();
       expect(externalChanges.length, 1);
 
       final firstNotification = externalChanges[0];
@@ -1044,7 +1045,8 @@ void main() {
         map["test1"] = Car("BMW");
       });
 
-      await Future<void>.delayed(const Duration(milliseconds: 20));
+      realm.refresh();
+      await pumpEventQueue();
       expect(externalChanges.length, 1);
 
       var notification = externalChanges[0];
@@ -1059,7 +1061,8 @@ void main() {
         map["test1"]?.year = 1999;
       });
 
-      await Future<void>.delayed(const Duration(milliseconds: 20));
+      realm.refresh();
+      await pumpEventQueue();
       expect(externalChanges.length, 1);
 
       notification = externalChanges[0];
@@ -1074,7 +1077,8 @@ void main() {
         map["test1"]?.color = "blue";
       });
 
-      await Future<void>.delayed(const Duration(milliseconds: 20));
+      realm.refresh();
+      await pumpEventQueue();
       expect(externalChanges.length, 0);
 
       subscription.cancel();
@@ -1084,7 +1088,8 @@ void main() {
         map["test1"]?.year = 22222;
       });
 
-      await Future<void>.delayed(const Duration(milliseconds: 20));
+      realm.refresh();
+      await pumpEventQueue();
       expect(externalChanges.length, 0);
     });
   });

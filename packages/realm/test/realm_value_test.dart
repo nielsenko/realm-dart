@@ -1148,7 +1148,8 @@ void main() {
         mapChanges.add(event);
       });
 
-      await Future<void>.delayed(Duration(milliseconds: 20));
+      realm.refresh();
+      await pumpEventQueue();
 
       parentChanges.clear();
       listChanges.clear();
@@ -1159,7 +1160,8 @@ void main() {
         obj.oneAny.asList().add(RealmValue.bool(true));
       });
 
-      await Future<void>.delayed(Duration(milliseconds: 20));
+      realm.refresh();
+      await pumpEventQueue();
 
       // Expect listeners to be fired.
       expect(parentChanges, hasLength(1));
@@ -1180,7 +1182,8 @@ void main() {
         obj.oneAny.asList()[1].asMap()['new-value'] = RealmValue.from({'foo': 'bar'});
       });
 
-      await Future<void>.delayed(Duration(milliseconds: 20));
+      realm.refresh();
+      await pumpEventQueue();
 
       // Expect listeners to be fired.
       expect(parentChanges, hasLength(2));
@@ -1205,7 +1208,8 @@ void main() {
         obj.oneAny.asList()[1].asMap().remove('string');
       });
 
-      await Future<void>.delayed(Duration(milliseconds: 20));
+      realm.refresh();
+      await pumpEventQueue();
 
       // Expect listeners to be fired.
       expect(parentChanges, hasLength(3));
@@ -1231,7 +1235,8 @@ void main() {
         obj.oneAny.asList().removeAt(1);
       });
 
-      await Future<void>.delayed(Duration(milliseconds: 20));
+      realm.refresh();
+      await pumpEventQueue();
 
       // Expect listeners to be fired.
       expect(parentChanges, hasLength(4));
@@ -1257,7 +1262,8 @@ void main() {
         obj.oneAny = RealmValue.bool(false);
       });
 
-      await Future<void>.delayed(Duration(milliseconds: 20));
+      realm.refresh();
+      await pumpEventQueue();
 
       // Subscriptions have been canceled - shouldn't get more notifications
       expect(parentChanges, hasLength(4));

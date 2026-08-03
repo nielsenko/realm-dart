@@ -40,6 +40,14 @@ class _Restaurant {
   String toString() => name;
 }
 
+/// A fresh, unmanaged set of restaurants. Called once per test so no
+/// managed instance is shared between tests or isolates.
+List<Restaurant> newRestaurants() => [
+  Restaurant('Noma', location: (12.610534422524335, 55.682837071136916).toLocation()),
+  Restaurant('The Fat Duck', location: (-0.7017480029998424, 51.508054146883474).toLocation()),
+  Restaurant('Mugaritz', location: (-1.9169972753911122, 43.27291163851115).toLocation()),
+];
+
 void createRestaurants(Realm realm) {
   realm.write(() {
     realm.add(Restaurant('Burger King', location: (0.0, 0.0).toLocation()));
@@ -71,12 +79,14 @@ GeoRing ring(Iterable<(num, num)> coords, {bool close = true}) => GeoRing.from(c
 void main() {
   setupTests();
 
-  final noma = Restaurant('Noma', location: (12.610534422524335, 55.682837071136916).toLocation());
-  final theFatDuck = Restaurant('The Fat Duck', location: (-0.7017480029998424, 51.508054146883474).toLocation());
-  final mugaritz = Restaurant('Mugaritz', location: (-1.9169972753911122, 43.27291163851115).toLocation());
+  final [noma, theFatDuck, mugaritz] = newRestaurants();
 
-  final realm = Realm(Configuration.inMemory([Location.schema, Restaurant.schema]));
-  realm.write(() => realm.addAll([noma, theFatDuck, mugaritz]));
+  late Realm realm;
+  setUp(() {
+    realm = Realm(Configuration.inMemory([Location.schema, Restaurant.schema], path: generateRandomRealmPath()));
+    realm.write(() => realm.addAll(newRestaurants()));
+  });
+  tearDown(() => realm.close());
 
   final ringAroundNoma = ring([(12.7, 55.7), (12.6, 55.7), (12.6, 55.6)]);
   final ringAroundTheFatDuck = ring([(-0.7, 51.6), (-0.7, 51.5), (-0.8, 51.5)]);
@@ -124,7 +134,7 @@ void main() {
   ]) {
     test('geo within $shape', () {
       final results = realm.query<Restaurant>('location geoWithin $shape');
-      expect(results, unorderedEquals(restaurants));
+      expect(results.map((r) => r.name), unorderedEquals(restaurants.map((r) => r.name)));
       expect(results, realm.query<Restaurant>('location geoWithin \$0', [shape]));
     });
   }

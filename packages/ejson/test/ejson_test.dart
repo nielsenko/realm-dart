@@ -82,6 +82,8 @@ void _invalidTestCase<T>([EJsonValue ejson = const {}]) {
 }
 
 void main() {
+  setUpAll(registerPerson);
+
   test('fluent encoding', () {
     // NOTE: These cannot be handled generically, as we want to hit the correct
     // extension method, ie. not the fallback on Object?.
@@ -295,8 +297,6 @@ void main() {
       });
 
       group('custom types', () {
-        registerPerson();
-
         final person = Person('John', DateTime(1974), 80000, spouse: Person('Jane', DateTime(1973), 90000));
 
         _testCase(

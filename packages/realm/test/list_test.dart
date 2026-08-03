@@ -508,7 +508,8 @@ void main() {
       externalChanges.add(changes);
     });
 
-    await Future<void>.delayed(const Duration(milliseconds: 20));
+    realm.refresh();
+    await pumpEventQueue();
     expect(externalChanges.length, 1);
 
     final firstNotification = externalChanges[0];
@@ -523,7 +524,8 @@ void main() {
       students.add(student);
     });
 
-    await Future<void>.delayed(const Duration(milliseconds: 20));
+    realm.refresh();
+    await pumpEventQueue();
     expect(externalChanges.length, 1);
 
     var notification = externalChanges[0];
@@ -538,7 +540,8 @@ void main() {
       student.yearOfBirth = 1999;
     });
 
-    await Future<void>.delayed(const Duration(milliseconds: 20));
+    realm.refresh();
+    await pumpEventQueue();
     expect(externalChanges.length, 1);
 
     notification = externalChanges[0];
@@ -553,7 +556,8 @@ void main() {
       student.name = "Luis";
     });
 
-    await Future<void>.delayed(const Duration(milliseconds: 20));
+    realm.refresh();
+    await pumpEventQueue();
     expect(externalChanges.length, 0);
 
     subscription.cancel();
@@ -563,7 +567,8 @@ void main() {
       student.yearOfBirth = 1299;
     });
 
-    await Future<void>.delayed(const Duration(milliseconds: 20));
+    realm.refresh();
+    await pumpEventQueue();
     expect(externalChanges.length, 0);
   });
 

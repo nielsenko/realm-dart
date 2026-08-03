@@ -487,47 +487,36 @@ void main() {
       var set = testSet.setByType(type).set;
       var values = testSet.setByType(type).values;
 
-      var state = 0;
-      final maxSate = 2;
-      final subscription = set.changes.listen((changes) {
-        if (state == 0) {
-          expect(changes.inserted.isEmpty, true);
-          expect(changes.modified.isEmpty, true);
-          expect(changes.deleted.isEmpty, true);
-          expect(changes.newModified.isEmpty, true);
-          expect(changes.moved.isEmpty, true);
-        } else if (state == 1) {
-          expect(changes.inserted, [0]); //new object at index 0
-          expect(changes.modified.isEmpty, true);
-          expect(changes.deleted.isEmpty, true);
-          expect(changes.newModified.isEmpty, true);
-          expect(changes.moved.isEmpty, true);
-        } else if (state == 2) {
-          expect(changes.inserted.isEmpty, true); //new object at index 0
-          expect(changes.modified.isEmpty, true);
-          expect(changes.deleted, [0]);
-          expect(changes.newModified.isEmpty, true);
-          expect(changes.moved.isEmpty, true);
-        }
-        state++;
-      });
+      final delivered = expectLater(
+        set.changes,
+        emitsInOrder(<Matcher>[
+          // Always an empty event on subscription.
+          isA<RealmSetChanges<Object?>>()
+              .having((changes) => changes.inserted, 'inserted', <int>[])
+              .having((changes) => changes.modified, 'modified', <int>[])
+              .having((changes) => changes.deleted, 'deleted', <int>[])
+              .having((changes) => changes.newModified, 'newModified', <int>[])
+              .having((changes) => changes.moved, 'moved', <int>[]),
+          isA<RealmSetChanges<Object?>>()
+              .having((changes) => changes.inserted, 'inserted', [0])
+              .having((changes) => changes.modified, 'modified', <int>[])
+              .having((changes) => changes.deleted, 'deleted', <int>[])
+              .having((changes) => changes.newModified, 'newModified', <int>[])
+              .having((changes) => changes.moved, 'moved', <int>[]),
+          isA<RealmSetChanges<Object?>>()
+              .having((changes) => changes.inserted, 'inserted', <int>[])
+              .having((changes) => changes.modified, 'modified', <int>[])
+              .having((changes) => changes.deleted, 'deleted', [0])
+              .having((changes) => changes.newModified, 'newModified', <int>[])
+              .having((changes) => changes.moved, 'moved', <int>[]),
+        ]),
+      );
 
-      await Future<void>.delayed(Duration(milliseconds: 20));
-      realm.write(() {
-        set.add(values.first);
-      });
+      realm.write(() => set.add(values.first));
+      realm.refresh();
+      realm.write(() => set.remove(values.first));
 
-      await Future<void>.delayed(Duration(milliseconds: 20));
-      realm.write(() {
-        set.remove(values.first);
-      });
-
-      expect(state, maxSate);
-
-      await Future<void>.delayed(Duration(milliseconds: 20));
-      subscription.cancel();
-
-      await Future<void>.delayed(Duration(milliseconds: 20));
+      await delivered;
     });
 
     test('RealmSet<$type>.isCleared notifications', () async {
@@ -812,7 +801,8 @@ void main() {
       externalChanges.add(changes);
     });
 
-    await Future<void>.delayed(const Duration(milliseconds: 20));
+    realm.refresh();
+    await pumpEventQueue();
     expect(externalChanges.length, 1);
 
     final firstNotification = externalChanges[0];
@@ -827,7 +817,8 @@ void main() {
       cars.add(bmw);
     });
 
-    await Future<void>.delayed(const Duration(milliseconds: 20));
+    realm.refresh();
+    await pumpEventQueue();
     expect(externalChanges.length, 1);
 
     var notification = externalChanges[0];
@@ -842,7 +833,8 @@ void main() {
       bmw.year = 1999;
     });
 
-    await Future<void>.delayed(const Duration(milliseconds: 20));
+    realm.refresh();
+    await pumpEventQueue();
     expect(externalChanges.length, 1);
 
     notification = externalChanges[0];
@@ -857,7 +849,8 @@ void main() {
       bmw.color = "blue";
     });
 
-    await Future<void>.delayed(const Duration(milliseconds: 20));
+    realm.refresh();
+    await pumpEventQueue();
     expect(externalChanges.length, 0);
 
     subscription.cancel();
@@ -867,7 +860,8 @@ void main() {
       bmw.year = 222;
     });
 
-    await Future<void>.delayed(const Duration(milliseconds: 20));
+    realm.refresh();
+    await pumpEventQueue();
     expect(externalChanges.length, 0);
   });
 

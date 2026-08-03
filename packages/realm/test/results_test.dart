@@ -65,6 +65,7 @@ void main() {
 
   group('Results notifications with keypaths', () {
     Future<void> verifyNotifications<T extends RealmObjectBase>(
+      Realm realm,
       List<RealmResultsChanges<T>> changeList, {
       List<int>? expectedInserted,
       List<int>? expectedModified,
@@ -73,7 +74,8 @@ void main() {
       bool expectedIsCleared = false,
       bool expectedNotifications = true,
     }) async {
-      await Future<void>.delayed(const Duration(milliseconds: 20));
+      realm.refresh();
+      await pumpEventQueue();
 
       if (!expectedNotifications) {
         expect(changeList.length, 0);
@@ -140,23 +142,23 @@ void main() {
       realm.write(() {
         realm.add(tno);
       });
-      await verifyNotifications(externalChanges, expectedInserted: [0]);
+      await verifyNotifications(realm, externalChanges, expectedInserted: [0]);
 
       realm.write(() {
         tno.stringProperty = "testString";
       });
-      await verifyNotifications(externalChanges, expectedModified: [0]);
+      await verifyNotifications(realm, externalChanges, expectedModified: [0]);
 
       realm.write(() {
         tno.embedded = TestNotificationEmbeddedObject();
         tno.linkDifferentType = TestNotificationDifferentType();
       });
-      await verifyNotifications(externalChanges, expectedModified: [0]);
+      await verifyNotifications(realm, externalChanges, expectedModified: [0]);
 
       realm.write(() {
         tno.linkDifferentType?.stringProperty = "test";
       });
-      await verifyNotifications(externalChanges, expectedModified: [0]);
+      await verifyNotifications(realm, externalChanges, expectedModified: [0]);
 
       subscription.cancel();
     });
@@ -175,12 +177,12 @@ void main() {
       realm.write(() {
         realm.add(tno);
       });
-      await verifyNotifications(externalChanges, expectedInserted: [0]);
+      await verifyNotifications(realm, externalChanges, expectedInserted: [0]);
 
       realm.write(() {
         tno.stringProperty = "testString";
       });
-      await verifyNotifications(externalChanges, expectedNotifications: false);
+      await verifyNotifications(realm, externalChanges, expectedNotifications: false);
 
       subscription.cancel();
     }, skip: true);
@@ -198,23 +200,23 @@ void main() {
       realm.write(() {
         realm.add(tno);
       });
-      await verifyNotifications(externalChanges, expectedInserted: [0]);
+      await verifyNotifications(realm, externalChanges, expectedInserted: [0]);
 
       realm.write(() {
         tno.stringProperty = "testString";
       });
-      await verifyNotifications(externalChanges, expectedModified: [0]);
+      await verifyNotifications(realm, externalChanges, expectedModified: [0]);
 
       realm.write(() {
         tno.intProperty = 23;
       });
-      await verifyNotifications(externalChanges, expectedModified: [0]);
+      await verifyNotifications(realm, externalChanges, expectedModified: [0]);
 
       realm.write(() {
         tno.remappedIntProperty = 25;
         tno.embedded = TestNotificationEmbeddedObject();
       });
-      await verifyNotifications(externalChanges, expectedNotifications: false);
+      await verifyNotifications(realm, externalChanges, expectedNotifications: false);
 
       subscription.cancel();
     });
@@ -232,12 +234,12 @@ void main() {
       realm.write(() {
         realm.add(tno);
       });
-      await verifyNotifications(externalChanges, expectedInserted: [0]);
+      await verifyNotifications(realm, externalChanges, expectedInserted: [0]);
 
       realm.write(() {
         tno.stringProperty = "testString";
       });
-      await verifyNotifications(externalChanges, expectedModified: [0]);
+      await verifyNotifications(realm, externalChanges, expectedModified: [0]);
 
       realm.write(() {
         tno.intProperty = 23;
@@ -246,7 +248,7 @@ void main() {
         tno.linkDifferentType = TestNotificationDifferentType();
         tno.listDifferentType.add(TestNotificationDifferentType());
       });
-      await verifyNotifications(externalChanges, expectedNotifications: false);
+      await verifyNotifications(realm, externalChanges, expectedNotifications: false);
 
       subscription.cancel();
     });
@@ -264,17 +266,17 @@ void main() {
       realm.write(() {
         realm.add(tno);
       });
-      await verifyNotifications(externalChanges, expectedInserted: [0]);
+      await verifyNotifications(realm, externalChanges, expectedInserted: [0]);
 
       realm.write(() {
         tno.linkDifferentType = TestNotificationDifferentType();
       });
-      await verifyNotifications(externalChanges, expectedModified: [0]);
+      await verifyNotifications(realm, externalChanges, expectedModified: [0]);
 
       realm.write(() {
         tno.linkDifferentType?.intProperty = 23;
       });
-      await verifyNotifications(externalChanges, expectedModified: [0]);
+      await verifyNotifications(realm, externalChanges, expectedModified: [0]);
 
       realm.write(() {
         tno.linkDifferentType?.stringProperty = "test";
@@ -283,7 +285,7 @@ void main() {
         tno.embedded = TestNotificationEmbeddedObject();
         tno.listDifferentType.add(TestNotificationDifferentType());
       });
-      await verifyNotifications(externalChanges, expectedNotifications: false);
+      await verifyNotifications(realm, externalChanges, expectedNotifications: false);
 
       subscription.cancel();
     });
@@ -301,17 +303,17 @@ void main() {
       realm.write(() {
         realm.add(tno);
       });
-      await verifyNotifications(externalChanges, expectedInserted: [0]);
+      await verifyNotifications(realm, externalChanges, expectedInserted: [0]);
 
       realm.write(() {
         tno.listDifferentType.add(TestNotificationDifferentType());
       });
-      await verifyNotifications(externalChanges, expectedModified: [0]);
+      await verifyNotifications(realm, externalChanges, expectedModified: [0]);
 
       realm.write(() {
         tno.listDifferentType[0].intProperty = 23;
       });
-      await verifyNotifications(externalChanges, expectedModified: [0]);
+      await verifyNotifications(realm, externalChanges, expectedModified: [0]);
 
       realm.write(() {
         tno.listDifferentType[0].stringProperty = "23";
@@ -319,7 +321,7 @@ void main() {
         tno.intProperty = 23;
         tno.embedded = TestNotificationEmbeddedObject();
       });
-      await verifyNotifications(externalChanges, expectedNotifications: false);
+      await verifyNotifications(realm, externalChanges, expectedNotifications: false);
 
       subscription.cancel();
     });
@@ -337,12 +339,12 @@ void main() {
       realm.write(() {
         realm.add(tno);
       });
-      await verifyNotifications(externalChanges, expectedInserted: [0]);
+      await verifyNotifications(realm, externalChanges, expectedInserted: [0]);
 
       realm.write(() {
         tno.listDifferentType.add(TestNotificationDifferentType());
       });
-      await verifyNotifications(externalChanges, expectedModified: [0]);
+      await verifyNotifications(realm, externalChanges, expectedModified: [0]);
 
       realm.write(() {
         tno.listDifferentType[0].stringProperty = "34";
@@ -350,7 +352,7 @@ void main() {
         tno.intProperty = 23;
         tno.linkDifferentType = TestNotificationDifferentType();
       });
-      await verifyNotifications(externalChanges, expectedNotifications: false);
+      await verifyNotifications(realm, externalChanges, expectedNotifications: false);
 
       subscription.cancel();
     });
@@ -368,27 +370,27 @@ void main() {
       realm.write(() {
         realm.add(tno);
       });
-      await verifyNotifications(externalChanges, expectedInserted: [0]);
+      await verifyNotifications(realm, externalChanges, expectedInserted: [0]);
 
       realm.write(() {
         tno.listDifferentType.add(TestNotificationDifferentType());
       });
-      await verifyNotifications(externalChanges, expectedModified: [0]);
+      await verifyNotifications(realm, externalChanges, expectedModified: [0]);
 
       realm.write(() {
         tno.mapDifferentType["test"] = TestNotificationDifferentType();
       });
-      await verifyNotifications(externalChanges, expectedModified: [0]);
+      await verifyNotifications(realm, externalChanges, expectedModified: [0]);
 
       realm.write(() {
         tno.linkDifferentType = TestNotificationDifferentType();
       });
-      await verifyNotifications(externalChanges, expectedModified: [0]);
+      await verifyNotifications(realm, externalChanges, expectedModified: [0]);
 
       realm.write(() {
         tno.intProperty = 23;
       });
-      await verifyNotifications(externalChanges, expectedModified: [0]);
+      await verifyNotifications(realm, externalChanges, expectedModified: [0]);
 
       // No notifications deeper than one level
       realm.write(() {
@@ -396,7 +398,7 @@ void main() {
         tno.mapDifferentType["test"]?.intProperty = 23;
         tno.linkDifferentType?.intProperty = 21;
       });
-      await verifyNotifications(externalChanges, expectedNotifications: false);
+      await verifyNotifications(realm, externalChanges, expectedNotifications: false);
 
       subscription.cancel();
     });
@@ -414,48 +416,48 @@ void main() {
       realm.write(() {
         realm.add(tno);
       });
-      await verifyNotifications(externalChanges, expectedInserted: [0]);
+      await verifyNotifications(realm, externalChanges, expectedInserted: [0]);
 
       realm.write(() {
         tno.listDifferentType.add(TestNotificationDifferentType());
       });
-      await verifyNotifications(externalChanges, expectedModified: [0]);
+      await verifyNotifications(realm, externalChanges, expectedModified: [0]);
 
       realm.write(() {
         tno.mapDifferentType["test"] = TestNotificationDifferentType();
       });
-      await verifyNotifications(externalChanges, expectedModified: [0]);
+      await verifyNotifications(realm, externalChanges, expectedModified: [0]);
 
       realm.write(() {
         tno.linkDifferentType = TestNotificationDifferentType();
       });
-      await verifyNotifications(externalChanges, expectedModified: [0]);
+      await verifyNotifications(realm, externalChanges, expectedModified: [0]);
 
       realm.write(() {
         tno.intProperty = 23;
       });
-      await verifyNotifications(externalChanges, expectedModified: [0]);
+      await verifyNotifications(realm, externalChanges, expectedModified: [0]);
 
       realm.write(() {
         tno.listDifferentType[0].stringProperty = "34";
       });
-      await verifyNotifications(externalChanges, expectedModified: [0]);
+      await verifyNotifications(realm, externalChanges, expectedModified: [0]);
 
       realm.write(() {
         tno.linkDifferentType?.intProperty = 21;
       });
-      await verifyNotifications(externalChanges, expectedModified: [0]);
+      await verifyNotifications(realm, externalChanges, expectedModified: [0]);
 
       realm.write(() {
         tno.linkDifferentType?.link = TestNotificationDifferentType();
       });
-      await verifyNotifications(externalChanges, expectedModified: [0]);
+      await verifyNotifications(realm, externalChanges, expectedModified: [0]);
 
       // No notifications deeper than two levels
       realm.write(() {
         tno.linkDifferentType?.link?.intProperty = 24;
       });
-      await verifyNotifications(externalChanges, expectedNotifications: false);
+      await verifyNotifications(realm, externalChanges, expectedNotifications: false);
 
       subscription.cancel();
     });
@@ -473,17 +475,17 @@ void main() {
       realm.write(() {
         realm.add(tno);
       });
-      await verifyNotifications(externalChanges, expectedInserted: [0]);
+      await verifyNotifications(realm, externalChanges, expectedInserted: [0]);
 
       realm.write(() {
         tno.linkDifferentType = TestNotificationDifferentType();
       });
-      await verifyNotifications(externalChanges, expectedModified: [0]);
+      await verifyNotifications(realm, externalChanges, expectedModified: [0]);
 
       realm.write(() {
         tno.linkDifferentType?.link = TestNotificationDifferentType();
       });
-      await verifyNotifications(externalChanges, expectedModified: [0]);
+      await verifyNotifications(realm, externalChanges, expectedModified: [0]);
 
       realm.write(() {
         tno.linkDifferentType?.link?.intProperty = 23;
@@ -491,7 +493,7 @@ void main() {
         tno.listDifferentType.add(TestNotificationDifferentType());
         tno.intProperty = 23;
       });
-      await verifyNotifications(externalChanges, expectedNotifications: false);
+      await verifyNotifications(realm, externalChanges, expectedNotifications: false);
 
       subscription.cancel();
     });
@@ -509,37 +511,37 @@ void main() {
       realm.write(() {
         realm.add(tno);
       });
-      await verifyNotifications(externalChanges, expectedInserted: [0]);
+      await verifyNotifications(realm, externalChanges, expectedInserted: [0]);
 
       realm.write(() {
         tno.linkDifferentType = TestNotificationDifferentType();
       });
-      await verifyNotifications(externalChanges, expectedModified: [0]);
+      await verifyNotifications(realm, externalChanges, expectedModified: [0]);
 
       realm.write(() {
         tno.linkDifferentType?.intProperty = 23;
       });
-      await verifyNotifications(externalChanges, expectedModified: [0]);
+      await verifyNotifications(realm, externalChanges, expectedModified: [0]);
 
       realm.write(() {
         tno.listDifferentType.add(TestNotificationDifferentType());
       });
-      await verifyNotifications(externalChanges, expectedModified: [0]);
+      await verifyNotifications(realm, externalChanges, expectedModified: [0]);
 
       realm.write(() {
         tno.listDifferentType[0].intProperty = 23;
       });
-      await verifyNotifications(externalChanges, expectedModified: [0]);
+      await verifyNotifications(realm, externalChanges, expectedModified: [0]);
 
       realm.write(() {
         tno.mapDifferentType["test"] = TestNotificationDifferentType();
       });
-      await verifyNotifications(externalChanges, expectedModified: [0]);
+      await verifyNotifications(realm, externalChanges, expectedModified: [0]);
 
       realm.write(() {
         tno.mapDifferentType["test"]?.intProperty = 22;
       });
-      await verifyNotifications(externalChanges, expectedModified: [0]);
+      await verifyNotifications(realm, externalChanges, expectedModified: [0]);
 
       // No notifications not on keypath
       realm.write(() {
@@ -547,7 +549,7 @@ void main() {
         tno.listDifferentType[0].stringProperty = "22";
         tno.mapDifferentType["test"]?.stringProperty = "22";
       });
-      await verifyNotifications(externalChanges, expectedNotifications: false);
+      await verifyNotifications(realm, externalChanges, expectedNotifications: false);
 
       subscription.cancel();
     });

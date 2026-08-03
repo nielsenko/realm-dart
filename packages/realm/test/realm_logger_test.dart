@@ -51,10 +51,14 @@ void main() {
   });
 
   group('LogCategory.contains', () {
-    for (final outer in LogCategory.values) {
-      for (final inner in LogCategory.values) {
-        test('$outer contains $inner', () {
-          expect(outer.contains(inner), inner.toString().startsWith(outer.toString()));
+    for (var i = 0; i < LogCategory.values.length; i++) {
+      for (var j = 0; j < LogCategory.values.length; j++) {
+        final outerName = LogCategory.values[i].toString();
+        final innerName = LogCategory.values[j].toString();
+        test('$outerName contains $innerName', () {
+          final outer = LogCategory.values[i];
+          final inner = LogCategory.values[j];
+          expect(outer.contains(inner), innerName.startsWith(outerName));
         });
       }
     }
