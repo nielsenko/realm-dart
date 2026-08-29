@@ -66,20 +66,17 @@ EJsonValue _encodeRequiredNamedParameters(RequiredNamedParameters value) {
 
 RequiredNamedParameters _decodeRequiredNamedParameters(EJsonValue ejson) {
   return switch (ejson) {
-    {'requiredNamed': EJsonValue requiredNamed} =>
-      RequiredNamedParameters(requiredNamed: fromEJson(requiredNamed)),
+    {'requiredNamed': EJsonValue requiredNamed} => RequiredNamedParameters(requiredNamed: fromEJson(requiredNamed)),
     _ => raiseInvalidEJson(ejson),
   };
 }
 
-extension RequiredNamedParametersEJsonEncoderExtension
-    on RequiredNamedParameters {
+extension RequiredNamedParametersEJsonEncoderExtension on RequiredNamedParameters {
   @pragma('vm:prefer-inline')
   EJsonValue toEJson() => _encodeRequiredNamedParameters(this);
 }
 
-void registerRequiredNamedParameters() =>
-    register(_encodeRequiredNamedParameters, _decodeRequiredNamedParameters);
+void registerRequiredNamedParameters() => register(_encodeRequiredNamedParameters, _decodeRequiredNamedParameters);
 
 EJsonValue _encodeOptionalNamedParameters(OptionalNamedParameters value) {
   return {'optionalNamed': value.optionalNamed.toEJson()};
@@ -87,20 +84,17 @@ EJsonValue _encodeOptionalNamedParameters(OptionalNamedParameters value) {
 
 OptionalNamedParameters _decodeOptionalNamedParameters(EJsonValue ejson) {
   return switch (ejson) {
-    {'optionalNamed': EJsonValue optionalNamed} =>
-      OptionalNamedParameters(optionalNamed: fromEJson(optionalNamed)),
+    {'optionalNamed': EJsonValue optionalNamed} => OptionalNamedParameters(optionalNamed: fromEJson(optionalNamed)),
     _ => raiseInvalidEJson(ejson),
   };
 }
 
-extension OptionalNamedParametersEJsonEncoderExtension
-    on OptionalNamedParameters {
+extension OptionalNamedParametersEJsonEncoderExtension on OptionalNamedParameters {
   @pragma('vm:prefer-inline')
   EJsonValue toEJson() => _encodeOptionalNamedParameters(this);
 }
 
-void registerOptionalNamedParameters() =>
-    register(_encodeOptionalNamedParameters, _decodeOptionalNamedParameters);
+void registerOptionalNamedParameters() => register(_encodeOptionalNamedParameters, _decodeOptionalNamedParameters);
 
 EJsonValue _encodeOptionalParameters(OptionalParameters value) {
   return {'optional': value.optional.toEJson()};
@@ -108,8 +102,7 @@ EJsonValue _encodeOptionalParameters(OptionalParameters value) {
 
 OptionalParameters _decodeOptionalParameters(EJsonValue ejson) {
   return switch (ejson) {
-    {'optional': EJsonValue optional} =>
-      OptionalParameters(fromEJson(optional)),
+    {'optional': EJsonValue optional} => OptionalParameters(fromEJson(optional)),
     _ => raiseInvalidEJson(ejson),
   };
 }
@@ -119,8 +112,7 @@ extension OptionalParametersEJsonEncoderExtension on OptionalParameters {
   EJsonValue toEJson() => _encodeOptionalParameters(this);
 }
 
-void registerOptionalParameters() =>
-    register(_encodeOptionalParameters, _decodeOptionalParameters);
+void registerOptionalParameters() => register(_encodeOptionalParameters, _decodeOptionalParameters);
 
 EJsonValue _encodePrivateMembers(PrivateMembers value) {
   return {'id': value.id.toEJson()};
@@ -138,8 +130,7 @@ extension PrivateMembersEJsonEncoderExtension on PrivateMembers {
   EJsonValue toEJson() => _encodePrivateMembers(this);
 }
 
-void registerPrivateMembers() =>
-    register(_encodePrivateMembers, _decodePrivateMembers);
+void registerPrivateMembers() => register(_encodePrivateMembers, _decodePrivateMembers);
 
 EJsonValue _encodePerson(Person value) {
   return {
@@ -147,21 +138,14 @@ EJsonValue _encodePerson(Person value) {
     'birthDate': value.birthDate.toEJson(),
     'income': value.income.toEJson(),
     'spouse': value.spouse.toEJson(),
-    'cprNumber': value.cprNumber.toEJson()
+    'cprNumber': value.cprNumber.toEJson(),
   };
 }
 
 Person _decodePerson(EJsonValue ejson) {
   return switch (ejson) {
-    {
-      'name': EJsonValue name,
-      'birthDate': EJsonValue birthDate,
-      'income': EJsonValue income,
-      'spouse': EJsonValue spouse,
-      'cprNumber': EJsonValue cprNumber
-    } =>
-      Person(fromEJson(name), fromEJson(birthDate), fromEJson(income),
-          spouse: fromEJson(spouse), cprNumber: fromEJson(cprNumber)),
+    {'name': EJsonValue name, 'birthDate': EJsonValue birthDate, 'income': EJsonValue income, 'spouse': EJsonValue spouse, 'cprNumber': EJsonValue cprNumber} =>
+      Person(fromEJson(name), fromEJson(birthDate), fromEJson(income), spouse: fromEJson(spouse), cprNumber: fromEJson(cprNumber)),
     _ => raiseInvalidEJson(ejson),
   };
 }

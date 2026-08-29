@@ -7,24 +7,17 @@ part of 'person.dart';
 // **************************************************************************
 
 EJsonValue _encodePerson(Person value) {
-  return {
-    'name': value.name.toEJson(),
-    'birthDate': value.birthDate.toEJson(),
-    'income': value.income.toEJson(),
-    'spouse': value.spouse.toEJson()
-  };
+  return {'name': value.name.toEJson(), 'birthDate': value.birthDate.toEJson(), 'income': value.income.toEJson(), 'spouse': value.spouse.toEJson()};
 }
 
 Person _decodePerson(EJsonValue ejson) {
   return switch (ejson) {
-    {
-      'name': EJsonValue name,
-      'birthDate': EJsonValue birthDate,
-      'income': EJsonValue income,
-      'spouse': EJsonValue spouse
-    } =>
-      Person(fromEJson(name), fromEJson(birthDate), fromEJson(income),
-          spouse: fromEJson(spouse)),
+    {'name': EJsonValue name, 'birthDate': EJsonValue birthDate, 'income': EJsonValue income, 'spouse': EJsonValue spouse} => Person(
+      fromEJson(name),
+      fromEJson(birthDate),
+      fromEJson(income),
+      spouse: fromEJson(spouse),
+    ),
     _ => raiseInvalidEJson(ejson),
   };
 }
