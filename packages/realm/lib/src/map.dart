@@ -16,7 +16,7 @@ import 'realm_class.dart';
 import 'realm_object.dart';
 import 'results.dart';
 
-/// RealmMap is a collection that contains key-value pairs of <String, T>.
+/// RealmMap is a collection that contains key-value pairs of `<String, T>`.
 abstract class RealmMap<T extends Object?> with RealmEntity implements MapBase<String, T> {
   /// Gets a value indicating whether this collection is still valid to use.
   ///

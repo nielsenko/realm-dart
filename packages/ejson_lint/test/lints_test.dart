@@ -30,7 +30,9 @@ void main() {
     final expected = expectedLints(exampleFile);
     expect(expected, isNotEmpty, reason: 'sanity check: example should declare expect_lint comments');
 
-    final analyze = Process.runSync('dart', ['analyze', '--format=json', '.'], workingDirectory: exampleDir.path);
+    // Note: We need specify file to analyze explicitly since the whole
+    // directory is excluded in analysis_options.yaml
+    final analyze = Process.runSync('dart', ['analyze', 'bin/example.dart', '--format=json', '.'], workingDirectory: exampleDir.path);
     final jsonStart = (analyze.stdout as String).indexOf('{');
     expect(jsonStart, isNot(-1), reason: 'no json in analyze output:\n${analyze.stdout}\n${analyze.stderr}');
 

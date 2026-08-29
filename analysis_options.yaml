@@ -18,6 +18,8 @@ analyzer:
     - '**/realm_bindings.dart'
     - '**/*_test_data/**' # contains weird dart for testing
     - 'packages/ejson_lint/example/bin/**' # contains lint errors for testing
+  plugins:
+    - tuid
 
 linter:
   rules:

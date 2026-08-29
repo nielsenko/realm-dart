@@ -66,7 +66,7 @@ void testCompile(String description, dynamic source, dynamic matcher, {dynamic s
       final assets = {..._realmCommonAssets, 'pkg|$assetName': '$source'};
       await _generateDirect(assets, 'pkg|$assetName', onLog: onLog);
       final result = await testBuilder(generateRealmObjects(), assets, rootPackage: 'pkg');
-      final outputs = result.buildResult.outputs;
+      final outputs = result.outputs;
       if (outputs.isEmpty) {
         throw StateError('build produced no outputs');
       }
@@ -101,7 +101,7 @@ void testCompileMany(String description, Iterable<dynamic> sources, dynamic matc
   test(description, () {
     generate() async {
       final result = await testBuilder(generateRealmObjects(), {..._realmCommonAssets, for (final (id, source) in inputs) id: source}, rootPackage: 'pkg');
-      return [for (final a in result.buildResult.outputs) _formatter.format(_readOutput(result, a))];
+      return [for (final a in result.outputs) _formatter.format(_readOutput(result, a))];
     }
 
     expect(generate(), matcher);

@@ -5,8 +5,6 @@
 
 import 'dart:typed_data';
 
-import 'package:test/test.dart' hide test, throws;
-
 import 'package:realm/realm.dart';
 
 import 'test.dart';
@@ -1517,7 +1515,7 @@ void main() {
     final none = realm.query<Task>('FALSEPREDICATE');
 
     expect(() => all.contains(Task(ObjectId())), throws<RealmStateError>());
-    // ignore: unnecessary_cast, iterable_contains_unrelated_type
+    // ignore: unnecessary_cast, iterable_contains_unrelated_type, collection_methods_unrelated_type
     expect(() => (all as Iterable<Task>).contains(1), throwsA(isA<TypeError>()));
 
     int i = 0;

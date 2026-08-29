@@ -4,9 +4,6 @@
 import 'dart:async';
 import 'dart:math';
 
-import 'package:realm_common/realm_common.dart';
-import 'package:test/test.dart' hide test, throws;
-
 import 'package:realm/realm.dart';
 
 import 'test.dart';
@@ -69,7 +66,6 @@ extension on GeoPoint {
 }
 
 extension on (num, num) {
-  (num, num) get r => ($2, $1);
   GeoPoint toGeoPoint() => GeoPoint(lon: $1.toDouble(), lat: $2.toDouble());
   Location toLocation() => toGeoPoint().toLocation();
 }

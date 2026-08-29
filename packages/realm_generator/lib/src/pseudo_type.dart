@@ -35,14 +35,6 @@ class PseudoType implements DartType {
   }
 
   @override
-  InterfaceType? asInstanceOf2(InterfaceElement element) {
-    throw UnimplementedError();
-  }
-
-  @override
-  Element? get element3 => throw UnimplementedError();
-
-  @override
   DartType get extensionTypeErasure => throw UnimplementedError();
 
   @override

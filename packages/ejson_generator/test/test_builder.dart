@@ -28,7 +28,7 @@ Future<String?> testBuilder(Builder builder, String source, {String package = 'p
   }
 
   // Read the output from the generated location
-  final outputs = result.buildResult.outputs;
+  final outputs = result.outputs;
   if (outputs.isEmpty) return null;
 
   final outputId = outputs.single;
