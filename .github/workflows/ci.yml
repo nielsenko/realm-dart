@@ -32,14 +32,11 @@ jobs:
       - name: Setup Runner
         uses: ./.github/actions/setup-runner
         with:
-          zig: "false"
-      - name: Format (realm package)
-        working-directory: packages/realm
-        run: >-
-          find lib test hook -name '*.dart' -not -name '*.g.dart' -not -name '*.realm.dart' -not -name 'realm_bindings.dart'
-          | xargs dart format --line-length 160 --output none --set-exit-if-changed
-      - name: Analyze (realm package)
-        run: dart analyze packages/realm/lib packages/realm/hook
+          zig: false
+      - name: Format
+        run: melos lint:format
+      - name: Analyze
+        run: dart analyze
 
   # Dart desktop tests - the hook builds librealm for the host target.
 
